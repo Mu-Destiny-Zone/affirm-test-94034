@@ -14,9 +14,11 @@ import { AssignOrgsDialog } from '@/components/admin/AssignOrgsDialog';
 import { CreateOrgDialog } from '@/components/admin/CreateOrgDialog';
 import { UserOrgsDisplay } from '@/components/admin/UserOrgsDisplay';
 import { ResetPasswordDialog } from '@/components/admin/ResetPasswordDialog';
-import { Users, Shield, Trash2, Mail, Search, Building2, ChevronRight, UserCog, UserX } from 'lucide-react';
+import { Users, Shield, Trash2, Mail, Search, Building2, ChevronRight, UserCog, UserX, Filter, SortAsc, Download, BarChart3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type User = {
   id: string;
@@ -45,15 +47,26 @@ export function AdminUsers() {
   const [orgs, setOrgs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [unassignedSearchQuery, setUnassignedSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'email' | 'date'>('name');
   
   // Get user's org role for the selected org
   const { canManage: isOrgAdmin } = useUserRole(selectedOrg);
 
-  // Filter users based on search
-  const filteredUsers = users.filter(u => 
-    u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort users
+  const filteredUsers = users
+    .filter(u => {
+      const matchesSearch = u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesRole = roleFilter === 'all' || u.org_role === roleFilter;
+      return matchesSearch && matchesRole;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.display_name || '').localeCompare(b.display_name || '');
+      if (sortBy === 'email') return (a.email || '').localeCompare(b.email || '');
+      if (sortBy === 'date') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      return 0;
+    });
 
   const filteredUnassignedUsers = usersWithoutOrg.filter(u => 
     u.display_name?.toLowerCase().includes(unassignedSearchQuery.toLowerCase()) ||
@@ -288,23 +301,39 @@ export function AdminUsers() {
   }
 
   return (
-    <div className="container mx-auto space-y-8 animate-fade-in">
-      {/* Enhanced Header */}
-      <div className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border/50">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div className="space-y-1">
-            <h1 className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-gradient-brand rounded-lg shadow-brand">
-                <UserCog className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+    <div className="container mx-auto space-y-6 animate-fade-in">
+      {/* Enhanced Header with Stats */}
+      <div className="mb-6 pb-4 border-b border-border/50">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg shadow-primary/20">
+                <UserCog className="h-7 w-7 text-white" />
               </div>
-              <span className="text-xl sm:text-2xl lg:text-3xl font-bold">{t('userManagement')}</span>
+              <span className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">{t('userManagement')}</span>
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground ml-14">
               {t('manageUsersAcrossOrganizations')}
             </p>
           </div>
           
-          <CreateOrgDialog onOrgCreated={fetchOrgs} />
+          <div className="flex items-center gap-3">
+            <div className="grid grid-cols-3 gap-2">
+              <Card className="px-4 py-2">
+                <div className="text-xs text-muted-foreground">Total Users</div>
+                <div className="text-2xl font-bold">{users.length}</div>
+              </Card>
+              <Card className="px-4 py-2">
+                <div className="text-xs text-muted-foreground">Organizations</div>
+                <div className="text-2xl font-bold">{orgs.length}</div>
+              </Card>
+              <Card className="px-4 py-2">
+                <div className="text-xs text-muted-foreground">Unassigned</div>
+                <div className="text-2xl font-bold text-destructive">{usersWithoutOrg.length}</div>
+              </Card>
+            </div>
+            <CreateOrgDialog onOrgCreated={fetchOrgs} />
+          </div>
         </div>
       </div>
 
@@ -427,33 +456,66 @@ export function AdminUsers() {
           </CardContent>
         </Card>
 
-        {/* Users Section */}
+        {/* Users Section with Enhanced Filters */}
         {selectedOrg && (
-          <Card className="border-2 shadow-md">
-            <CardHeader className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Users className="h-6 w-6 text-primary" />
+                  </div>
                   <div>
-                    <CardTitle className="text-lg">Team Members</CardTitle>
+                    <CardTitle className="text-xl">Team Members</CardTitle>
                     <CardDescription className="mt-0.5">
                       {filteredUsers.length} members in {orgs.find(o => o.id === selectedOrg)?.name}
                     </CardDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1 sm:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 h-9"
-                    />
-                  </div>
-                  {isOrgAdmin && (
-                    <CreateUserDialog onUserCreated={fetchUsers} />
-                  )}
+                {isOrgAdmin && (
+                  <CreateUserDialog onUserCreated={fetchUsers} />
+                )}
+              </div>
+
+              {/* Filters and Actions Bar */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-36">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="tester">Tester</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+                    <SelectTrigger className="w-36">
+                      <SortAsc className="h-4 w-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">By Name</SelectItem>
+                      <SelectItem value="email">By Email</SelectItem>
+                      <SelectItem value="date">By Date</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon">
+                    <Download className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </CardHeader>

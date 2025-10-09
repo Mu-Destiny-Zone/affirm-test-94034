@@ -7,11 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings, Save, Building, Plus, Users, FolderOpen, Trash2, Edit, Database, Sparkles, AlertCircle } from 'lucide-react';
+import { Settings, Save, Building, Plus, Users, FolderOpen, Trash2, Edit, Database, Sparkles, AlertCircle, Shield, Bell, Eye, Activity, TrendingUp } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { TransferOwnershipDialog } from '@/components/admin/TransferOwnershipDialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 type Organization = {
   id: string;
@@ -255,26 +258,44 @@ export function AdminSettings() {
   };
 
   return (
-    <div className="container mx-auto space-y-8 animate-fade-in">
-      {/* Enhanced Header */}
-      <div className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border/50">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div className="space-y-1">
-            <h1 className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-gradient-brand rounded-lg shadow-brand">
-                <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+    <div className="container mx-auto space-y-6 animate-fade-in">
+      {/* Enhanced Header with Stats */}
+      <div className="mb-6 pb-4 border-b border-border/50">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg shadow-primary/20">
+                <Settings className="h-7 w-7 text-white" />
               </div>
-              <span className="text-xl sm:text-2xl lg:text-3xl font-bold">Organization Settings</span>
+              <span className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">Organization Settings</span>
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Manage all your organizations in one place
+            <p className="text-sm text-muted-foreground ml-14">
+              Configure and manage your organizations
             </p>
           </div>
           
-          <Badge variant="secondary" className="text-sm px-3 py-1">
-            <Building className="h-3.5 w-3.5 mr-1.5" />
-            {allOrgs.length} Organizations
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Card className="px-4 py-2">
+              <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-primary" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Organizations</div>
+                  <div className="text-2xl font-bold">{allOrgs.length}</div>
+                </div>
+              </div>
+            </Card>
+            <Card className="px-4 py-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Total Users</div>
+                  <div className="text-2xl font-bold">
+                    {Object.values(orgStats).reduce((sum, stat) => sum + stat.userCount, 0)}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
 
@@ -416,9 +437,9 @@ export function AdminSettings() {
                               </div>
                             </div>
                           </div>
-                        ) : (
+                         ) : (
                           <>
-                            <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-start justify-between mb-6">
                               <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 ring-2 ring-primary/10">
                                   <Building className="h-6 w-6 text-primary" />
@@ -426,9 +447,15 @@ export function AdminSettings() {
                                 <div>
                                   <h3 className="text-xl font-bold mb-1">{org.name}</h3>
                                   <p className="text-sm text-muted-foreground font-mono">{org.slug}</p>
-                                  {org.owner_id === user?.id && (
-                                    <Badge variant="secondary" className="text-xs mt-1">Owner</Badge>
-                                  )}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    {org.owner_id === user?.id && (
+                                      <Badge variant="secondary" className="text-xs">Owner</Badge>
+                                    )}
+                                    <Badge variant="outline" className="text-xs">
+                                      <Activity className="h-3 w-3 mr-1" />
+                                      Active
+                                    </Badge>
+                                  </div>
                                 </div>
                               </div>
                               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -449,31 +476,99 @@ export function AdminSettings() {
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                              <div className="p-4 rounded-lg bg-muted/50 border">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Users className="h-4 w-4 text-primary" />
-                                  <span className="text-sm font-medium text-muted-foreground">Users</span>
+                            <Tabs defaultValue="overview" className="w-full">
+                              <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="overview">Overview</TabsTrigger>
+                                <TabsTrigger value="settings">Settings</TabsTrigger>
+                                <TabsTrigger value="security">Security</TabsTrigger>
+                              </TabsList>
+                              
+                              <TabsContent value="overview" className="space-y-4 mt-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                  <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Users className="h-5 w-5 text-primary" />
+                                      <span className="text-sm font-medium text-muted-foreground">Users</span>
+                                    </div>
+                                    <p className="text-3xl font-bold">{stats.userCount}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Team members</p>
+                                  </div>
+                                  <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <FolderOpen className="h-5 w-5 text-primary" />
+                                      <span className="text-sm font-medium text-muted-foreground">Projects</span>
+                                    </div>
+                                    <p className="text-3xl font-bold">{stats.projectCount}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Active projects</p>
+                                  </div>
+                                  <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Database className="h-5 w-5 text-primary" />
+                                      <span className="text-sm font-medium text-muted-foreground">Created</span>
+                                    </div>
+                                    <p className="text-lg font-bold">{new Date(org.created_at).toLocaleDateString()}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Organization age</p>
+                                  </div>
                                 </div>
-                                <p className="text-2xl font-bold">{stats.userCount}</p>
-                              </div>
-                              <div className="p-4 rounded-lg bg-muted/50 border">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <FolderOpen className="h-4 w-4 text-primary" />
-                                  <span className="text-sm font-medium text-muted-foreground">Projects</span>
-                                </div>
-                                <p className="text-2xl font-bold">{stats.projectCount}</p>
-                              </div>
-                              <div className="p-4 rounded-lg bg-muted/50 border">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Database className="h-4 w-4 text-primary" />
-                                  <span className="text-sm font-medium text-muted-foreground">Created</span>
-                                </div>
-                                <p className="text-sm font-semibold">
-                                  {new Date(org.created_at).toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
+                              </TabsContent>
+
+                              <TabsContent value="settings" className="space-y-4 mt-4">
+                                <Card className="p-4">
+                                  <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                      <div className="space-y-0.5">
+                                        <div className="flex items-center gap-2">
+                                          <Eye className="h-4 w-4 text-muted-foreground" />
+                                          <Label className="text-base font-medium">Public Organization</Label>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Make this organization visible to everyone</p>
+                                      </div>
+                                      <Switch defaultChecked={false} />
+                                    </div>
+                                    <Separator />
+                                    <div className="flex items-center justify-between">
+                                      <div className="space-y-0.5">
+                                        <div className="flex items-center gap-2">
+                                          <Bell className="h-4 w-4 text-muted-foreground" />
+                                          <Label className="text-base font-medium">Email Notifications</Label>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Receive updates about organization activity</p>
+                                      </div>
+                                      <Switch defaultChecked={true} />
+                                    </div>
+                                  </div>
+                                </Card>
+                              </TabsContent>
+
+                              <TabsContent value="security" className="space-y-4 mt-4">
+                                <Card className="p-4">
+                                  <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                      <Shield className="h-5 w-5 text-primary" />
+                                      <div>
+                                        <h4 className="font-semibold">Security Settings</h4>
+                                        <p className="text-sm text-muted-foreground">Manage access and permissions</p>
+                                      </div>
+                                    </div>
+                                    <Separator />
+                                    <div className="flex items-center justify-between">
+                                      <div className="space-y-0.5">
+                                        <Label className="text-base font-medium">Two-Factor Authentication</Label>
+                                        <p className="text-sm text-muted-foreground">Require 2FA for all members</p>
+                                      </div>
+                                      <Switch defaultChecked={false} />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <div className="space-y-0.5">
+                                        <Label className="text-base font-medium">IP Whitelist</Label>
+                                        <p className="text-sm text-muted-foreground">Restrict access to specific IP addresses</p>
+                                      </div>
+                                      <Switch defaultChecked={false} />
+                                    </div>
+                                  </div>
+                                </Card>
+                              </TabsContent>
+                            </Tabs>
                           </>
                         )}
                       </div>
