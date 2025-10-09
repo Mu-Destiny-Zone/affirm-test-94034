@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, Settings, Users, User, LogOut, Moon, Sun, Monitor, Languages, ClipboardList } from "lucide-react";
+import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, Settings, Users, User, LogOut, Moon, Sun, Monitor, Languages, ClipboardList, BookOpen, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -69,6 +69,7 @@ export function AppSidebar() {
 
   // Check if user is admin in any org
   const [isAdmin, setIsAdmin] = useState(false);
+  const [docsExpanded, setDocsExpanded] = useState(false);
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!user) {
@@ -201,6 +202,57 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4 border-t border-border/40 transition-all duration-300 ease-in-out">
         {!collapsed ? <div className="space-y-1 transition-opacity duration-300">
+            {/* Documentation Section */}
+            <div className="mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDocsExpanded(!docsExpanded)}
+                className="w-full justify-between hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg font-medium"
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-sm">{t('documentation')}</span>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${docsExpanded ? 'rotate-180' : ''}`} />
+              </Button>
+              {docsExpanded && (
+                <div className="mt-2 p-3 bg-accent/30 rounded-lg space-y-2 text-xs">
+                  <h4 className="font-semibold text-sm mb-2">{t('howToUseSystem')}</h4>
+                  <ul className="space-y-1.5 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{t('docMyTasks')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{t('docTests')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{t('docBugs')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{t('docSuggestions')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{t('docExecution')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{t('docReporting')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{t('docCollaboration')}</span>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full justify-start hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg font-medium">
@@ -246,6 +298,58 @@ export function AppSidebar() {
               <span className="text-sm">{t('signOut')}</span>
             </Button>
           </div> : <div className="flex flex-col gap-1 transition-opacity duration-300">
+            {/* Collapsed Documentation Toggle */}
+            <Tooltip delayDuration={0}>
+              <DropdownMenu>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full p-2 hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out">
+                      <BookOpen className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <DropdownMenuContent side="right" align="end" className="w-80">
+                  <DropdownMenuLabel>{t('howToUseSystem')}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="p-3 space-y-2 text-xs">
+                    <ul className="space-y-1.5 text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{t('docMyTasks')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{t('docTests')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{t('docBugs')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{t('docSuggestions')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{t('docExecution')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{t('docReporting')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{t('docCollaboration')}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <TooltipContent side="right" className="font-medium">
+                {t('documentation')}
+              </TooltipContent>
+            </Tooltip>
+
             {/* Collapsed Theme Toggle */}
             <Tooltip delayDuration={0}>
               <DropdownMenu>

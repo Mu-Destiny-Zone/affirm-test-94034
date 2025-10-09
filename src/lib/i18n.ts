@@ -401,7 +401,18 @@ const resources = {
       manage: 'Manage',
       refresh: 'Refresh',
       export: 'Export',
-      import: 'Import'
+      import: 'Import',
+      
+      // Documentation
+      documentation: 'Documentation',
+      howToUseSystem: 'How to Use the System',
+      docMyTasks: 'My Tasks - View and manage tests assigned to you',
+      docTests: 'Tests - Browse all available test cases',
+      docBugs: 'Bugs - Report and track bugs you find',
+      docSuggestions: 'Suggestions - Share improvement ideas',
+      docExecution: 'Execute tests by marking each step as pass, fail, or skip',
+      docReporting: 'Report bugs with detailed steps and optional video evidence',
+      docCollaboration: 'Collaborate by voting and commenting on bugs and suggestions'
     }
   },
   bg: {
@@ -803,7 +814,18 @@ const resources = {
       manage: 'Управлявай',
       refresh: 'Опресни',
       export: 'Експортирай',
-      import: 'Импортирай'
+      import: 'Импортирай',
+      
+      // Documentation
+      documentation: 'Документация',
+      howToUseSystem: 'Как да използвате системата',
+      docMyTasks: 'Моите Задачи - Преглед и управление на възложените ви тестове',
+      docTests: 'Тестове - Разглеждане на всички налични тестови случаи',
+      docBugs: 'Грешки - Докладвайте и проследявайте намерени грешки',
+      docSuggestions: 'Предложения - Споделете идеи за подобрение',
+      docExecution: 'Изпълнявайте тестове като маркирате всяка стъпка като успешна, неуспешна или пропусната',
+      docReporting: 'Докладвайте грешки с подробни стъпки и опционално видео доказателство',
+      docCollaboration: 'Сътрудничете чрез гласуване и коментиране на грешки и предложения'
     }
   }
 };
