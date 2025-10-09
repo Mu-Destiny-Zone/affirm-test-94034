@@ -473,7 +473,6 @@ export function AdminSettings() {
             )}
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
