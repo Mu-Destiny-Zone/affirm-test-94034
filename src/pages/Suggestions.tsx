@@ -325,7 +325,7 @@ export function Suggestions() {
       />
 
       {/* Suggestions List */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         {filteredSuggestions.length === 0 ? (
           <div className="col-span-full">
             <Card className="text-center py-12 animate-fade-in glass">
@@ -363,8 +363,7 @@ export function Suggestions() {
             </Card>
           </div>
         ) : (
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-            {filteredSuggestions.map((suggestion, index) => {
+          filteredSuggestions.map((suggestion, index) => {
               const quickActions = suggestion.author_id === user?.id && (
                 <Button
                   variant="ghost"
@@ -452,8 +451,7 @@ export function Suggestions() {
                   />
                 </EnhancedCard>
               );
-            })}
-          </div>
+            })
         )}
       </div>
     </div>
