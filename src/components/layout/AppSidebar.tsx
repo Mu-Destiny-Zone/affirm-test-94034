@@ -112,7 +112,7 @@ export function AppSidebar() {
       className="border-r border-border/60 bg-card transition-all duration-300 ease-in-out"
       collapsible="icon"
     >
-      <SidebarHeader className="p-4 border-b border-border/40">
+      <SidebarHeader className={`p-4 border-b border-border/40 ${collapsed ? 'flex justify-center' : ''}`}>
         {!collapsed ? (
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center overflow-hidden shadow-sm">
@@ -128,7 +128,7 @@ export function AppSidebar() {
             </div>
           </div>
         ) : (
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mx-auto overflow-hidden shadow-sm">
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mx-auto self-center overflow-hidden shadow-sm">
             <img
               src="/lovable-uploads/5dc1400a-d879-4c3c-a68e-15d5b86bbafb.png"
               alt="Mu Destiny Zone Logo"
