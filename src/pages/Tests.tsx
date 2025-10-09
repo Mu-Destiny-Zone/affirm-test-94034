@@ -452,7 +452,7 @@ export function Tests() {
             <p className="text-xs sm:text-sm text-muted-foreground">
               {canManage 
                 ? `Create and manage test cases for ${currentOrg.name}`
-                : `View and execute tests assigned to you in ${currentOrg.name}`
+                : `View and execute your ${tests.length} assigned test${tests.length !== 1 ? 's' : ''} in ${currentOrg.name}`
               }
             </p>
           </div>
@@ -513,21 +513,31 @@ export function Tests() {
             {tests.length === 0 ? (
               <>
                 <TestTube className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No tests yet</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {canManage ? 'No tests yet' : 'No Assigned Tests'}
+                </h3>
                 <p className="text-muted-foreground mb-4">
-                  Create your first test case to get started with testing your projects.
+                  {canManage 
+                    ? 'Create your first test case to get started with testing your projects.'
+                    : 'You don\'t have any tests assigned to you yet. Contact your team manager to get test assignments.'
+                  }
                 </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Test
-                </Button>
+                {canManage && (
+                  <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Test
+                  </Button>
+                )}
               </>
             ) : (
               <>
                 <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No tests found</h3>
                 <p className="text-muted-foreground">
-                  Try adjusting your search criteria or filters.
+                  {canManage 
+                    ? 'Try adjusting your search criteria or filters.'
+                    : `You have ${tests.length} assigned test${tests.length !== 1 ? 's' : ''}, but none match your current filters.`
+                  }
                 </p>
               </>
             )}
