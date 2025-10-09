@@ -425,15 +425,15 @@ export function MyTasks() {
         <TabsContent value="tests" className="space-y-4 animate-fade-in">
           {assignedTests.length === 0 ? (
             <Card className="glass border-border/60">
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="p-4 bg-primary/10 rounded-full mb-4">
-                  <TestTube className="h-16 w-16 text-primary" />
+              <CardContent className="flex flex-col items-center justify-center py-10 sm:py-16">
+                <div className="p-3 sm:p-4 bg-primary/10 rounded-full mb-3 sm:mb-4">
+                  <TestTube className="h-10 w-10 sm:h-16 sm:w-16 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">No assigned tests</h3>
-                <p className="text-muted-foreground text-center max-w-md">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">No assigned tests</h3>
+                <p className="text-muted-foreground text-center max-w-md text-sm">
                   You don't have any tests assigned to you at the moment. Check back later or contact your project manager.
                 </p>
-                <Button onClick={() => navigate('/tests')} className="mt-6 btn-gradient">
+                <Button onClick={() => navigate('/tests')} className="mt-4 sm:mt-6 btn-gradient" size="sm">
                   <TestTube className="h-4 w-4 mr-2" />
                   Browse All Tests
                 </Button>
@@ -447,15 +447,15 @@ export function MyTasks() {
                   className="card-interactive border-border/60 hover:border-primary/30 animate-slide-up"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <CardHeader className="pb-4">
+                  <CardHeader className="pb-2 sm:pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <TestTube className="h-5 w-5 text-primary" />
+                          <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                            <TestTube className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <CardTitle className="text-xl font-bold mb-1">{assignment.tests.title}</CardTitle>
+                            <CardTitle className="text-base sm:text-xl font-bold mb-1">{assignment.tests.title}</CardTitle>
                             <div className="flex items-center gap-2">
                               <Badge variant={getPriorityColor(assignment.tests.priority)} className="text-xs">
                                 {getPriorityLabel(assignment.tests.priority)}
@@ -486,26 +486,27 @@ export function MyTasks() {
                         </p>
                       </div>
                       <Button
-                        size="lg"
+                        size="sm"
                         onClick={() => setExecutionDialogTest(assignment.tests as Test)}
-                        className="btn-gradient gap-2 shadow-md"
+                        className="btn-gradient gap-2 shadow-md h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
                       >
-                        <TestTube className="h-4 w-4" />
-                        Execute Test
+                        <TestTube className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Execute Test</span>
+                        <span className="sm:hidden">Run</span>
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-6 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
+                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 sm:p-3 rounded-lg">
                       <div className="flex items-center gap-2">
                         <div className="p-1.5 bg-background rounded">
-                          <FileText className="h-3.5 w-3.5" />
+                          <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         </div>
                         <span className="font-medium">{assignment.tests.steps?.length || 0} steps</span>
                       </div>
                       {assignment.due_date && (
                         <div className="flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-warning" />
+                          <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-warning" />
                           <span>Due: {format(new Date(assignment.due_date), 'MMM dd, yyyy')}</span>
                         </div>
                       )}
@@ -520,15 +521,15 @@ export function MyTasks() {
         <TabsContent value="bugs" className="space-y-4 animate-fade-in">
           {userBugs.length === 0 ? (
             <Card className="glass border-border/60">
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="p-4 bg-destructive/10 rounded-full mb-4">
-                  <Bug className="h-16 w-16 text-destructive" />
+              <CardContent className="flex flex-col items-center justify-center py-10 sm:py-16">
+                <div className="p-3 sm:p-4 bg-destructive/10 rounded-full mb-3 sm:mb-4">
+                  <Bug className="h-10 w-10 sm:h-16 sm:w-16 text-destructive" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">No bugs reported</h3>
-                <p className="text-muted-foreground text-center max-w-md">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">No bugs reported</h3>
+                <p className="text-muted-foreground text-center max-w-md text-sm">
                   You haven't reported any bugs yet. Found an issue? Report it now!
                 </p>
-                <Button onClick={() => navigate('/bugs')} variant="destructive" className="mt-6 shadow-md">
+                <Button onClick={() => navigate('/bugs')} variant="destructive" className="mt-4 sm:mt-6 shadow-md" size="sm">
                   <Bug className="h-4 w-4 mr-2" />
                   Report Your First Bug
                 </Button>
@@ -542,15 +543,15 @@ export function MyTasks() {
                   className="card-interactive border-border/60 hover:border-destructive/30 animate-slide-up"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <CardHeader className="pb-4">
+                  <CardHeader className="pb-2 sm:pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 bg-destructive/10 rounded-lg">
-                            <Bug className="h-5 w-5 text-destructive" />
+                          <div className="p-1.5 sm:p-2 bg-destructive/10 rounded-lg">
+                            <Bug className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
                           </div>
                           <div className="flex-1">
-                            <CardTitle className="text-xl font-bold mb-1">{bug.title}</CardTitle>
+                            <CardTitle className="text-base sm:text-xl font-bold mb-1">{bug.title}</CardTitle>
                             <div className="flex items-center gap-2">
                               <Badge variant={getSeverityColor(bug.severity)} className="text-xs">
                                 {bug.severity}
@@ -573,18 +574,19 @@ export function MyTasks() {
                         </p>
                       </div>
                       <Button
-                        size="lg"
+                        size="sm"
                         variant="destructive"
                         onClick={() => handleBugClick(bug)}
-                        className="gap-2 shadow-md"
+                        className="gap-2 shadow-md h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        View Details
+                        <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">View Details</span>
+                        <span className="sm:hidden">View</span>
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-6 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
+                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 sm:p-3 rounded-lg">
                       {bug.projects && (
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-background rounded">
