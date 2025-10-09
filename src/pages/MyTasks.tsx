@@ -11,6 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { TestTube, Bug, Lightbulb, Clock, CircleCheck as CheckCircle, CircleAlert as AlertCircle, ExternalLink, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { BugDetailDialog } from '@/components/bugs/BugDetailDialog';
+import { SuggestionDetailDialog } from '@/components/suggestions/SuggestionDetailDialog';
+import { BugReport, BugSeverity } from '@/lib/types';
 
 interface AssignedTest {
   id: string;
@@ -31,9 +34,25 @@ interface UserBug {
   id: string;
   title: string;
   description: string;
-  severity: string;
-  status: string;
+  severity: BugSeverity;
+  status: 'new' | 'triaged' | 'in_progress' | 'fixed' | 'closed' | 'duplicate' | "won't_fix";
   created_at: string;
+  org_id: string;
+  project_id: string | null;
+  reporter_id: string;
+  test_id: string | null;
+  assignment_id: string | null;
+  repro_steps: any[];
+  duplicate_of: string | null;
+  updated_at: string;
+  deleted_at: string | null;
+  youtube_url: string | null;
+  tags: string[] | null;
+  fix_notes: string | null;
+  profiles?: {
+    display_name: string | null;
+    email: string;
+  };
   projects: {
     name: string;
   } | null;
@@ -43,11 +62,27 @@ interface UserSuggestion {
   id: string;
   title: string;
   description: string;
-  impact: string;
-  status: string;
+  impact: 'low' | 'medium' | 'high';
+  status: 'new' | 'consider' | 'planned' | 'done' | 'rejected';
   created_at: string;
+  updated_at: string;
+  author_id: string;
+  org_id: string;
+  project_id: string | null;
+  test_id: string | null;
+  tags: string[] | null;
+  profiles?: {
+    id: string;
+    display_name: string | null;
+    email: string;
+  };
   projects: {
+    id: string;
     name: string;
+  } | null;
+  tests?: {
+    id: string;
+    title: string;
   } | null;
 }
 
@@ -63,6 +98,12 @@ export function MyTasks() {
   const [assignedTests, setAssignedTests] = useState<AssignedTest[]>([]);
   const [userBugs, setUserBugs] = useState<UserBug[]>([]);
   const [userSuggestions, setUserSuggestions] = useState<UserSuggestion[]>([]);
+
+  // Dialog states
+  const [selectedBug, setSelectedBug] = useState<UserBug | null>(null);
+  const [bugDialogOpen, setBugDialogOpen] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<UserSuggestion | null>(null);
+  const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false);
 
   const [stats, setStats] = useState({
     pendingTests: 0,
@@ -115,6 +156,19 @@ export function MyTasks() {
             severity,
             status,
             created_at,
+            updated_at,
+            org_id,
+            project_id,
+            reporter_id,
+            test_id,
+            assignment_id,
+            repro_steps,
+            duplicate_of,
+            deleted_at,
+            youtube_url,
+            tags,
+            fix_notes,
+            profiles (display_name, email),
             projects (name)
           `)
           .eq('org_id', currentOrg.id)
@@ -122,7 +176,7 @@ export function MyTasks() {
           .is('deleted_at', null)
           .order('created_at', { ascending: false }),
 
-supabase
+        supabase
           .from('suggestions')
           .select(`
             id,
@@ -131,7 +185,15 @@ supabase
             impact,
             status,
             created_at,
-            projects (name)
+            updated_at,
+            author_id,
+            org_id,
+            project_id,
+            test_id,
+            tags,
+            profiles!suggestions_author_id_fkey(id, display_name, email),
+            projects (id, name),
+            tests (id, title)
           `)
           .eq('org_id', currentOrg.id)
           .eq('author_id', user.id)
@@ -198,6 +260,26 @@ supabase
       case 'low': return 'secondary';
       default: return 'secondary';
     }
+  };
+
+  const handleBugClick = (bug: UserBug) => {
+    setSelectedBug(bug);
+    setBugDialogOpen(true);
+  };
+
+  const handleSuggestionClick = (suggestion: UserSuggestion) => {
+    setSelectedSuggestion(suggestion);
+    setSuggestionDialogOpen(true);
+  };
+
+  const handleBugEdit = (bug: any) => {
+    setBugDialogOpen(false);
+    navigate('/bugs');
+  };
+
+  const handleSuggestionEdit = (suggestion: any) => {
+    setSuggestionDialogOpen(false);
+    navigate('/suggestions');
   };
 
   if (loading || !currentOrg) {
@@ -500,7 +582,7 @@ supabase
                       <Button
                         size="lg"
                         variant="destructive"
-                        onClick={() => navigate('/bugs')}
+                        onClick={() => handleBugClick(bug)}
                         className="gap-2 shadow-md"
                       >
                         <ExternalLink className="h-4 w-4" />
@@ -596,6 +678,23 @@ supabase
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Bug Detail Dialog */}
+      <BugDetailDialog
+        open={bugDialogOpen}
+        onOpenChange={setBugDialogOpen}
+        bug={selectedBug as any}
+        onEdit={handleBugEdit}
+      />
+
+      {/* Suggestion Detail Dialog */}
+      <SuggestionDetailDialog
+        open={suggestionDialogOpen}
+        onOpenChange={setSuggestionDialogOpen}
+        suggestion={selectedSuggestion as any}
+        onEdit={handleSuggestionEdit}
+        onStatusChange={fetchMyTasks}
+      />
     </div>
   );
 }
