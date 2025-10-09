@@ -312,6 +312,23 @@
   .hover-glow {
     @apply transition-all duration-300 hover:shadow-glow;
   }
+
+  /* Sidebar Utilities */
+  .sidebar-transition {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .sidebar-collapsed-icon {
+    @apply flex items-center justify-center w-full;
+  }
+
+  .no-shift-layout {
+    @apply transform-gpu will-change-transform;
+  }
+
+  .sidebar-mobile-overlay {
+    @apply backdrop-blur-sm bg-background/80;
+  }
   
   /* Status Colors */
   .text-success { color: hsl(var(--success)); }

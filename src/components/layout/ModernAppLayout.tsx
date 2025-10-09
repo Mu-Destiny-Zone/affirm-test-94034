@@ -56,8 +56,8 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
         <AppSidebar />
         
         <SidebarInset className="flex flex-col flex-1">
-          <header className="flex h-16 items-center gap-4 border-b border-border/60 bg-background/95 backdrop-blur-md px-4 lg:px-6 sticky top-0 z-50 shadow-sm">
-            <SidebarTrigger className="hover:bg-accent transition-colors rounded-lg" />
+          <header className="flex h-16 items-center gap-4 border-b border-border/60 bg-background/95 backdrop-blur-md px-4 lg:px-6 sticky top-0 z-50 shadow-sm transition-all duration-300 ease-in-out">
+            <SidebarTrigger className="hover:bg-accent hover:scale-105 transition-all duration-300 ease-in-out rounded-lg h-9 w-9" />
 
             <div className="flex-1 flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -178,8 +178,8 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
             </div>
           </header>
 
-          <main className="flex-1 p-6 lg:p-8 overflow-auto bg-muted/20">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto bg-muted/20 transition-all duration-300 ease-in-out">
+            <div className="max-w-7xl mx-auto w-full">
               {children}
             </div>
           </main>

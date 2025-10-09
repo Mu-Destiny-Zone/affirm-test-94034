@@ -129,6 +129,26 @@ export default {
 						height: '0'
 					}
 				},
+				'sidebar-expand': {
+					from: {
+						width: '3.5rem',
+						opacity: '0.8'
+					},
+					to: {
+						width: '16rem',
+						opacity: '1'
+					}
+				},
+				'sidebar-collapse': {
+					from: {
+						width: '16rem',
+						opacity: '1'
+					},
+					to: {
+						width: '3.5rem',
+						opacity: '0.8'
+					}
+				},
 				'fade-in': {
 					'0%': {
 						opacity: '0',
@@ -180,6 +200,8 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
+				'sidebar-expand': 'sidebar-expand 0.3s ease-in-out',
+				'sidebar-collapse': 'sidebar-collapse 0.3s ease-in-out',
 				'fade-in': 'fade-in 0.3s ease-out',
 				'slide-up': 'slide-up 0.3s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out',

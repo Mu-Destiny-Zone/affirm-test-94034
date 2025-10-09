@@ -19,6 +19,11 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -98,7 +103,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className="border-r border-border/60 bg-card"
+      className="border-r border-border/60 bg-card transition-all duration-300 ease-in-out"
       collapsible="icon"
     >
       <SidebarHeader className="p-4 border-b border-border/40">
@@ -159,16 +164,25 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1">
               {navigation.map((item) => (
                 <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.href)}
-                    className="hover:bg-accent transition-all duration-200 rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm font-medium"
-                  >
-                    <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2">
-                      <item.icon className="h-5 w-5" />
-                      {!collapsed && <span className="text-sm">{t(item.name)}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
+                  <Tooltip delayDuration={collapsed ? 0 : 999999}>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(item.href)}
+                        className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
+                      >
+                        <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2">
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    {collapsed && (
+                      <TooltipContent side="right" className="font-medium">
+                        {t(item.name)}
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -184,16 +198,25 @@ export function AppSidebar() {
               <SidebarMenu className="space-y-1">
                 {adminNavigation.map((item) => (
                   <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive(item.href)}
-                      className="hover:bg-accent transition-all duration-200 rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm font-medium"
-                    >
-                      <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2">
-                        <item.icon className="h-5 w-5" />
-                        {!collapsed && <span className="text-sm">{t(item.name)}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
+                    <Tooltip delayDuration={collapsed ? 0 : 999999}>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive(item.href)}
+                          className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
+                        >
+                          <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2">
+                            <item.icon className="h-5 w-5 flex-shrink-0" />
+                            {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      {collapsed && (
+                        <TooltipContent side="right" className="font-medium">
+                          {t(item.name)}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -202,15 +225,15 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/40">
+      <SidebarFooter className="p-4 border-t border-border/40 transition-all duration-300 ease-in-out">
         {!collapsed ? (
-          <div className="space-y-1">
+          <div className="space-y-1 transition-opacity duration-300">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start hover:bg-accent transition-colors rounded-lg font-medium"
+                  className="w-full justify-start hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg font-medium"
                 >
                   {theme === 'dark' ? (
                     <Moon className="h-4 w-4 mr-3" />
@@ -243,7 +266,7 @@ export function AppSidebar() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start hover:bg-accent transition-colors rounded-lg font-medium"
+                  className="w-full justify-start hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg font-medium"
                 >
                   <Languages className="h-4 w-4 mr-3" />
                   <span className="text-sm">{i18n.language === 'bg' ? 'Български' : 'English'}</span>
@@ -263,69 +286,90 @@ export function AppSidebar() {
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-              className="w-full justify-start hover:bg-destructive/10 hover:text-destructive transition-colors rounded-lg font-medium"
+              className="w-full justify-start hover:bg-destructive/10 hover:text-destructive hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg font-medium"
             >
               <LogOut className="h-4 w-4 mr-3" />
               <span className="text-sm">{t('signOut')}</span>
             </Button>
           </div>
         ) : (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 transition-opacity duration-300">
             {/* Collapsed Theme Toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-full p-2">
-                  {theme === 'dark' ? <Moon className="h-4 w-4" /> : 
-                   theme === 'light' ? <Sun className="h-4 w-4" /> : 
-                   <Monitor className="h-4 w-4" />}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end">
-                <DropdownMenuLabel>{t('theme')}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setTheme('light')}>
-                  <Sun className="h-4 w-4 mr-2" />
-                  {t('light')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('dark')}>
-                  <Moon className="h-4 w-4 mr-2" />
-                  {t('dark')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('system')}>
-                  <Monitor className="h-4 w-4 mr-2" />
-                  {t('system')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Tooltip delayDuration={0}>
+              <DropdownMenu>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full p-2 hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out">
+                      {theme === 'dark' ? <Moon className="h-4 w-4" /> : 
+                       theme === 'light' ? <Sun className="h-4 w-4" /> : 
+                       <Monitor className="h-4 w-4" />}
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <DropdownMenuContent side="right" align="end">
+                  <DropdownMenuLabel>{t('theme')}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setTheme('light')}>
+                    <Sun className="h-4 w-4 mr-2" />
+                    {t('light')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')}>
+                    <Moon className="h-4 w-4 mr-2" />
+                    {t('dark')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('system')}>
+                    <Monitor className="h-4 w-4 mr-2" />
+                    {t('system')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <TooltipContent side="right" className="font-medium">
+                {t('theme')}
+              </TooltipContent>
+            </Tooltip>
 
             {/* Collapsed Language Toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-full p-2">
-                  <Languages className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end">
-                <DropdownMenuLabel>{t('language')}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
-                  English
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleLanguageChange('bg')}>
-                  Български
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Tooltip delayDuration={0}>
+              <DropdownMenu>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full p-2 hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out">
+                      <Languages className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <DropdownMenuContent side="right" align="end">
+                  <DropdownMenuLabel>{t('language')}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
+                    English
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleLanguageChange('bg')}>
+                    Български
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <TooltipContent side="right" className="font-medium">
+                {t('language')}
+              </TooltipContent>
+            </Tooltip>
 
             {/* Collapsed Sign Out */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="w-full p-2 hover:bg-destructive/10 hover:text-destructive"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="w-full p-2 hover:bg-destructive/10 hover:text-destructive hover:scale-[1.02] transition-all duration-300 ease-in-out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-medium">
+                {t('signOut')}
+              </TooltipContent>
+            </Tooltip>
           </div>
         )}
       </SidebarFooter>
