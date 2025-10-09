@@ -861,6 +861,10 @@ export type Database = {
         Args: { p_org_id: string; p_profile_id: string }
         Returns: undefined
       }
+      transfer_org_ownership: {
+        Args: { p_new_owner_id: string; p_org_id: string }
+        Returns: undefined
+      }
       update_org_member_role: {
         Args: {
           p_org_id: string

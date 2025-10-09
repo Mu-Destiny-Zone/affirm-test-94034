@@ -11,6 +11,7 @@ import { Settings, Save, Building, Plus, Users, FolderOpen, Trash2, Edit, Databa
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { TransferOwnershipDialog } from '@/components/admin/TransferOwnershipDialog';
 
 type Organization = {
   id: string;
@@ -425,17 +426,29 @@ export function AdminSettings() {
                                 <div>
                                   <h3 className="text-xl font-bold mb-1">{org.name}</h3>
                                   <p className="text-sm text-muted-foreground font-mono">{org.slug}</p>
+                                  {org.owner_id === user?.id && (
+                                    <Badge variant="secondary" className="text-xs mt-1">Owner</Badge>
+                                  )}
                                 </div>
                               </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingOrg(org.id)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </Button>
+                              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {org.owner_id === user?.id && (
+                                  <TransferOwnershipDialog 
+                                    orgId={org.id}
+                                    orgName={org.name}
+                                    currentOwnerId={org.owner_id}
+                                    onSuccess={fetchAllOrgs}
+                                  />
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setEditingOrg(org.id)}
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Button>
+                              </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
