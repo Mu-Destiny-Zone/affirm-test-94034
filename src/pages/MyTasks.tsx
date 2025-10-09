@@ -13,7 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { BugDetailDialog } from '@/components/bugs/BugDetailDialog';
 import { SuggestionDetailDialog } from '@/components/suggestions/SuggestionDetailDialog';
-import { BugReport, BugSeverity } from '@/lib/types';
+import { TestExecutionDialog } from '@/components/tests/TestExecutionDialog';
+import { BugReport, BugSeverity, Test } from '@/lib/types';
 
 interface AssignedTest {
   id: string;
@@ -104,6 +105,7 @@ export function MyTasks() {
   const [bugDialogOpen, setBugDialogOpen] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<UserSuggestion | null>(null);
   const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false);
+  const [executionDialogTest, setExecutionDialogTest] = useState<Test | null>(null);
 
   const [stats, setStats] = useState({
     pendingTests: 0,
@@ -494,10 +496,10 @@ export function MyTasks() {
                       </div>
                       <Button
                         size="lg"
-                        onClick={() => navigate('/tests')}
+                        onClick={() => setExecutionDialogTest(assignment.tests as Test)}
                         className="btn-gradient gap-2 shadow-md"
                       >
-                        <ExternalLink className="h-4 w-4" />
+                        <TestTube className="h-4 w-4" />
                         Execute Test
                       </Button>
                     </div>
@@ -694,6 +696,14 @@ export function MyTasks() {
         suggestion={selectedSuggestion as any}
         onEdit={handleSuggestionEdit}
         onStatusChange={fetchMyTasks}
+      />
+
+      {/* Test Execution Dialog */}
+      <TestExecutionDialog
+        test={executionDialogTest}
+        open={!!executionDialogTest}
+        onOpenChange={(open) => !open && setExecutionDialogTest(null)}
+        onExecutionComplete={fetchMyTasks}
       />
     </div>
   );
