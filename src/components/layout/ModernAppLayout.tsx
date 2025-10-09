@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { NoOrganizationAccess } from "./NoOrganizationAccess";
 
 interface ModernAppLayoutProps {
   children: React.ReactNode;
@@ -39,6 +40,11 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
   const { organizations, currentOrg, setCurrentOrg, loading } = useOrganization();
   const { notifications, loading: notificationsLoading, unreadCount, markAsRead, markAllAsRead, getNotificationIcon, getNotificationUrl } = useNotifications();
   const navigate = useNavigate();
+
+  // If user has no organizations, show the "Profile Under Review" screen
+  if (!loading && organizations.length === 0) {
+    return <NoOrganizationAccess />;
+  }
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read_at) {
