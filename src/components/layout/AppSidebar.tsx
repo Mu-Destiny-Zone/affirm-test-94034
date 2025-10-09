@@ -115,15 +115,15 @@ export function AppSidebar() {
       <SidebarHeader className={`p-4 border-b border-border/40 ${collapsed ? 'flex justify-center' : ''}`}>
         {!collapsed ? (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center overflow-hidden shadow-sm">
+            <div className="w-11 h-11 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-primary/20 ring-2 ring-primary/10">
               <img
                 src="/lovable-uploads/5dc1400a-d879-4c3c-a68e-15d5b86bbafb.png"
                 alt="Mu Destiny Zone Logo"
-                className="w-7 h-7 object-contain"
+                className="w-8 h-8 object-contain drop-shadow-sm"
               />
             </div>
             <div>
-              <h2 className="font-bold text-sm text-foreground">Mu Destiny Zone</h2>
+              <h2 className="font-bold text-base text-foreground leading-tight">Mu Destiny Zone</h2>
               <p className="text-xs text-muted-foreground font-medium">Test Management</p>
             </div>
           </div>
