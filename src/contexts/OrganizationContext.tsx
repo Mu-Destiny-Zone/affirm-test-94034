@@ -29,7 +29,13 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchOrganizations = async () => {
+    // Always enter a loading state when (re)fetching, especially when user just became available
+    setLoading(true);
+
     if (!user) {
+      // When signed out, clear org state and stop loading
+      setOrganizations([]);
+      setCurrentOrg(null);
       setLoading(false);
       return;
     }
@@ -54,10 +60,16 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         } else if (data.length > 0) {
           setCurrentOrg(data[0]);
           localStorage.setItem('currentOrgId', data[0].id);
+        } else {
+          setCurrentOrg(null);
+          localStorage.removeItem('currentOrgId');
         }
       } else if (data && data.length > 0) {
         setCurrentOrg(data[0]);
         localStorage.setItem('currentOrgId', data[0].id);
+      } else {
+        setCurrentOrg(null);
+        localStorage.removeItem('currentOrgId');
       }
     } catch (error: any) {
       console.error('Error fetching organizations:', error);
