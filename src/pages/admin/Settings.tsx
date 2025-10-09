@@ -432,14 +432,12 @@ export function AdminSettings() {
                                 </div>
                               </div>
                               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {org.owner_id === user?.id && (
-                                  <TransferOwnershipDialog 
-                                    orgId={org.id}
-                                    orgName={org.name}
-                                    currentOwnerId={org.owner_id}
-                                    onSuccess={fetchAllOrgs}
-                                  />
-                                )}
+                                <TransferOwnershipDialog 
+                                  orgId={org.id}
+                                  orgName={org.name}
+                                  currentOwnerId={org.owner_id}
+                                  onSuccess={fetchAllOrgs}
+                                />
                                 <Button
                                   variant="outline"
                                   size="sm"
