@@ -281,54 +281,54 @@ export function AdminUsers() {
 
       {/* Compact Users Without Organization Section */}
       {usersWithoutOrg.length > 0 && (
-          <Card className="border-2 border-destructive/20 shadow-md">
-            <CardHeader className="pb-3">
+          <Card className="border border-destructive/20 shadow-sm">
+            <CardHeader className="pb-2 pt-3 px-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <UserX className="h-4 w-4 text-destructive" />
-                  <CardTitle className="text-base">Unassigned Users</CardTitle>
-                  <Badge variant="destructive" className="text-xs">
+                <div className="flex items-center gap-1.5">
+                  <UserX className="h-3.5 w-3.5 text-destructive" />
+                  <CardTitle className="text-sm">Unassigned Users</CardTitle>
+                  <Badge variant="destructive" className="text-[10px] h-4 px-1.5">
                     {usersWithoutOrg.length}
                   </Badge>
                 </div>
-                <div className="relative w-64">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <div className="relative w-48">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                   <Input
                     placeholder="Search..."
                     value={unassignedSearchQuery}
                     onChange={(e) => setUnassignedSearchQuery(e.target.value)}
-                    className="pl-8 h-8 text-sm"
+                    className="pl-6 h-6 text-xs"
                   />
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-3 pb-3">
               {loadingUnassigned ? (
-                <div className="flex items-center justify-center py-6">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-destructive/20 border-t-destructive" />
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-destructive/20 border-t-destructive" />
                 </div>
               ) : filteredUnassignedUsers.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
+                <p className="text-xs text-muted-foreground text-center py-3">
                   {unassignedSearchQuery ? 'No matches found' : 'No unassigned users'}
                 </p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5">
                   {filteredUnassignedUsers.map((userItem) => (
                     <div
                       key={userItem.id}
-                      className="group p-3 rounded-lg border hover:border-destructive/40 hover:bg-destructive/5 transition-all"
+                      className="group p-2 rounded-lg border hover:border-destructive/40 hover:bg-destructive/5 transition-all"
                     >
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-destructive/80 to-destructive/60 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-destructive-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-destructive/80 to-destructive/60 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[10px] font-bold text-destructive-foreground">
                             {userItem.display_name?.charAt(0).toUpperCase() || 'U'}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
+                          <p className="font-medium text-xs truncate leading-tight">
                             {userItem.display_name || 'Unnamed User'}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">{userItem.email}</p>
+                          <p className="text-[10px] text-muted-foreground truncate leading-tight">{userItem.email}</p>
                         </div>
                         <AssignOrgsDialog
                           user={{
