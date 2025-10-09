@@ -641,7 +641,7 @@ export function MyTasks() {
                       </div>
                       <Button
                         size="sm"
-                        onClick={() => navigate('/suggestions')}
+                        onClick={() => handleSuggestionClick(suggestion)}
                         className="gap-2"
                       >
                         <ExternalLink className="h-4 w-4" />
