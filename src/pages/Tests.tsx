@@ -151,13 +151,8 @@ export function Tests() {
         assignmentsQuery = assignmentsQuery.eq('assignee_id', user.id);
       }
 
-      const [testsResponse, projectsResponse, assignmentsResponse] = await Promise.all([
+      const [testsResponse, assignmentsResponse] = await Promise.all([
         testsQuery,
-        supabase
-          .from('projects')
-          .select('*')
-          .eq('org_id', currentOrg.id)
-          .is('deleted_at', null),
         assignmentsQuery
       ]);
 
@@ -229,16 +224,6 @@ export function Tests() {
         const draft = testsWithSteps.filter(t => t.status === 'draft').length;
         const archived = testsWithSteps.filter(t => t.status === 'archived').length;
         setStats({ total, active, draft, archived });
-      }
-
-      if (projectsResponse.error) {
-        toast({
-          title: 'Error',
-          description: projectsResponse.error.message,
-          variant: 'destructive'
-        });
-      } else {
-        setProjects(projectsResponse.data || []);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -409,9 +394,8 @@ export function Tests() {
     
     const matchesStatus = statusFilter === 'all' || test.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || test.priority.toString() === priorityFilter;
-    const matchesProject = projectFilter === 'all' || test.project_id === projectFilter;
     
-    return matchesSearch && matchesStatus && matchesPriority && matchesProject;
+    return matchesSearch && matchesStatus && matchesPriority;
   });
 
   if (loading || !currentOrg) {
@@ -571,20 +555,6 @@ export function Tests() {
               <SelectItem value="3">Critical</SelectItem>
             </SelectContent>
           </Select>
-          
-          <Select value={projectFilter} onValueChange={setProjectFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Project" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Projects</SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
@@ -640,7 +610,6 @@ export function Tests() {
       <CreateTestDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        projects={projects}
         onTestCreated={fetchData}
       />
 
@@ -648,7 +617,6 @@ export function Tests() {
         test={editDialogTest}
         open={!!editDialogTest}
         onOpenChange={(open) => !open && setEditDialogTest(null)}
-        projects={projects}
         onTestUpdated={fetchData}
       />
 

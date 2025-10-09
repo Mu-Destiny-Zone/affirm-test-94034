@@ -18,10 +18,9 @@ interface CreateTestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onTestCreated: () => void;
-  projects: { id: string; name: string }[];
 }
 
-export function CreateTestDialog({ open, onOpenChange, onTestCreated, projects }: CreateTestDialogProps) {
+export function CreateTestDialog({ open, onOpenChange, onTestCreated }: CreateTestDialogProps) {
   const { currentOrg } = useOrganization();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -29,7 +28,6 @@ export function CreateTestDialog({ open, onOpenChange, onTestCreated, projects }
   const [newTest, setNewTest] = useState({
     title: '',
     description: '',
-    project_id: '',
     priority: 0,
     steps: [{ title: '', expected: '', required: true }] as TestStep[]
   });
@@ -60,10 +58,10 @@ export function CreateTestDialog({ open, onOpenChange, onTestCreated, projects }
   };
 
   const handleCreate = async () => {
-    if (!user || !currentOrg || !newTest.title.trim() || !newTest.project_id) {
+    if (!user || !currentOrg || !newTest.title.trim()) {
       toast({
         title: 'Error',
-        description: 'Please fill in all required fields including project',
+        description: 'Please fill in all required fields',
         variant: 'destructive'
       });
       return;
@@ -75,7 +73,6 @@ export function CreateTestDialog({ open, onOpenChange, onTestCreated, projects }
         .from('tests')
         .insert({
           org_id: currentOrg.id,
-          project_id: newTest.project_id,
           title: newTest.title.trim(),
           description: newTest.description.trim() || null,
           priority: newTest.priority,
@@ -93,7 +90,6 @@ export function CreateTestDialog({ open, onOpenChange, onTestCreated, projects }
       setNewTest({
         title: '',
         description: '',
-        project_id: '',
         priority: 0,
         steps: [{ title: '', expected: '', required: true }]
       });

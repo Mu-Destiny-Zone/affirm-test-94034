@@ -21,7 +21,7 @@ interface TestDetailDialogProps {
   canManage: boolean;
 }
 
-export function TestDetailDialog({ test, project, open, onOpenChange, onEdit, onExecute, canManage }: TestDetailDialogProps) {
+export function TestDetailDialog({ test, open, onOpenChange, onEdit, onExecute, canManage }: TestDetailDialogProps) {
   const [executionHistory, setExecutionHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedExecution, setSelectedExecution] = useState<any | null>(null);

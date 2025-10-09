@@ -34,7 +34,6 @@ interface TestCardProps {
     lastExecution?: any;
     assignments?: any[];
   };
-  project?: Project;
   onEdit: (test: Test) => void;
   onDelete: (test: Test) => void;
   onExecute: (test: Test) => void;
@@ -47,7 +46,7 @@ interface TestCardProps {
   isManager?: boolean;
 }
 
-export function TestCard({ test, project, onEdit, onDelete, onExecute, onViewDetails, onAssign, onCopy, onViewExecution, canManage, isAdmin, isManager }: TestCardProps) {
+export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onAssign, onCopy, onViewExecution, canManage, isAdmin, isManager }: TestCardProps) {
   const [assignees, setAssignees] = useState<TestAssignee[]>([]);
   const { user } = useAuth();
 
@@ -135,8 +134,6 @@ export function TestCard({ test, project, onEdit, onDelete, onExecute, onViewDet
                   {test.title}
                 </CardTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  <span className="font-medium">{project?.name || 'Unknown Project'}</span>
-                  <span>•</span>
                   <span>{test.steps?.length || 0} steps</span>
                   {test.priority > 1 && (
                     <>
