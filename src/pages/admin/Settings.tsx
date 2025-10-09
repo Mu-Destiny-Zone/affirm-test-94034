@@ -49,12 +49,12 @@ export function AdminSettings() {
     if (!user) return;
     
     try {
-      // Fetch all orgs where user is admin
+      // Fetch all orgs where user is admin or manager
       const { data: memberData, error: memberError } = await supabase
         .from('org_members')
         .select('org_id, role')
         .eq('profile_id', user.id)
-        .eq('role', 'admin')
+        .in('role', ['admin', 'manager'])
         .is('deleted_at', null);
 
       if (memberError) throw memberError;
