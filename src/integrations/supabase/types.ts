@@ -821,6 +821,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_org_member: {
+        Args: {
+          p_org_id: string
+          p_profile_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
       is_org_admin: {
         Args: { org_id: string }
         Returns: boolean
@@ -841,12 +849,24 @@ export type Database = {
         Args: { project_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      remove_user_from_all_managed_orgs: {
+        Args: { p_profile_id: string }
+        Returns: number
+      }
       soft_delete_test: {
         Args: { test_id: string }
         Returns: undefined
       }
       soft_remove_org_member: {
         Args: { p_org_id: string; p_profile_id: string }
+        Returns: undefined
+      }
+      update_org_member_role: {
+        Args: {
+          p_org_id: string
+          p_profile_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
         Returns: undefined
       }
     }
