@@ -190,8 +190,8 @@ export function AppSidebar() {
                           isActive={isActive(item.href)}
                           className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
                         >
-                          <NavLink to={item.href} className={`flex items-center ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`} onClick={handleNavClick}>
-                            <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <NavLink to={item.href} className={`flex items-center w-full ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`} onClick={handleNavClick}>
+                            <item.icon className={`h-5 w-5 flex-shrink-0 ${collapsed ? 'mx-auto' : ''}`} />
                             {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
                           </NavLink>
                         </SidebarMenuButton>
@@ -224,8 +224,8 @@ export function AppSidebar() {
                             isActive={isActive(item.href)}
                             className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
                           >
-                            <NavLink to={item.href} className={`flex items-center ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`} onClick={handleNavClick}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                            <NavLink to={item.href} className={`flex items-center w-full ${collapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`} onClick={handleNavClick}>
+                              <item.icon className={`h-5 w-5 flex-shrink-0 ${collapsed ? 'mx-auto' : ''}`} />
                               {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
                             </NavLink>
                           </SidebarMenuButton>
