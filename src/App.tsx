@@ -16,6 +16,7 @@ import { Reports } from "./pages/Reports";
 import { MyTasks } from "./pages/MyTasks";
 import { AdminUsers } from "./pages/admin/Users";
 import { AdminSettings } from "./pages/admin/Settings";
+import { ProfileSettings } from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 import "@/lib/i18n";
 
@@ -55,6 +56,7 @@ function AppContent() {
               <Route path="/suggestions" element={<Suggestions />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/my-tasks" element={<MyTasks />} />
+              <Route path="/profile" element={<ProfileSettings />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

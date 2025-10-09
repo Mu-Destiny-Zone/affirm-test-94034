@@ -86,6 +86,7 @@ export function Bugs() {
             id: '',
             locale: 'en' as const,
             theme: 'system' as const,
+            avatar_url: null,
             created_at: '',
             updated_at: '',
             deleted_at: null

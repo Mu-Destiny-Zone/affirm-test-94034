@@ -140,23 +140,36 @@ export function AppSidebar() {
         {profile && (
           <>
             <SidebarSeparator className="my-4" />
-            <div className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-accent/50 transition-colors">
-              <Avatar className="h-9 w-9 border-2 border-primary/20">
-                <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
-                  {profile.display_name?.charAt(0) || profile.email?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              {!collapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate text-foreground">
-                    {profile.display_name || 'User'}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    Team Member
-                  </p>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+                  <Avatar className="h-9 w-9 border-2 border-primary/20">
+                    <AvatarImage src={profile.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
+                      {profile.display_name?.charAt(0) || profile.email?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {!collapsed && (
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate text-foreground">
+                        {profile.display_name || 'User'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        Team Member
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => window.location.href = '/profile'} className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  Profile Settings
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         )}
       </SidebarHeader>
