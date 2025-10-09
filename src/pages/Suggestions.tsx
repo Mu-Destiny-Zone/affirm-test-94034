@@ -13,6 +13,7 @@ import { SuggestionDetailDialog } from '@/components/suggestions/SuggestionDetai
 import { EnhancedCard, CardHeader, CardFooter } from '@/components/ui/enhanced-card';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { LoadingGrid, LoadingState } from '@/components/ui/enhanced-loading';
+import { VotePanel } from '@/components/shared/VotePanel';
 
 interface SuggestionWithDetails {
   id: string;
@@ -362,91 +363,97 @@ export function Suggestions() {
             </Card>
           </div>
         ) : (
-          filteredSuggestions.map((suggestion, index) => {
-            const quickActions = (
-              <div className="flex gap-1">
-                {suggestion.author_id === user?.id && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditSuggestion(suggestion);
-                    }}
-                    className="h-8 w-8 p-0 bg-background/80 hover:bg-background shadow-sm"
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-            );
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            {filteredSuggestions.map((suggestion, index) => {
+              const quickActions = suggestion.author_id === user?.id && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditSuggestion(suggestion);
+                  }}
+                  className="h-7 w-7 p-0 hover:bg-primary/10"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                </Button>
+              );
 
-            const getImpactIcon = () => {
-              switch (suggestion.impact) {
-                case 'high': return <Flame className="h-3 w-3 mr-1" />
-                case 'medium': return <Target className="h-3 w-3 mr-1" />
-                case 'low': return <Sparkles className="h-3 w-3 mr-1" />
-                default: return null
-              }
-            };
-
-            return (
-              <EnhancedCard
-                key={suggestion.id}
-                priority={suggestion.impact}
-                quickActions={quickActions}
-                animationDelay={index * 50}
-                onClick={() => handleCardClick(suggestion)}
-                className="hover:shadow-primary/5"
-                topBadge={
-                  <Badge 
-                    variant={
-                      suggestion.impact === 'high' ? 'destructive' :
-                      suggestion.impact === 'medium' ? 'default' : 'secondary'
-                    }
-                    className="text-xs px-2 py-1 font-medium shadow-sm"
-                  >
-                      {getImpactIcon()}
-                      {suggestion.impact} {t('impact').toLowerCase()}
-                  </Badge>
+              const getImpactIcon = () => {
+                switch (suggestion.impact) {
+                  case 'high': return <Flame className="h-2.5 w-2.5 mr-0.5" />
+                  case 'medium': return <Target className="h-2.5 w-2.5 mr-0.5" />
+                  case 'low': return <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                  default: return null
                 }
-              >
-                <CardHeader
-                  title={suggestion.title}
-                  subtitle={suggestion.description || undefined}
-                  icon={<Lightbulb className="h-5 w-5 text-primary" />}
-                />
+              };
 
-                {/* Unified Metadata Row */}
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
-                  {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      <span>{suggestion.tags.length} {t('tags').toLowerCase()}</span>
+              const votePanel = (
+                <VotePanel
+                  targetId={suggestion.id}
+                  targetType="suggestion"
+                  variant="compact"
+                />
+              );
+
+              return (
+                <EnhancedCard
+                  key={suggestion.id}
+                  priority={suggestion.impact}
+                  quickActions={quickActions}
+                  votePanel={votePanel}
+                  animationDelay={index * 30}
+                  onClick={() => handleCardClick(suggestion)}
+                  topBadge={
+                    <Badge 
+                      variant={
+                        suggestion.impact === 'high' ? 'destructive' :
+                        suggestion.impact === 'medium' ? 'default' : 'secondary'
+                      }
+                      className="text-[10px] px-1.5 py-0.5 font-medium shadow-sm"
+                    >
+                        {getImpactIcon()}
+                        {suggestion.impact}
+                    </Badge>
+                  }
+                >
+                  <CardHeader
+                    title={suggestion.title}
+                    subtitle={suggestion.description || undefined}
+                    icon={<Lightbulb className="h-4 w-4 text-primary" />}
+                  />
+
+                  {/* Compact Metadata Row */}
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
+                    {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
+                      <span className="flex items-center gap-0.5">
+                        <span className="font-medium">{suggestion.tags.length}</span> tags
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-1 ml-auto">
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        suggestion.status === 'new' ? 'bg-blue-500' :
+                        suggestion.status === 'consider' ? 'bg-yellow-500' :
+                        suggestion.status === 'planned' ? 'bg-purple-500' :
+                        suggestion.status === 'done' ? 'bg-green-500' :
+                        'bg-red-500'
+                      }`}></span>
+                      <span className="capitalize text-[10px]">{suggestion.status.replace('_', ' ')}</span>
                     </div>
-                  )}
-
-                  <div className="flex items-center gap-1 ml-auto">
-                    <span className={`w-2 h-2 rounded-full ${
-                      suggestion.status === 'new' ? 'bg-primary' :
-                      suggestion.status === 'consider' ? 'bg-warning' :
-                      suggestion.status === 'planned' ? 'bg-accent' :
-                      suggestion.status === 'done' ? 'bg-success' :
-                      'bg-destructive'
-                    }`}></span>
-                    <span className="capitalize">{suggestion.status.replace('_', ' ')}</span>
                   </div>
-                </div>
 
-                <CardFooter
-                  author={suggestion.profiles?.display_name || 'Unknown'}
-                  date={new Date(suggestion.created_at).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                />
-              </EnhancedCard>
-            );
-          })
+                  <CardFooter
+                    author={suggestion.profiles?.display_name || 'Unknown'}
+                    date={new Date(suggestion.created_at).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  />
+                </EnhancedCard>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

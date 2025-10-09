@@ -189,37 +189,49 @@ export function VotePanel({ targetType, targetId, className, variant = 'default'
 
   if (variant === 'compact') {
     return (
-      <div className={cn("inline-flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-full border", className)}>
+      <div className={cn("flex flex-col items-center justify-center gap-1 py-2", className)}>
         <Button
           variant="ghost"
           size="sm"
           className={cn(
-            "h-6 w-auto px-2 gap-1 rounded-full text-xs font-medium transition-all hover:scale-105",
+            "h-7 w-7 p-0 rounded-md transition-all hover:scale-110",
             userVote === true 
-              ? "text-primary bg-primary/10 shadow-sm" 
-              : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+              ? "text-primary bg-primary/15 shadow-sm" 
+              : "text-muted-foreground hover:text-primary hover:bg-primary/10"
           )}
-          onClick={() => handleVote(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleVote(true);
+          }}
           disabled={loading}
         >
           <ThumbsUp className="h-3 w-3" />
-          {votes.upvotes}
         </Button>
+        
+        <div className={cn(
+          "text-xs font-bold min-w-[1.5rem] text-center py-0.5 px-1 rounded",
+          netScore > 0 ? "text-primary" : 
+          netScore < 0 ? "text-destructive" : "text-muted-foreground"
+        )}>
+          {netScore > 0 ? `+${netScore}` : netScore}
+        </div>
 
         <Button
           variant="ghost"
           size="sm"
           className={cn(
-            "h-6 w-auto px-2 gap-1 rounded-full text-xs font-medium transition-all hover:scale-105",
+            "h-7 w-7 p-0 rounded-md transition-all hover:scale-110",
             userVote === false 
-              ? "text-destructive bg-destructive/10 shadow-sm" 
-              : "text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+              ? "text-destructive bg-destructive/15 shadow-sm" 
+              : "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           )}
-          onClick={() => handleVote(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleVote(false);
+          }}
           disabled={loading}
         >
           <ThumbsDown className="h-3 w-3" />
-          {votes.downvotes}
         </Button>
       </div>
     );

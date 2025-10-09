@@ -14,6 +14,7 @@ import { BugDetailDialog } from '@/components/bugs/BugDetailDialog';
 import { EnhancedCard, CardHeader, CardFooter } from '@/components/ui/enhanced-card';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { LoadingGrid, LoadingState } from '@/components/ui/enhanced-loading';
+import { VotePanel } from '@/components/shared/VotePanel';
 
 export function Bugs() {
   const { t } = useTranslation();
@@ -355,24 +356,28 @@ export function Bugs() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {filteredBugs.map((bug, index) => {
-            const quickActions = (
-              <div className="flex gap-1">
-                {bug.reporter_id === user?.id && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditBug(bug);
-                    }}
-                    className="h-8 w-8 p-0 bg-background/80 hover:bg-background shadow-sm"
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
+            const quickActions = bug.reporter_id === user?.id && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditBug(bug);
+                }}
+                className="h-7 w-7 p-0 hover:bg-primary/10"
+              >
+                <Edit className="h-3.5 w-3.5" />
+              </Button>
+            );
+
+            const votePanel = (
+              <VotePanel
+                targetId={bug.id}
+                targetType="bug"
+                variant="compact"
+              />
             );
 
             return (
@@ -380,17 +385,17 @@ export function Bugs() {
                 key={bug.id}
                 priority={bug.severity}
                 quickActions={quickActions}
-                animationDelay={index * 50}
+                votePanel={votePanel}
+                animationDelay={index * 30}
                 onClick={() => handleCardClick(bug)}
-                className="hover:shadow-destructive/5"
                 topBadge={
                   <Badge 
                     variant={getSeverityColor(bug.severity)}
-                    className="text-xs px-2 py-1 font-medium shadow-sm"
+                    className="text-[10px] px-1.5 py-0.5 font-medium shadow-sm"
                   >
-                    {bug.severity === 'critical' && <Zap className="h-3 w-3 mr-1" />}
-                    {bug.severity === 'high' && <Star className="h-3 w-3 mr-1" />}
-                    {bug.severity === 'medium' && <Clock className="h-3 w-3 mr-1" />}
+                    {bug.severity === 'critical' && <Zap className="h-2.5 w-2.5 mr-0.5" />}
+                    {bug.severity === 'high' && <Star className="h-2.5 w-2.5 mr-0.5" />}
+                    {bug.severity === 'medium' && <Clock className="h-2.5 w-2.5 mr-0.5" />}
                     {bug.severity}
                   </Badge>
                 }
@@ -398,35 +403,35 @@ export function Bugs() {
                 <CardHeader
                   title={bug.title}
                   subtitle={bug.description || undefined}
-                  icon={<Bug className="h-5 w-5 text-destructive" />}
+                  icon={<Bug className="h-4 w-4 text-destructive" />}
                 />
 
-                {/* Unified Metadata Row */}
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
+                {/* Compact Metadata Row */}
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
                   {bug.tags && Array.isArray(bug.tags) && bug.tags.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      <span>{bug.tags.length} tags</span>
-                    </div>
+                    <span className="flex items-center gap-0.5">
+                      <span className="font-medium">{bug.tags.length}</span> tags
+                    </span>
                   )}
 
                   {bug.youtube_url && (
-                    <div className="flex items-center gap-1">
-                      <ExternalLink className="h-3 w-3" />
-                      <span>video</span>
-                    </div>
+                    <span className="flex items-center gap-0.5">
+                      <ExternalLink className="h-2.5 w-2.5" />
+                      video
+                    </span>
                   )}
 
                   <div className="flex items-center gap-1 ml-auto">
-                    <span className={`w-2 h-2 rounded-full ${
-                      bug.status === 'new' ? 'bg-primary' :
-                      bug.status === 'triaged' ? 'bg-warning' :
-                      bug.status === 'in_progress' ? 'bg-accent' :
-                      bug.status === 'fixed' ? 'bg-success' :
-                      bug.status === 'closed' ? 'bg-muted-foreground' :
-                      bug.status === 'duplicate' ? 'bg-secondary' :
-                      'bg-destructive'
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      bug.status === 'new' ? 'bg-blue-500' :
+                      bug.status === 'triaged' ? 'bg-yellow-500' :
+                      bug.status === 'in_progress' ? 'bg-purple-500' :
+                      bug.status === 'fixed' ? 'bg-green-500' :
+                      bug.status === 'closed' ? 'bg-gray-400' :
+                      bug.status === 'duplicate' ? 'bg-gray-500' :
+                      'bg-red-500'
                     }`}></span>
-                    <span className="capitalize">{bug.status.replace('_', ' ')}</span>
+                    <span className="capitalize text-[10px]">{bug.status.replace('_', ' ')}</span>
                   </div>
                 </div>
 

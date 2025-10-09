@@ -14,6 +14,7 @@ interface EnhancedCardProps {
   quickActions?: React.ReactNode
   topBadge?: React.ReactNode
   animationDelay?: number
+  votePanel?: React.ReactNode
 }
 
 const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
@@ -27,14 +28,15 @@ const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
     quickActions,
     topBadge,
     animationDelay = 0,
+    votePanel,
     ...props 
   }, ref) => {
     const getPriorityColor = () => {
       switch (priority) {
-        case 'critical': return 'bg-destructive'
-        case 'high': return 'bg-destructive/80'
-        case 'medium': return 'bg-warning'
-        case 'low': return 'bg-success'
+        case 'critical': return 'bg-gradient-to-r from-red-600 to-red-500'
+        case 'high': return 'bg-gradient-to-r from-orange-500 to-orange-400'
+        case 'medium': return 'bg-gradient-to-r from-yellow-500 to-yellow-400'
+        case 'low': return 'bg-gradient-to-r from-green-500 to-green-400'
         default: return 'bg-muted'
       }
     }
@@ -43,8 +45,10 @@ const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
       <Card 
         ref={ref}
         className={cn(
-          "group relative overflow-hidden card-elevated hover-lift cursor-pointer transition-all duration-normal",
-          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20",
+          "group relative overflow-hidden transition-all duration-300",
+          "hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30",
+          "hover:-translate-y-1 hover:scale-[1.02]",
+          "border-border/50 bg-card/50 backdrop-blur-sm",
           "animate-fade-in",
           className
         )}
@@ -52,28 +56,39 @@ const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
         onClick={onClick}
         {...props}
       >
-        {/* Priority/Impact indicator bar - only show if priority exists */}
+        {/* Priority indicator - compact bar on left */}
         {priority && (
-          <div className={`absolute top-0 left-0 w-full h-1.5 ${getPriorityColor()}`} />
+          <div className={`absolute top-0 left-0 w-1 h-full ${getPriorityColor()}`} />
         )}
         
-        {/* Top badge for status or other info */}
+        {/* Top badge - more compact positioning */}
         {topBadge && (
-          <div className="absolute top-3 right-3 z-10">
+          <div className="absolute top-2 right-2 z-10">
             {topBadge}
           </div>
         )}
 
-        <CardContent className="p-5 relative">
-          {children}
-          
-          {/* Quick actions - appear on hover */}
-          {quickActions && (
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-normal transform translate-x-2 group-hover:translate-x-0">
-              {quickActions}
+        <div className="flex">
+          {/* Vote panel on left side */}
+          {votePanel && (
+            <div className="flex-shrink-0 border-r border-border/30 bg-muted/30 px-2 py-3">
+              {votePanel}
             </div>
           )}
-        </CardContent>
+          
+          <div className="flex-1 relative">
+            <CardContent className={cn("p-3", votePanel ? "pr-2" : "pl-4")}>
+              {children}
+              
+              {/* Quick actions - subtle hover */}
+              {quickActions && (
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {quickActions}
+                </div>
+              )}
+            </CardContent>
+          </div>
+        </div>
       </Card>
     )
   }
@@ -89,18 +104,18 @@ interface CardHeaderProps {
 }
 
 const CardHeader: React.FC<CardHeaderProps> = ({ title, subtitle, icon, className }) => (
-  <div className={cn("flex items-start gap-3 mb-4", className)}>
+  <div className={cn("flex items-start gap-2.5 mb-2.5", className)}>
     {icon && (
-      <div className="flex-shrink-0 p-1">
+      <div className="flex-shrink-0 mt-0.5">
         {icon}
       </div>
     )}
     <div className="flex-1 min-w-0">
-      <h3 className="font-semibold text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+      <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-200">
         {title}
       </h3>
       {subtitle && (
-        <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+        <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
           {subtitle}
         </p>
       )}
@@ -116,20 +131,20 @@ interface CardFooterProps {
 }
 
 const CardFooter: React.FC<CardFooterProps> = ({ author, date, metadata, className }) => (
-  <div className={cn("flex items-center justify-between pt-3 mt-4 border-t border-border/50 text-xs text-muted-foreground", className)}>
-    <div className="flex items-center gap-2">
+  <div className={cn("flex items-center justify-between pt-2 mt-2.5 border-t border-border/30 text-[11px] text-muted-foreground/80", className)}>
+    <div className="flex items-center gap-1.5 min-w-0 flex-1">
       {author && (
-        <span className="truncate max-w-[100px] font-medium">{author}</span>
+        <span className="truncate max-w-[120px] font-medium">{author}</span>
       )}
       {date && (
         <>
-          {author && <span>•</span>}
-          <span>{date}</span>
+          {author && <span className="text-muted-foreground/50">•</span>}
+          <span className="whitespace-nowrap">{date}</span>
         </>
       )}
     </div>
     {metadata && (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         {metadata.map((item, index) => (
           <React.Fragment key={index}>
             {item}
