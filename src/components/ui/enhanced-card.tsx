@@ -131,7 +131,7 @@ interface CardFooterProps {
 }
 
 const CardFooter: React.FC<CardFooterProps> = ({ author, date, metadata, className }) => (
-  <div className={cn("flex items-center justify-between pt-2 mt-2.5 border-t border-border/30 text-[11px] text-muted-foreground/80", className)}>
+  <div className={cn("flex items-center justify-between pt-1 pb-2 text-[11px] text-muted-foreground/80", className)}>
     <div className="flex items-center gap-1.5 min-w-0 flex-1">
       {author && (
         <span className="truncate max-w-[120px] font-medium">{author}</span>
