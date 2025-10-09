@@ -338,7 +338,7 @@ export function MyTasks() {
       </div>
 
       {/* Modern Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="stat-card p-6 cursor-pointer" onClick={() => setActiveTab('tests')}>
           <div className="flex items-center justify-between mb-3">
             <div className="p-3 bg-primary/10 rounded-xl">
@@ -350,20 +350,6 @@ export function MyTasks() {
             <p className="text-sm font-medium text-muted-foreground">Assigned Tests</p>
             <p className="text-3xl font-bold tracking-tight text-primary">{stats.pendingTests}</p>
             <p className="text-xs text-muted-foreground">Awaiting execution</p>
-          </div>
-        </div>
-
-        <div className="stat-card p-6 cursor-pointer" onClick={() => setActiveTab('tests')}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-info/10 rounded-xl">
-              <TestTube className="h-6 w-6 text-info" />
-            </div>
-            <Badge variant="secondary" className="text-xs">Active</Badge>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">In Progress</p>
-            <p className="text-3xl font-bold tracking-tight text-info">{stats.inProgressTests}</p>
-            <p className="text-xs text-muted-foreground">Currently testing</p>
           </div>
         </div>
 
