@@ -77,7 +77,7 @@ export function SuggestionDetailDialog({
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isAdmin, isManager, orgRole, loading: roleLoading } = useCurrentOrgRole();
+  const { isAdmin, isManager } = useCurrentOrgRole();
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -85,16 +85,6 @@ export function SuggestionDetailDialog({
   if (!suggestion) return null;
 
   const canDelete = isAdmin || isManager;
-  
-  console.log('Suggestion Detail - Role Info:', { 
-    isAdmin, 
-    isManager, 
-    orgRole, 
-    canDelete, 
-    roleLoading,
-    userId: user?.id,
-    suggestionAuthorId: suggestion.author_id 
-  });
 
   const handleDelete = async () => {
     setDeleting(true);

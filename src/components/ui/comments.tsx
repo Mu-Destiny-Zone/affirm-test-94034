@@ -20,6 +20,7 @@ interface Comment {
     id: string;
     display_name: string | null;
     email: string;
+    avatar_url: string | null;
   };
 }
 
@@ -56,7 +57,7 @@ export function Comments({ targetType, targetId }: CommentsProps) {
           body,
           created_at,
           author_id,
-          profiles!comments_author_id_fkey(id, display_name, email)
+          profiles!comments_author_id_fkey(id, display_name, email, avatar_url)
         `)
         .eq('target_type', targetType)
         .eq('target_id', targetId)
@@ -145,6 +146,7 @@ export function Comments({ targetType, targetId }: CommentsProps) {
               <CardContent className="pt-3 pb-3">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src={comment.profiles?.avatar_url || undefined} />
                     <AvatarFallback>
                       {comment.profiles?.display_name?.[0] || comment.profiles?.email?.[0] || 'U'}
                     </AvatarFallback>
