@@ -11,7 +11,7 @@ import { BugReport, BugSeverity } from '@/lib/types';
 import { Plus, Bug, Edit, User, ExternalLink, AlertTriangle, Clock, Zap, Star } from 'lucide-react';
 import { BugFormDialog } from '@/components/forms/BugFormDialog';
 import { BugDetailDialog } from '@/components/bugs/BugDetailDialog';
-import { EnhancedCard, CardHeader, CardFooter } from '@/components/ui/enhanced-card';
+import { EnhancedCard, CardHeader } from '@/components/ui/enhanced-card';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { LoadingGrid, LoadingState } from '@/components/ui/enhanced-loading';
 import { VotePanel } from '@/components/shared/VotePanel';
@@ -404,9 +404,6 @@ export function Bugs() {
                   title={bug.title}
                   subtitle={bug.description || undefined}
                   icon={<Bug className="h-4 w-4 text-destructive" />}
-                />
-
-                <CardFooter
                   author={bug.profiles?.display_name || 'Unknown'}
                   date={new Date(bug.created_at).toLocaleDateString('en-US', { 
                     month: 'short', 

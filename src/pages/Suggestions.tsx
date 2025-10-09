@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Lightbulb, Plus, Edit, User, Sparkles, Flame, Target } from 'lucide-react';
 import { SuggestionFormDialog } from '@/components/forms/SuggestionFormDialog';
 import { SuggestionDetailDialog } from '@/components/suggestions/SuggestionDetailDialog';
-import { EnhancedCard, CardHeader, CardFooter } from '@/components/ui/enhanced-card';
+import { EnhancedCard, CardHeader } from '@/components/ui/enhanced-card';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { LoadingGrid, LoadingState } from '@/components/ui/enhanced-loading';
 import { VotePanel } from '@/components/shared/VotePanel';
@@ -416,20 +416,18 @@ export function Suggestions() {
                     </Badge>
                   }
                 >
-                <CardHeader
-                  title={suggestion.title}
-                  subtitle={suggestion.description || undefined}
-                  icon={<Lightbulb className="h-4 w-4 text-primary" />}
-                />
+                  <CardHeader
+                    title={suggestion.title}
+                    subtitle={suggestion.description || undefined}
+                    icon={<Lightbulb className="h-4 w-4 text-primary" />}
+                    author={suggestion.profiles?.display_name || 'Unknown'}
+                    date={new Date(suggestion.created_at).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  />
 
-                <CardFooter
-                  author={suggestion.profiles?.display_name || 'Unknown'}
-                  date={new Date(suggestion.created_at).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                />
-              </EnhancedCard>
+                </EnhancedCard>
               );
             })
         )}

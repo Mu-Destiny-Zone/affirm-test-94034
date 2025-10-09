@@ -100,10 +100,12 @@ interface CardHeaderProps {
   title: string
   subtitle?: string
   icon?: React.ReactNode
+  author?: string
+  date?: string
   className?: string
 }
 
-const CardHeader: React.FC<CardHeaderProps> = ({ title, subtitle, icon, className }) => (
+const CardHeader: React.FC<CardHeaderProps> = ({ title, subtitle, icon, author, date, className }) => (
   <div className={cn("flex items-start gap-2.5 mb-2.5", className)}>
     {icon && (
       <div className="flex-shrink-0 mt-0.5">
@@ -114,6 +116,21 @@ const CardHeader: React.FC<CardHeaderProps> = ({ title, subtitle, icon, classNam
       <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-200">
         {title}
       </h3>
+
+      {(author || date) && (
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 mt-1">
+          {author && (
+            <span className="truncate max-w-[120px] font-medium">{author}</span>
+          )}
+          {date && (
+            <>
+              {author && <span className="text-muted-foreground/50">•</span>}
+              <span className="whitespace-nowrap">{date}</span>
+            </>
+          )}
+        </div>
+      )}
+
       {subtitle && (
         <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
           {subtitle}
