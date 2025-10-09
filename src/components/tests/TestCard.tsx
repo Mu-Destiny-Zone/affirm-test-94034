@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Test } from '@/lib/types';
 import { Clock, Play, XCircle, TestTube, MoreHorizontal, Edit, Trash2, Users, PlayCircle, AlertTriangle, Copy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { TestCardMetadata } from './TestCardMetadata';
 import { TestCardAssignees } from './TestCardAssignees';
 import { TestCardExecutionStats } from './TestCardExecutionStats';
@@ -80,6 +82,32 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
       setAssignees(data || []);
     } catch (error) {
       console.error('Error fetching assignees:', error);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: 'draft' | 'active' | 'archived') => {
+    try {
+      const { error } = await supabase
+        .from('tests')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', test.id);
+
+      if (error) throw error;
+
+      toast({
+        title: t('success'),
+        description: `Test status updated to ${newStatus}`,
+      });
+
+      // Trigger parent refresh
+      onEdit(test);
+    } catch (error) {
+      console.error('Error updating test status:', error);
+      toast({
+        title: t('error'),
+        description: 'Failed to update test status',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -215,6 +243,33 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
           </div>
 
           <div className="flex items-center gap-2">
+            {canManage && (
+              <Select value={test.status} onValueChange={handleStatusChange}>
+                <SelectTrigger className="w-[130px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3 w-3" />
+                      Draft
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="active">
+                    <div className="flex items-center gap-2">
+                      <Play className="h-3 w-3" />
+                      Active
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="archived">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="h-3 w-3" />
+                      Archived
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             {(isAdmin || isManager) && (
               <TooltipProvider>
                 <Tooltip>
