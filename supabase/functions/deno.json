@@ -1,0 +1,10 @@
+{
+  "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "skipLibCheck": true
+  },
+  "imports": {
+    "openai": "npm:openai@^4.52.5"
+  }
+}
