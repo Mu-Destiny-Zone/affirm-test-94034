@@ -280,16 +280,16 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
                         size="sm" 
                         onClick={() => onAssign(test)}
                         className="flex items-center gap-1.5"
-                        disabled={test.status === 'draft'}
+                        disabled={test.status === 'draft' || test.status === 'archived'}
                       >
                         <Users className="h-4 w-4" />
                         {t('assign')}
                       </Button>
                     </span>
                   </TooltipTrigger>
-                  {test.status === 'draft' && (
+                  {(test.status === 'draft' || test.status === 'archived') && (
                     <TooltipContent>
-                      <p>Cannot assign draft tests. Change status to "Active" first.</p>
+                      <p>{test.status === 'draft' ? 'Cannot assign draft tests. Change status to "Active" first.' : 'Cannot assign archived tests.'}</p>
                     </TooltipContent>
                   )}
                 </Tooltip>
