@@ -170,7 +170,7 @@ export function MyTasks() {
             youtube_url,
             tags,
             fix_notes,
-            profiles (display_name, email),
+            profiles!bug_reports_reporter_id_fkey (display_name, email),
             projects (name)
           `)
           .eq('org_id', currentOrg.id)
