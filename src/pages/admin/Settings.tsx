@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings, Save, Building, Plus, Users, FolderOpen, Trash2, Edit, Database, Sparkles } from 'lucide-react';
+import { Settings, Save, Building, Plus, Users, FolderOpen, Trash2, Edit, Database, Sparkles, AlertCircle } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -278,8 +278,31 @@ export function AdminSettings() {
         </div>
       </div>
 
+      {/* Profile Under Review Message */}
+      {allOrgs.length === 0 && (
+        <Card className="border-2 border-yellow-500/50 shadow-lg bg-yellow-50/50 dark:bg-yellow-950/20">
+          <CardContent className="pt-12 pb-12">
+            <div className="flex flex-col items-center justify-center text-center space-y-4">
+              <div className="p-6 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                <AlertCircle className="h-16 w-16 text-yellow-600 dark:text-yellow-500" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold">Profile Under Review</h3>
+                <p className="text-muted-foreground max-w-md">
+                  Your profile is currently being reviewed by administrators. You will be assigned to an organization once the review is complete.
+                </p>
+                <p className="text-sm text-muted-foreground pt-2">
+                  Please check back later or contact support if you have any questions.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Create New Organization */}
-      <Card className="border-2 shadow-md">
+      {allOrgs.length > 0 && (
+        <Card className="border-2 shadow-md">
           <CardHeader className="bg-gradient-to-r from-muted/50 to-transparent">
             <div className="flex items-center gap-3">
               <Plus className="h-6 w-6 text-primary" />
@@ -323,8 +346,10 @@ export function AdminSettings() {
             </div>
           </CardContent>
         </Card>
+      )}
 
         {/* Organizations List */}
+        {allOrgs.length > 0 && (
         <Card className="border-2 shadow-lg">
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -484,6 +509,7 @@ export function AdminSettings() {
             )}
           </CardContent>
         </Card>
+      )}
     </div>
   );
 }
