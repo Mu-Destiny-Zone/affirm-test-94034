@@ -200,15 +200,14 @@ export function AdminUsers() {
     }
   };
 
-  const handleRemoveUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this user from the organization?')) {
-      return;
-    }
+  const handleRemoveUser = async () => {
+    if (!userToRemove) return;
 
+    setIsRemoving(true);
     try {
       const { error } = await supabase.rpc('soft_remove_org_member' as any, {
         p_org_id: selectedOrg,
-        p_profile_id: userId
+        p_profile_id: userToRemove.id
       });
 
       if (error) throw error;
@@ -218,7 +217,7 @@ export function AdminUsers() {
         description: t('userRemoved')
       });
 
-      // Refresh users list
+      setUserToRemove(null);
       fetchUsers();
     } catch (error: any) {
       console.error('Error removing user:', error);
@@ -227,17 +226,18 @@ export function AdminUsers() {
         description: error.message || 'Failed to remove user',
         variant: 'destructive'
       });
+    } finally {
+      setIsRemoving(false);
     }
   };
 
-  const handleDisableUser = async (userId: string, userName: string) => {
-    if (!confirm(`Are you sure you want to remove "${userName}" from all organizations you manage?`)) {
-      return;
-    }
+  const handleDisableUser = async () => {
+    if (!userToDisable) return;
 
+    setIsDisabling(true);
     try {
       const { data, error } = await supabase.rpc('remove_user_from_all_managed_orgs' as any, {
-        p_profile_id: userId
+        p_profile_id: userToDisable.id
       });
 
       if (error) throw error;
@@ -245,9 +245,10 @@ export function AdminUsers() {
       const count = data || 0;
       toast({ 
         title: t('success'), 
-        description: `"${userName}" removed from ${count} organization${count !== 1 ? 's' : ''}` 
+        description: `"${userToDisable.name}" removed from ${count} organization${count !== 1 ? 's' : ''}` 
       });
       
+      setUserToDisable(null);
       fetchUsers();
       fetchUsersWithoutOrg();
     } catch (error: any) {
@@ -257,11 +258,17 @@ export function AdminUsers() {
         description: error.message || 'Failed to disable user',
         variant: 'destructive'
       });
+    } finally {
+      setIsDisabling(false);
     }
   };
 
   const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [userToRemove, setUserToRemove] = useState<{ id: string; name: string } | null>(null);
+  const [userToDisable, setUserToDisable] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [isDisabling, setIsDisabling] = useState(false);
 
   const handleHardDeleteUser = async () => {
     if (!userToDelete) return;
@@ -650,7 +657,7 @@ export function AdminUsers() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleRemoveUser(userItem.id)}
+                                  onClick={() => setUserToRemove({ id: userItem.id, name: userItem.display_name || userItem.email })}
                                   className="hover:bg-destructive/10 hover:text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -689,6 +696,50 @@ export function AdminUsers() {
               className="bg-destructive hover:bg-destructive/90"
             >
               {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!userToRemove} onOpenChange={() => setUserToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove User from Organization?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{userToRemove?.name}</strong> from this organization?
+              They will lose access to all organization resources.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRemoving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveUser}
+              disabled={isRemoving}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isRemoving ? 'Removing...' : 'Remove User'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!userToDisable} onOpenChange={() => setUserToDisable(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove from All Organizations?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{userToDisable?.name}</strong> from all organizations you manage?
+              This will revoke their access across multiple organizations.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDisabling}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDisableUser}
+              disabled={isDisabling}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDisabling ? 'Removing...' : 'Remove from All'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
