@@ -112,7 +112,7 @@ export function AppSidebar() {
       className="border-r border-border/60 bg-card transition-all duration-300 ease-in-out"
       collapsible="icon"
     >
-      <SidebarHeader className={`p-4 border-b border-border/40 ${collapsed ? 'flex justify-center' : ''}`}>
+      <SidebarHeader className={`border-b border-border/40 ${collapsed ? 'h-14 flex items-center justify-center' : 'p-4'}`}>
         {!collapsed ? (
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center overflow-hidden shadow-sm">
