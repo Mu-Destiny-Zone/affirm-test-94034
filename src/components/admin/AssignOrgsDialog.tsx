@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,10 @@ interface OrgAssignment {
 export function AssignOrgsDialog({ user, onAssignmentUpdated }: AssignOrgsDialogProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user: authUser } = useAuth();
   const [open, setOpen] = useState(false);
+  
+  const isSelf = authUser?.id === user.id;
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [availableOrgs, setAvailableOrgs] = useState<any[]>([]);
@@ -282,7 +286,8 @@ export function AssignOrgsDialog({ user, onAssignmentUpdated }: AssignOrgsDialog
                               variant="outline"
                               size="sm"
                               onClick={() => handleRemoveOrg(orgAssignment.org_id)}
-                              disabled={saving}
+                              disabled={saving || isSelf}
+                              title={isSelf ? "You can't remove yourself. Ask another admin to remove you." : "Remove from organization"}
                             >
                               <X className="h-4 w-4" />
                             </Button>
