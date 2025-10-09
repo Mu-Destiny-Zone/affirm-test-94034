@@ -454,7 +454,7 @@ export function Tests() {
             </p>
           </div>
           
-          {activeTab === 'tests' && (
+          {activeTab === 'tests' && canManage && (
             <Button onClick={() => setCreateDialogOpen(true)} size="sm" className="btn-gradient shadow-lg w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               <span className="text-sm">New Test</span>
