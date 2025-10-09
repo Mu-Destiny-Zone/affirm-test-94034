@@ -51,6 +51,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
   const { toast } = useToast();
   
   const [tests, setTests] = useState<Array<{id: string, title: string}>>([]);
+  const [orgMembers, setOrgMembers] = useState<Array<{ id: string; display_name: string | null; email: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState('');
   
@@ -60,12 +61,15 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
     impact: 'medium' as 'low' | 'medium' | 'high',
     status: 'new' as 'new' | 'consider' | 'planned' | 'done' | 'rejected',
     test_id: 'none',
+    owner_id: '',
     tags: [] as string[]
   });
 
   useEffect(() => {
     if (open && currentOrg) {
       fetchTests();
+      fetchOrgMembers();
+      
       if (suggestion) {
         setFormData({
           title: suggestion.title,
@@ -73,6 +77,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
           impact: suggestion.impact,
           status: suggestion.status,
           test_id: suggestion.test_id || 'none',
+          owner_id: (suggestion as any).owner_id || '',
           tags: suggestion.tags || []
         });
       } else {
@@ -98,6 +103,30 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
     }
   };
 
+  const fetchOrgMembers = async () => {
+    if (!currentOrg) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('org_members')
+        .select('profile_id, profiles!inner(id, display_name, email)')
+        .eq('org_id', currentOrg.id)
+        .is('deleted_at', null);
+      
+      if (error) throw error;
+      
+      const members = (data || []).map(m => ({
+        id: m.profiles.id,
+        display_name: m.profiles.display_name,
+        email: m.profiles.email
+      }));
+      
+      setOrgMembers(members);
+    } catch (error) {
+      console.error('Error fetching org members:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -105,6 +134,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
       impact: 'medium',
       status: 'new',
       test_id: 'none',
+      owner_id: '',
       tags: []
     });
     setTagInput('');
@@ -155,6 +185,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
         impact: formData.impact,
         status: formData.status,
         test_id: formData.test_id === 'none' ? null : formData.test_id || null,
+        owner_id: formData.owner_id || null,
         tags: formData.tags.length > 0 ? formData.tags : null,
         author_id: user.id
       };
@@ -276,6 +307,26 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
               </Select>
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label>Owner (Optional)</Label>
+            <Select 
+              value={formData.owner_id} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, owner_id: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select owner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No owner</SelectItem>
+                {orgMembers.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.display_name || member.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <Card>
             <CardContent className="pt-6">

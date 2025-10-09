@@ -36,6 +36,7 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
   const { currentOrg } = useOrganization();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [orgMembers, setOrgMembers] = useState<Array<{ id: string; display_name: string | null; email: string }>>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -43,11 +44,15 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
     severity: 'medium' as BugSeverity,
     status: 'new' as 'new' | 'in_progress' | 'fixed' | 'closed',
     youtube_url: '',
+    owner_id: '',
     repro_steps: ['']
   });
 
   useEffect(() => {
-    if (open) {
+    if (open && currentOrg) {
+      // Fetch org members for owner selection
+      fetchOrgMembers();
+      
       if (bug) {
         setFormData({
           title: bug.title,
@@ -55,13 +60,38 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
           severity: bug.severity,
           status: bug.status as 'new' | 'in_progress' | 'fixed' | 'closed',
           youtube_url: bug.youtube_url || '',
+          owner_id: bug.owner_id || '',
           repro_steps: Array.isArray(bug.repro_steps) ? bug.repro_steps as string[] : ['']
         });
       } else {
         resetForm();
       }
     }
-  }, [open, bug]);
+  }, [open, bug, currentOrg]);
+
+  const fetchOrgMembers = async () => {
+    if (!currentOrg) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('org_members')
+        .select('profile_id, profiles!inner(id, display_name, email)')
+        .eq('org_id', currentOrg.id)
+        .is('deleted_at', null);
+      
+      if (error) throw error;
+      
+      const members = (data || []).map(m => ({
+        id: m.profiles.id,
+        display_name: m.profiles.display_name,
+        email: m.profiles.email
+      }));
+      
+      setOrgMembers(members);
+    } catch (error) {
+      console.error('Error fetching org members:', error);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -70,6 +100,7 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
       severity: 'medium',
       status: 'new',
       youtube_url: '',
+      owner_id: '',
       repro_steps: ['']
     });
   };
@@ -117,6 +148,7 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
         severity: formData.severity,
         status: formData.status,
         youtube_url: formData.youtube_url.trim() || null,
+        owner_id: formData.owner_id || null,
         repro_steps: formData.repro_steps.filter(step => step.trim() !== '') as any,
         reporter_id: user.id
       };
@@ -216,6 +248,26 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
               </Select>
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label>Owner (Optional)</Label>
+            <Select 
+              value={formData.owner_id} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, owner_id: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select owner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No owner</SelectItem>
+                {orgMembers.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.display_name || member.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="youtube">Video URL (Optional)</Label>
