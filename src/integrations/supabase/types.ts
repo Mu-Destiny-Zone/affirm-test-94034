@@ -82,7 +82,6 @@ export type Database = {
           fix_notes: string | null
           id: string
           org_id: string
-          owner_id: string | null
           project_id: string | null
           reporter_id: string
           repro_steps: Json | null
@@ -103,7 +102,6 @@ export type Database = {
           fix_notes?: string | null
           id?: string
           org_id: string
-          owner_id?: string | null
           project_id?: string | null
           reporter_id: string
           repro_steps?: Json | null
@@ -124,7 +122,6 @@ export type Database = {
           fix_notes?: string | null
           id?: string
           org_id?: string
-          owner_id?: string | null
           project_id?: string | null
           reporter_id?: string
           repro_steps?: Json | null
@@ -156,13 +153,6 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bug_reports_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -597,7 +587,6 @@ export type Database = {
           id: string
           impact: Database["public"]["Enums"]["suggestion_impact"] | null
           org_id: string
-          owner_id: string | null
           project_id: string | null
           status: Database["public"]["Enums"]["suggestion_status"] | null
           tags: string[] | null
@@ -613,7 +602,6 @@ export type Database = {
           id?: string
           impact?: Database["public"]["Enums"]["suggestion_impact"] | null
           org_id: string
-          owner_id?: string | null
           project_id?: string | null
           status?: Database["public"]["Enums"]["suggestion_status"] | null
           tags?: string[] | null
@@ -629,7 +617,6 @@ export type Database = {
           id?: string
           impact?: Database["public"]["Enums"]["suggestion_impact"] | null
           org_id?: string
-          owner_id?: string | null
           project_id?: string | null
           status?: Database["public"]["Enums"]["suggestion_status"] | null
           tags?: string[] | null
@@ -650,13 +637,6 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "suggestions_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {

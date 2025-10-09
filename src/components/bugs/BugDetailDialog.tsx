@@ -146,7 +146,7 @@ export function BugDetailDialog({
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2">
-                  {(bug.reporter_id === user?.id || (bug as any).owner_id === user?.id) && onEdit && (
+                  {bug.reporter_id === user?.id && onEdit && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -238,34 +238,6 @@ export function BugDetailDialog({
             </div>
           )}
 
-
-          <Separator />
-
-          {/* Reporter Info */}
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Reported By
-            </h4>
-            <div className="bg-muted/50 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{bug.profiles?.display_name || bug.profiles?.email || 'Unknown'}</span>
-            </div>
-          </div>
-
-          {/* Owner Info */}
-          {(bug as any).owner && (
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm flex items-center gap-2">
-                <User className="h-4 w-4 text-primary" />
-                Owner / Responsible
-              </h4>
-              <div className="bg-primary/10 px-3 py-2 rounded-lg text-sm flex items-center gap-2 border border-primary/20">
-                <User className="h-4 w-4 text-primary" />
-                <span className="font-medium text-primary">{(bug as any).owner.display_name || (bug as any).owner.email}</span>
-              </div>
-            </div>
-          )}
 
           <Separator />
 

@@ -66,7 +66,6 @@ export function Bugs() {
         .select(`
           *,
           profiles!bug_reports_reporter_id_fkey(id, display_name, email, avatar_url),
-          owner:profiles!bug_reports_owner_id_fkey(id, display_name, email, avatar_url),
           projects(name)
         `)
         .eq('org_id', currentOrg.id)
@@ -93,14 +92,6 @@ export function Bugs() {
             updated_at: '',
             deleted_at: null
           } : undefined,
-          owner: bug.owner ? {
-            ...bug.owner,
-            locale: 'en' as const,
-            theme: 'system' as const,
-            created_at: '',
-            updated_at: '',
-            deleted_at: null
-          } : null,
           projects: bug.projects || null
         }));
         setBugs(bugsWithSteps);
@@ -368,7 +359,7 @@ export function Bugs() {
       ) : (
         <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {filteredBugs.map((bug, index) => {
-            const quickActions = (bug.reporter_id === user?.id || bug.owner_id === user?.id) && (
+            const quickActions = bug.reporter_id === user?.id && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -422,14 +413,7 @@ export function Bugs() {
                 />
 
                 {/* Compact Metadata Row */}
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2 flex-wrap">
-                  {bug.owner && (
-                    <span className="flex items-center gap-1 bg-primary/10 text-primary rounded px-1.5 py-0.5 font-medium">
-                      <User className="h-2.5 w-2.5" />
-                      {bug.owner.display_name || bug.owner.email}
-                    </span>
-                  )}
-                  
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
                   {bug.tags && Array.isArray(bug.tags) && bug.tags.length > 0 && (
                     <span className="flex items-center gap-0.5">
                       <span className="font-medium">{bug.tags.length}</span> tags

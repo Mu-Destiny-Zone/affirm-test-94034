@@ -89,7 +89,6 @@ export interface BugReport {
   id: string;
   org_id: string;
   reporter_id: string;
-  owner_id: string | null;
   test_id: string | null;
   assignment_id: string | null;
   title: string;
@@ -105,17 +104,14 @@ export interface BugReport {
   updated_at: string;
   deleted_at: string | null;
   profiles?: Profile;
-  owner?: Profile | null;
   tests?: Test;
   test_assignments?: TestAssignment;
-  projects?: { name: string } | null;
 }
 
 export interface Suggestion {
   id: string;
   org_id: string;
   author_id: string;
-  owner_id: string | null;
   test_id: string | null;
   title: string;
   description: string | null;
@@ -126,7 +122,6 @@ export interface Suggestion {
   updated_at: string;
   deleted_at: string | null;
   profiles?: Profile;
-  owner?: Profile | null;
   tests?: Test;
 }
 

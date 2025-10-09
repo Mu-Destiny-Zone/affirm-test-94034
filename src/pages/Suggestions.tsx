@@ -7,14 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Plus, Edit, User, Sparkles, Flame, Target, TestTube } from 'lucide-react';
+import { Lightbulb, Plus, Edit, User, Sparkles, Flame, Target } from 'lucide-react';
 import { SuggestionFormDialog } from '@/components/forms/SuggestionFormDialog';
 import { SuggestionDetailDialog } from '@/components/suggestions/SuggestionDetailDialog';
 import { EnhancedCard, CardHeader } from '@/components/ui/enhanced-card';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { LoadingGrid, LoadingState } from '@/components/ui/enhanced-loading';
 import { VotePanel } from '@/components/shared/VotePanel';
-import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 interface SuggestionWithDetails {
   id: string;
@@ -26,7 +25,6 @@ interface SuggestionWithDetails {
   created_at: string;
   updated_at: string;
   author_id: string;
-  owner_id: string | null;
   project_id: string;
   org_id: string;
   test_id: string | null;
@@ -35,11 +33,6 @@ interface SuggestionWithDetails {
     display_name: string | null;
     email: string;
   };
-  owner?: {
-    id: string;
-    display_name: string | null;
-    email: string;
-  } | null;
   projects?: {
     id: string;
     name: string;
@@ -96,7 +89,6 @@ export function Suggestions() {
     }
 
     try {
-      // Fetch suggestions with author and related data
       const { data, error } = await supabase
         .from('suggestions')
         .select(`
@@ -109,40 +101,18 @@ export function Suggestions() {
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-
-      // Fetch owners separately to avoid FK issues
-      const ownerIds = [...new Set((data || []).map(s => s.owner_id).filter(Boolean))] as string[];
-      let ownerMap: Record<string, { id: string; display_name: string | null; email: string }> = {};
-      
-      if (ownerIds.length > 0) {
-        const { data: ownerData, error: ownerError } = await supabase
-          .from('profiles')
-          .select('id, display_name, email')
-          .in('id', ownerIds);
-        
-        if (!ownerError && ownerData) {
-          ownerMap = ownerData.reduce((acc, owner) => {
-            acc[owner.id] = owner;
-            return acc;
-          }, {} as Record<string, { id: string; display_name: string | null; email: string }>);
-        }
+      if (error) {
+        console.error('Error fetching suggestions:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load suggestions",
+          variant: "destructive"
+        });
+      } else {
+        setSuggestions(data || []);
       }
-
-      // Attach owners to suggestions
-      const suggestionsWithOwners = (data || []).map(suggestion => ({
-        ...suggestion,
-        owner: suggestion.owner_id ? ownerMap[suggestion.owner_id] || null : null
-      }));
-
-      setSuggestions(suggestionsWithOwners);
     } catch (error) {
-      console.error('Error fetching suggestions:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch suggestions",
-        variant: "destructive"
-      });
+      console.error('Error in fetchSuggestions:', error);
     } finally {
       setLoading(false);
     }
@@ -339,25 +309,21 @@ export function Suggestions() {
         defaultExpanded={false}
       />
 
-      <ErrorBoundary>
-        <SuggestionFormDialog
-          open={formDialogOpen}
-          onOpenChange={setFormDialogOpen}
-          suggestion={editingSuggestion}
-          onSuccess={handleFormSuccess}
-        />
-      </ErrorBoundary>
+      <SuggestionFormDialog
+        open={formDialogOpen}
+        onOpenChange={setFormDialogOpen}
+        suggestion={editingSuggestion}
+        onSuccess={handleFormSuccess}
+      />
 
-      <ErrorBoundary>
-        <SuggestionDetailDialog
-          open={detailDialogOpen}
-          onOpenChange={setDetailDialogOpen}
-          suggestion={selectedSuggestion}
-          onEdit={handleDetailEdit}
-          onStatusChange={fetchSuggestions}
-          onDelete={fetchSuggestions}
-        />
-      </ErrorBoundary>
+      <SuggestionDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        suggestion={selectedSuggestion}
+        onEdit={handleDetailEdit}
+        onStatusChange={fetchSuggestions}
+        onDelete={fetchSuggestions}
+      />
 
       {/* Suggestions List */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -399,7 +365,7 @@ export function Suggestions() {
           </div>
         ) : (
           filteredSuggestions.map((suggestion, index) => {
-              const quickActions = (suggestion.author_id === user?.id || suggestion.owner_id === user?.id) && (
+              const quickActions = suggestion.author_id === user?.id && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -461,29 +427,6 @@ export function Suggestions() {
                       day: 'numeric' 
                     })}
                   />
-
-                  {/* Compact Metadata Row */}
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2 flex-wrap">
-                    {suggestion.owner && (
-                      <span className="flex items-center gap-1 bg-primary/10 text-primary rounded px-1.5 py-0.5 font-medium">
-                        <User className="h-2.5 w-2.5" />
-                        {suggestion.owner.display_name || suggestion.owner.email}
-                      </span>
-                    )}
-                    
-                    {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
-                      <span className="flex items-center gap-0.5">
-                        <span className="font-medium">{suggestion.tags.length}</span> tags
-                      </span>
-                    )}
-
-                    {suggestion.tests && (
-                      <span className="flex items-center gap-0.5">
-                        <TestTube className="h-2.5 w-2.5" />
-                        linked
-                      </span>
-                    )}
-                  </div>
 
                 </EnhancedCard>
               );

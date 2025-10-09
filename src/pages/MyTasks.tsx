@@ -41,7 +41,6 @@ interface UserBug {
   org_id: string;
   project_id: string | null;
   reporter_id: string;
-  owner_id: string | null;
   test_id: string | null;
   assignment_id: string | null;
   repro_steps: any[];
@@ -163,7 +162,6 @@ export function MyTasks() {
             org_id,
             project_id,
             reporter_id,
-            owner_id,
             test_id,
             assignment_id,
             repro_steps,
@@ -172,7 +170,7 @@ export function MyTasks() {
             youtube_url,
             tags,
             fix_notes,
-            profiles!bug_reports_reporter_id_fkey(display_name, email),
+            profiles (display_name, email),
             projects (name)
           `)
           .eq('org_id', currentOrg.id)
