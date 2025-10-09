@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
-import { useCurrentOrgRole } from '@/hooks/useCurrentOrgRole';
-import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings, Shield, Save, Building, Plus, Users, FolderOpen, Trash2, BarChart3, Info, Database, Activity } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Settings, Save, Building, Plus, Users, FolderOpen, Trash2, Edit, Database, Sparkles } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Organization = {
   id: string;
@@ -33,75 +30,99 @@ export function AdminSettings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const { organizations, currentOrg, refreshOrganizations } = useOrganization();
-  const { isAdmin: isOrgAdmin } = useCurrentOrgRole();
-  const selectedOrg = currentOrg?.id || '';
-  const [orgData, setOrgData] = useState({
-    name: '',
-    slug: ''
-  });
+  const [allOrgs, setAllOrgs] = useState<Organization[]>([]);
+  const [editingOrg, setEditingOrg] = useState<string | null>(null);
+  const [orgData, setOrgData] = useState<Record<string, { name: string; slug: string }>>({});
   const [newOrgData, setNewOrgData] = useState({
     name: '',
     slug: ''
   });
-  const [orgStats, setOrgStats] = useState<OrgStats>({ userCount: 0, projectCount: 0 });
+  const [orgStats, setOrgStats] = useState<Record<string, OrgStats>>({});
   const [creatingOrg, setCreatingOrg] = useState(false);
 
   useEffect(() => {
-    if (selectedOrg) {
-      fetchOrgDetails();
-      fetchOrgStats();
-    }
-  }, [selectedOrg]);
+    fetchAllOrgs();
+  }, []);
 
-  const fetchOrgDetails = async () => {
-    if (!selectedOrg) return;
+  const fetchAllOrgs = async () => {
+    if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      // Fetch all orgs where user is admin
+      const { data: memberData, error: memberError } = await supabase
+        .from('org_members')
+        .select('org_id, role')
+        .eq('profile_id', user.id)
+        .eq('role', 'admin')
+        .is('deleted_at', null);
+
+      if (memberError) throw memberError;
+
+      const orgIds = memberData?.map(m => m.org_id) || [];
+
+      if (orgIds.length === 0) {
+        setAllOrgs([]);
+        return;
+      }
+
+      // Fetch org details
+      const { data: orgsData, error: orgsError } = await supabase
         .from('orgs')
         .select('*')
-        .eq('id', selectedOrg)
-        .single();
+        .in('id', orgIds)
+        .is('deleted_at', null)
+        .order('name');
 
-      if (error) throw error;
+      if (orgsError) throw orgsError;
 
-      if (data) {
-        setOrgData({
-          name: data.name,
-          slug: data.slug
-        });
-      }
+      setAllOrgs(orgsData || []);
+
+      // Initialize orgData state
+      const dataMap: Record<string, { name: string; slug: string }> = {};
+      orgsData?.forEach(org => {
+        dataMap[org.id] = { name: org.name, slug: org.slug };
+      });
+      setOrgData(dataMap);
+
+      // Fetch stats for all orgs
+      await fetchAllOrgStats(orgIds);
     } catch (error) {
-      console.error('Error fetching org details:', error);
+      console.error('Error fetching orgs:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch organizations',
+        variant: 'destructive'
+      });
     }
   };
 
-  const fetchOrgStats = async () => {
-    if (!selectedOrg) return;
+  const fetchAllOrgStats = async (orgIds: string[]) => {
+    const statsMap: Record<string, OrgStats> = {};
     
-    try {
-      // Get user count
-      const { count: userCount } = await supabase
-        .from('org_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('org_id', selectedOrg)
-        .is('deleted_at', null);
+    for (const orgId of orgIds) {
+      try {
+        const { count: userCount } = await supabase
+          .from('org_members')
+          .select('*', { count: 'exact', head: true })
+          .eq('org_id', orgId)
+          .is('deleted_at', null);
 
-      // Get project count
-      const { count: projectCount } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('org_id', selectedOrg)
-        .is('deleted_at', null);
+        const { count: projectCount } = await supabase
+          .from('projects')
+          .select('*', { count: 'exact', head: true })
+          .eq('org_id', orgId)
+          .is('deleted_at', null);
 
-      setOrgStats({
-        userCount: userCount || 0,
-        projectCount: projectCount || 0
-      });
-    } catch (error) {
-      console.error('Error fetching org stats:', error);
+        statsMap[orgId] = {
+          userCount: userCount || 0,
+          projectCount: projectCount || 0
+        };
+      } catch (error) {
+        console.error(`Error fetching stats for org ${orgId}:`, error);
+      }
     }
+    
+    setOrgStats(statsMap);
   };
 
   const handleCreateOrg = async () => {
@@ -134,7 +155,7 @@ export function AdminSettings() {
       });
 
       setNewOrgData({ name: '', slug: '' });
-      await refreshOrganizations();
+      await fetchAllOrgs();
     } catch (error: any) {
       console.error('Error creating organization:', error);
       toast({
@@ -147,28 +168,27 @@ export function AdminSettings() {
     }
   };
 
-  const handleSaveOrg = async () => {
-    if (!selectedOrg || !isOrgAdmin) return;
-    
+  const handleSaveOrg = async (orgId: string) => {
     setLoading(true);
     try {
+      const data = orgData[orgId];
       const { error } = await supabase
         .from('orgs')
         .update({
-          name: orgData.name,
-          slug: orgData.slug
+          name: data.name,
+          slug: data.slug
         })
-        .eq('id', selectedOrg);
+        .eq('id', orgId);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: t('orgUpdated')
+        description: 'Organization updated successfully'
       });
 
-      // Refresh orgs list
-      await refreshOrganizations();
+      setEditingOrg(null);
+      await fetchAllOrgs();
     } catch (error: any) {
       console.error('Error updating organization:', error);
       toast({
@@ -181,25 +201,22 @@ export function AdminSettings() {
     }
   };
 
-  const handleDeleteOrg = async () => {
-    if (!selectedOrg || !isOrgAdmin) return;
-    
+  const handleDeleteOrg = async (orgId: string) => {
     setLoading(true);
     try {
       const { error } = await supabase
         .from('orgs')
         .update({ deleted_at: new Date().toISOString() })
-        .eq('id', selectedOrg);
+        .eq('id', orgId);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: t('orgDeleted')
+        description: 'Organization deleted successfully'
       });
 
-      // Reset selection and refresh
-      await refreshOrganizations();
+      await fetchAllOrgs();
     } catch (error: any) {
       console.error('Error deleting organization:', error);
       toast({
@@ -226,333 +243,242 @@ export function AdminSettings() {
     setNewOrgData({ name, slug });
   };
 
-  const handleNameChange = (name: string) => {
-    setOrgData({
-      name,
-      slug: generateSlug(name)
-    });
+  const handleNameChange = (orgId: string, name: string) => {
+    setOrgData(prev => ({
+      ...prev,
+      [orgId]: {
+        name,
+        slug: generateSlug(name)
+      }
+    }));
   };
 
-  if (!isOrgAdmin && selectedOrg) {
-    return (
-      <div className="container mx-auto py-6">
-        <Card>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="container mx-auto py-8 space-y-8">
+        {/* Modern Header */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-2 border-primary/20 p-8">
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm">
+                    <Settings className="h-7 w-7 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                      Organization Settings
+                    </h1>
+                    <p className="text-muted-foreground mt-1">Manage all your organizations in one place</p>
+                  </div>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-lg px-4 py-2">
+                <Sparkles className="h-4 w-4 mr-2" />
+                {allOrgs.length} Organizations
+              </Badge>
+            </div>
+          </div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+        </div>
+
+        {/* Create New Organization */}
+        <Card className="border-2 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-muted/50 to-transparent">
+            <div className="flex items-center gap-3">
+              <Plus className="h-6 w-6 text-primary" />
+              <div>
+                <CardTitle className="text-2xl">Create New Organization</CardTitle>
+                <CardDescription className="mt-1">Add a new organization to your account</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-center">
-              <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">{t('accessDenied')}</h3>
-              <p className="text-muted-foreground">
-                {t('noAdminPrivileges')}
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div className="space-y-2">
+                <Label htmlFor="new-org-name">Organization Name</Label>
+                <Input
+                  id="new-org-name"
+                  value={newOrgData.name}
+                  onChange={(e) => generateNewOrgSlug(e.target.value)}
+                  placeholder="Enter organization name"
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-org-slug">URL Slug</Label>
+                <Input
+                  id="new-org-slug"
+                  value={newOrgData.slug}
+                  onChange={(e) => setNewOrgData({ ...newOrgData, slug: e.target.value })}
+                  placeholder="organization-slug"
+                  className="h-11"
+                />
+              </div>
+              <Button 
+                onClick={handleCreateOrg} 
+                disabled={creatingOrg || !newOrgData.name || !newOrgData.slug}
+                size="lg"
+                className="h-11"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {creatingOrg ? 'Creating...' : 'Create Organization'}
+              </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Organizations List */}
+        <Card className="border-2 shadow-lg">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Building className="h-6 w-6 text-primary" />
+              <div>
+                <CardTitle className="text-2xl">Your Organizations</CardTitle>
+                <CardDescription className="mt-1">Manage and configure your organizations</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {allOrgs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="p-6 rounded-full bg-gradient-to-br from-muted to-muted/50 mb-4">
+                  <Building className="h-14 w-14 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No organizations yet</h3>
+                <p className="text-muted-foreground text-center mb-6 max-w-sm">
+                  Create your first organization to get started
+                </p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[600px] pr-4">
+                <div className="space-y-4">
+                  {allOrgs.map((org) => {
+                    const stats = orgStats[org.id] || { userCount: 0, projectCount: 0 };
+                    const isEditing = editingOrg === org.id;
+                    const data = orgData[org.id] || { name: org.name, slug: org.slug };
+
+                    return (
+                      <div
+                        key={org.id}
+                        className="group p-6 rounded-xl border-2 hover:border-primary/50 hover:shadow-lg transition-all duration-200"
+                      >
+                        {isEditing ? (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Organization Name</Label>
+                                <Input
+                                  value={data.name}
+                                  onChange={(e) => handleNameChange(org.id, e.target.value)}
+                                  placeholder="Organization name"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>URL Slug</Label>
+                                <Input
+                                  value={data.slug}
+                                  onChange={(e) => setOrgData(prev => ({
+                                    ...prev,
+                                    [org.id]: { ...prev[org.id], slug: e.target.value }
+                                  }))}
+                                  placeholder="organization-slug"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between pt-4">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="destructive" size="sm">
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Organization</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure? This will permanently delete the organization and all associated data.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteOrg(org.id)} className="bg-destructive text-destructive-foreground">
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                              <div className="flex gap-2">
+                                <Button variant="outline" onClick={() => setEditingOrg(null)}>
+                                  Cancel
+                                </Button>
+                                <Button onClick={() => handleSaveOrg(org.id)} disabled={loading}>
+                                  <Save className="h-4 w-4 mr-2" />
+                                  {loading ? 'Saving...' : 'Save Changes'}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 ring-2 ring-primary/10">
+                                  <Building className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                  <h3 className="text-xl font-bold mb-1">{org.name}</h3>
+                                  <p className="text-sm text-muted-foreground font-mono">{org.slug}</p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingOrg(org.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              <div className="p-4 rounded-lg bg-muted/50 border">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Users className="h-4 w-4 text-primary" />
+                                  <span className="text-sm font-medium text-muted-foreground">Users</span>
+                                </div>
+                                <p className="text-2xl font-bold">{stats.userCount}</p>
+                              </div>
+                              <div className="p-4 rounded-lg bg-muted/50 border">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <FolderOpen className="h-4 w-4 text-primary" />
+                                  <span className="text-sm font-medium text-muted-foreground">Projects</span>
+                                </div>
+                                <p className="text-2xl font-bold">{stats.projectCount}</p>
+                              </div>
+                              <div className="p-4 rounded-lg bg-muted/50 border">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Database className="h-4 w-4 text-primary" />
+                                  <span className="text-sm font-medium text-muted-foreground">Created</span>
+                                </div>
+                                <p className="text-sm font-semibold">
+                                  {new Date(org.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    );
-  }
-
-  const selectedOrgData = organizations.find(org => org.id === selectedOrg);
-
-  return (
-    <div className="container mx-auto py-8 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Settings className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('orgManagement')}</h1>
-            <p className="text-muted-foreground">{t('configureOrgSettings')}</p>
-          </div>
-        </div>
-      </div>
-
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:inline-flex">
-          <TabsTrigger value="overview" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
-            {t('overview')}
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="gap-2">
-            <Building className="h-4 w-4" />
-            {t('settings')}
-          </TabsTrigger>
-          <TabsTrigger value="system" className="gap-2">
-            <Database className="h-4 w-4" />
-            {t('system')}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          {/* Current Organization */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Building className="h-5 w-5 text-primary" />
-                <CardTitle>{t('currentOrganization')}</CardTitle>
-              </div>
-              <CardDescription>{t('viewingOrganization')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <Building className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold text-lg">{currentOrg?.name}</p>
-                  <p className="text-sm text-muted-foreground">{currentOrg?.slug}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Statistics */}
-          {selectedOrg && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  {t('orgStats')}
-                </CardTitle>
-                <CardDescription>{t('keyMetrics')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-4 p-6 rounded-xl border-2 bg-card hover:shadow-md transition-shadow">
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <Users className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold">{orgStats.userCount}</p>
-                      <p className="text-sm text-muted-foreground">{t('totalUsers')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-6 rounded-xl border-2 bg-card hover:shadow-md transition-shadow">
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <FolderOpen className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold">{orgStats.projectCount}</p>
-                      <p className="text-sm text-muted-foreground">{t('totalProjects')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-6 rounded-xl border-2 bg-card hover:shadow-md transition-shadow">
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <Activity className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{t('createdOn')}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedOrgData ? new Date(selectedOrgData.created_at).toLocaleDateString() : '-'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Create New Organization */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Plus className="h-5 w-5 text-primary" />
-                <CardTitle>{t('newOrganization')}</CardTitle>
-              </div>
-              <CardDescription>{t('createNewOrgDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-org-name">{t('orgName')}</Label>
-                  <Input
-                    id="new-org-name"
-                    value={newOrgData.name}
-                    onChange={(e) => generateNewOrgSlug(e.target.value)}
-                    placeholder="Enter organization name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-org-slug">{t('orgSlug')}</Label>
-                  <Input
-                    id="new-org-slug"
-                    value={newOrgData.slug}
-                    onChange={(e) => setNewOrgData({ ...newOrgData, slug: e.target.value })}
-                    placeholder="organization-slug"
-                  />
-                  <p className="text-xs text-muted-foreground">{t('slugDescription')}</p>
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <Button 
-                  onClick={handleCreateOrg} 
-                  disabled={creatingOrg || !newOrgData.name || !newOrgData.slug}
-                  size="lg"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {creatingOrg ? t('loading') : t('createOrganization')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="space-y-6">
-          {selectedOrg ? (
-            <>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Building className="h-5 w-5 text-primary" />
-                    <CardTitle>{t('organizationSettings')}</CardTitle>
-                  </div>
-                  <CardDescription>{t('updateOrgDetails')}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="org-name">{t('orgName')}</Label>
-                      <Input
-                        id="org-name"
-                        value={orgData.name}
-                        onChange={(e) => handleNameChange(e.target.value)}
-                        placeholder={t('enterOrganizationName')}
-                        disabled={!isOrgAdmin}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="org-slug">{t('urlSlug')}</Label>
-                      <Input
-                        id="org-slug"
-                        value={orgData.slug}
-                        onChange={(e) => setOrgData({ ...orgData, slug: e.target.value })}
-                        placeholder={t('orgSlug')}
-                        disabled={!isOrgAdmin}
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {selectedOrgData && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>{t('organizationId')}</Label>
-                        <Input value={selectedOrgData.id} disabled className="font-mono text-xs" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>{t('created')}</Label>
-                        <Input 
-                          value={new Date(selectedOrgData.created_at).toLocaleDateString()} 
-                          disabled 
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {isOrgAdmin && (
-                    <>
-                      <Separator />
-                      <div className="flex flex-col sm:flex-row justify-between gap-4">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              {t('deleteOrg')}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>{t('deleteOrg')}</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {t('confirmDeleteOrg')}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleDeleteOrg} className="bg-destructive text-destructive-foreground">
-                                {t('delete')}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                        
-                        <Button 
-                          onClick={handleSaveOrg} 
-                          disabled={loading || !orgData.name || !orgData.slug}
-                          size="lg"
-                        >
-                          <Save className="h-4 w-4 mr-2" />
-                          {loading ? t('saving') : t('saveChanges')}
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </>
-          ) : (
-            <Card>
-              <CardContent className="py-12">
-                <div className="flex flex-col items-center justify-center">
-                  <div className="p-4 rounded-full bg-muted mb-4">
-                    <Building className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                  <p className="text-muted-foreground">{t('noOrgSelected')}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="system" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-primary" />
-                <CardTitle>{t('systemInformation')}</CardTitle>
-              </div>
-              <CardDescription>{t('techDetails')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('applicationVersion')}</Label>
-                  <Input value="1.0.0" disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('databaseStatus')}</Label>
-                  <div className="flex items-center gap-2 p-3 rounded-lg border bg-success/5 border-success/20">
-                    <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                    <span className="text-sm font-medium text-success">{t('connected')}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  {t('systemHealth')}
-                </Label>
-                <div className="p-4 rounded-lg border-2 bg-success/5 border-success/20">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-success/10">
-                      <Activity className="h-5 w-5 text-success" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-success">✅ {t('allSystemsOperational')}</p>
-                      <p className="text-sm text-muted-foreground">{t('noIssuesDetected')}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }
