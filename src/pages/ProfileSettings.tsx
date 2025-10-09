@@ -75,7 +75,7 @@ export function ProfileSettings() {
 
       toast({
         title: t('success'),
-        description: 'Profile picture updated successfully',
+        description: t('profilePictureUpdated'),
       });
     } catch (error: any) {
       toast({
@@ -101,7 +101,7 @@ export function ProfileSettings() {
 
       toast({
         title: t('success'),
-        description: 'Profile updated successfully',
+        description: t('profileUpdated'),
       });
     } catch (error: any) {
       toast({
@@ -119,7 +119,7 @@ export function ProfileSettings() {
       if (!newPassword || newPassword.length < 6) {
         toast({
           title: t('error'),
-          description: 'Password must be at least 6 characters',
+          description: t('passwordMinLength'),
           variant: 'destructive',
         });
         return;
@@ -128,7 +128,7 @@ export function ProfileSettings() {
       if (newPassword !== confirmPassword) {
         toast({
           title: t('error'),
-          description: 'Passwords do not match',
+          description: t('passwordsDoNotMatch'),
           variant: 'destructive',
         });
         return;
@@ -147,7 +147,7 @@ export function ProfileSettings() {
 
       toast({
         title: t('success'),
-        description: 'Password changed successfully',
+        description: t('passwordChanged'),
       });
     } catch (error: any) {
       toast({
@@ -169,10 +169,10 @@ export function ProfileSettings() {
       <div>
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold flex items-center gap-2">
           <User className="h-5 w-5 sm:h-6 sm:w-6" />
-          Profile Settings
+          {t('profileSettings')}
         </h1>
         <p className="text-muted-foreground text-xs sm:text-sm">
-          Manage your profile information and preferences
+          {t('manageProfile')}
         </p>
       </div>
 
@@ -181,9 +181,9 @@ export function ProfileSettings() {
         <CardHeader className="pb-3 sm:pb-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Camera className="h-4 w-4 sm:h-5 sm:w-5" />
-            Profile Picture
+            {t('profilePicture')}
           </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Upload a profile picture</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">{t('uploadPicture')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 sm:space-y-4">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -197,7 +197,7 @@ export function ProfileSettings() {
               <Label htmlFor="avatar-upload" className="cursor-pointer">
                 <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                   <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
-                  Click to upload a new picture
+                  {t('clickToUpload')}
                 </div>
               </Label>
               <Input
@@ -218,12 +218,12 @@ export function ProfileSettings() {
                 {uploading ? (
                   <>
                     <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                    Uploading...
+                    {t('uploading')}
                   </>
                 ) : (
                   <>
                     <Upload className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    Upload Picture
+                    {t('uploadPicture')}
                   </>
                 )}
               </Button>
@@ -237,23 +237,23 @@ export function ProfileSettings() {
         <CardHeader className="pb-3 sm:pb-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <User className="h-4 w-4 sm:h-5 sm:w-5" />
-            Display Name
+            {t('displayName')}
           </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Update your display name</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">{t('updateProfile')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 sm:space-y-4">
           <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="displayName" className="text-xs sm:text-sm">Display Name</Label>
+            <Label htmlFor="displayName" className="text-xs sm:text-sm">{t('displayName')}</Label>
             <Input
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Enter your display name"
+              placeholder={t('enterDisplayName')}
               className="h-9 sm:h-10"
             />
           </div>
           <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
+            <Label htmlFor="email" className="text-xs sm:text-sm">{t('email')}</Label>
             <Input
               id="email"
               value={profile?.email || ''}
@@ -261,17 +261,17 @@ export function ProfileSettings() {
               className="bg-muted h-9 sm:h-10"
             />
             <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Email cannot be changed
+              {t('emailCannotChange')}
             </p>
           </div>
           <Button onClick={handleSaveProfile} disabled={saving} size="sm" className="w-full sm:w-auto">
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                Saving...
+                {t('saving')}
               </>
             ) : (
-              'Save Changes'
+              t('saveChanges')
             )}
           </Button>
         </CardContent>
@@ -282,30 +282,30 @@ export function ProfileSettings() {
         <CardHeader className="pb-3 sm:pb-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Lock className="h-4 w-4 sm:h-5 sm:w-5" />
-            Change Password
+            {t('changePassword')}
           </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Update your account password</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">{t('accountPassword')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 sm:space-y-4">
           <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="newPassword" className="text-xs sm:text-sm">New Password</Label>
+            <Label htmlFor="newPassword" className="text-xs sm:text-sm">{t('newPassword')}</Label>
             <Input
               id="newPassword"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
+              placeholder={t('enterNewPassword')}
               className="h-9 sm:h-10"
             />
           </div>
           <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="confirmPassword" className="text-xs sm:text-sm">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-xs sm:text-sm">{t('confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
+              placeholder={t('confirmNewPassword')}
               className="h-9 sm:h-10"
             />
           </div>
@@ -313,10 +313,10 @@ export function ProfileSettings() {
             {changingPassword ? (
               <>
                 <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                Changing...
+                {t('changing')}
               </>
             ) : (
-              'Change Password'
+              t('changePassword')
             )}
           </Button>
         </CardContent>

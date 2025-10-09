@@ -120,8 +120,8 @@ export function AdminUsers() {
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'User role updated successfully'
+        title: t('success'),
+        description: t('userUpdated')
       });
 
       // Refresh users list
@@ -151,8 +151,8 @@ export function AdminUsers() {
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'User removed from organization'
+        title: t('success'),
+        description: t('userRemoved')
       });
 
       // Refresh users list
@@ -184,9 +184,9 @@ export function AdminUsers() {
           <CardContent className="pt-6">
             <div className="text-center">
               <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('accessDenied')}</h3>
               <p className="text-muted-foreground">
-                You don't have admin privileges for this organization.
+                {t('noAdminPrivileges')}
               </p>
             </div>
           </CardContent>
@@ -208,13 +208,13 @@ export function AdminUsers() {
       {/* Organization Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Select Organization</CardTitle>
+          <CardTitle>{t('selectOrganization')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
             <Select value={selectedOrg} onValueChange={setSelectedOrg}>
               <SelectTrigger className="w-64">
-                <SelectValue placeholder="Select organization" />
+                <SelectValue placeholder={t('selectOrganization')} />
               </SelectTrigger>
               <SelectContent>
                 {orgs.map((org) => (
@@ -235,7 +235,7 @@ export function AdminUsers() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Users in Organization</CardTitle>
+              <CardTitle>{t('usersInOrganization')}</CardTitle>
               {selectedOrg && (
                 <Button
                   variant="outline"
@@ -252,22 +252,22 @@ export function AdminUsers() {
           <CardContent>
             {loading ? (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">Loading users...</p>
+                <p className="text-muted-foreground">{t('loadingUsers')}</p>
               </div>
             ) : users.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No users found in this organization.</p>
+                <p className="text-muted-foreground">{t('noUsersFound')}</p>
               </div>
             ) : (
               <Table>
                  <TableHeader>
                    <TableRow>
-                     <TableHead>User</TableHead>
-                     <TableHead>Email</TableHead>
-                     <TableHead>Organizations</TableHead>
-                     <TableHead>Joined</TableHead>
-                     <TableHead>Actions</TableHead>
+                     <TableHead>{t('user')}</TableHead>
+                     <TableHead>{t('email')}</TableHead>
+                     <TableHead>{t('organizations')}</TableHead>
+                     <TableHead>{t('joined')}</TableHead>
+                     <TableHead>{t('actions')}</TableHead>
                    </TableRow>
                  </TableHeader>
                 <TableBody>

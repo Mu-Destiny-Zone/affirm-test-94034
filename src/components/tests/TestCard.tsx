@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Test } from '@/lib/types';
 import { Clock, Play, XCircle, TestTube, MoreHorizontal, Edit, Trash2, Users, PlayCircle, AlertTriangle, Copy } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { TestCardMetadata } from './TestCardMetadata';
 import { TestCardAssignees } from './TestCardAssignees';
@@ -49,6 +50,7 @@ interface TestCardProps {
 export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onAssign, onCopy, onViewExecution, canManage, isAdmin, isManager }: TestCardProps) {
   const [assignees, setAssignees] = useState<TestAssignee[]>([]);
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (canManage) {
@@ -134,7 +136,7 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
                   {test.title}
                 </CardTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  <span>{test.steps?.length || 0} steps</span>
+                  <span>{test.steps?.length || 0} {t('steps')}</span>
                   {test.priority > 1 && (
                     <>
                       <span>•</span>
@@ -168,21 +170,21 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
         <div className={`grid grid-cols-1 ${canManage ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} divide-y lg:divide-y-0 lg:divide-x`}>
           {/* Metadata Section */}
           <div className="p-3 lg:p-4 space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Test Details</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('testDetails')}</h4>
             <TestCardMetadata test={test} />
           </div>
 
           {/* Assignees Section - Only for admins/managers */}
           {canManage && (
             <div className="p-3 lg:p-4 space-y-3">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assignments</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('assignmentsSection')}</h4>
               <TestCardAssignees assignees={assignees} canManage={canManage} />
             </div>
           )}
 
           {/* Execution Stats Section */}
           <div className="p-3 lg:p-4 space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Execution Stats</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('executionStats')}</h4>
             <TestCardExecutionStats test={test} onViewExecution={onViewExecution} canManage={canManage} isAdmin={isAdmin} currentUserId={user?.id} />
           </div>
         </div>
@@ -197,7 +199,7 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
               className="flex items-center gap-1.5 font-medium"
             >
               <PlayCircle className="h-4 w-4" />
-              Execute Test
+              {t('executeTest')}
             </Button>
             
             <Button 
@@ -207,7 +209,7 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
               className="flex items-center gap-1.5"
             >
               <TestTube className="h-4 w-4" />
-              View Details
+              {t('viewDetails')}
             </Button>
           </div>
 
@@ -220,7 +222,7 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
                 className="flex items-center gap-1.5"
               >
                 <Users className="h-4 w-4" />
-                Assign
+                {t('assign')}
               </Button>
             )}
             
@@ -234,17 +236,17 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onEdit(test)}>
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit Test
+                    {t('editTest')}
                   </DropdownMenuItem>
                   {isAdmin && onCopy && (
                     <DropdownMenuItem onClick={() => onCopy(test)}>
                       <Copy className="h-4 w-4 mr-2" />
-                      Copy to Another Org
+                      {t('copyToAnotherOrg')}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={() => onDelete(test)} className="text-destructive">
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Test
+                    {t('deleteTest')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

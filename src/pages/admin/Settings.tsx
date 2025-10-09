@@ -238,9 +238,9 @@ export function AdminSettings() {
           <CardContent className="pt-6">
             <div className="text-center">
               <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('accessDenied')}</h3>
               <p className="text-muted-foreground">
-                You don't have admin privileges for this organization.
+                {t('noAdminPrivileges')}
               </p>
             </div>
           </CardContent>
@@ -306,7 +306,7 @@ export function AdminSettings() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            You can switch organizations using the selector in the header. Currently managing: <strong>{currentOrg?.name}</strong>
+            {t('managingOrganization')}: <strong>{currentOrg?.name}</strong>
           </p>
         </CardContent>
       </Card>
@@ -355,28 +355,28 @@ export function AdminSettings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building className="h-5 w-5" />
-                Organization Settings
+                {t('organizationSettings')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="org-name">Organization Name</Label>
+                  <Label htmlFor="org-name">{t('orgName')}</Label>
                   <Input
                     id="org-name"
                     value={orgData.name}
                     onChange={(e) => handleNameChange(e.target.value)}
-                    placeholder="Enter organization name"
+                    placeholder={t('enterOrganizationName')}
                     disabled={!isOrgAdmin}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="org-slug">URL Slug</Label>
+                  <Label htmlFor="org-slug">{t('urlSlug')}</Label>
                   <Input
                     id="org-slug"
                     value={orgData.slug}
                     onChange={(e) => setOrgData({ ...orgData, slug: e.target.value })}
-                    placeholder="organization-slug"
+                    placeholder={t('orgSlug')}
                     disabled={!isOrgAdmin}
                   />
                 </div>
@@ -385,11 +385,11 @@ export function AdminSettings() {
               {selectedOrgData && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Organization ID</Label>
+                    <Label>{t('organizationId')}</Label>
                     <Input value={selectedOrgData.id} disabled />
                   </div>
                   <div>
-                    <Label>Created</Label>
+                    <Label>{t('created')}</Label>
                     <Input 
                       value={new Date(selectedOrgData.created_at).toLocaleDateString()} 
                       disabled 
@@ -423,13 +423,13 @@ export function AdminSettings() {
                     </AlertDialogContent>
                   </AlertDialog>
                   
-                  <Button 
-                    onClick={handleSaveOrg} 
-                    disabled={loading || !orgData.name || !orgData.slug}
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {loading ? 'Saving...' : 'Save Changes'}
-                  </Button>
+                    <Button 
+                      onClick={handleSaveOrg} 
+                      disabled={loading || !orgData.name || !orgData.slug}
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {loading ? t('saving') : t('saveChanges')}
+                    </Button>
                 </div>
               )}
             </CardContent>
@@ -438,25 +438,25 @@ export function AdminSettings() {
           {/* System Information */}
           <Card>
             <CardHeader>
-              <CardTitle>System Information</CardTitle>
+              <CardTitle>{t('systemInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Application Version</Label>
+                  <Label>{t('applicationVersion')}</Label>
                   <Input value="1.0.0" disabled />
                 </div>
                 <div>
-                  <Label>Database Status</Label>
-                  <Input value="Connected" disabled className="text-green-600" />
+                  <Label>{t('databaseStatus')}</Label>
+                  <Input value={t('connected')} disabled className="text-green-600" />
                 </div>
               </div>
               
               <div>
-                <Label>System Health</Label>
+                <Label>{t('systemHealth')}</Label>
                 <div className="mt-2 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-green-800 text-sm">
-                    ✅ All systems operational
+                    ✅ {t('allSystemsOperational')}
                   </p>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useState } from "react"
+import { useTranslation } from 'react-i18next'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -56,6 +57,7 @@ export function FilterPanel({
   defaultExpanded = true
 }: FilterPanelProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+  const { t } = useTranslation()
 
   // Calculate active filters for display
   const activeFilterChips: ActiveFilter[] = React.useMemo(() => {
@@ -193,7 +195,7 @@ export function FilterPanel({
       {/* Active Filter Chips */}
       {activeFilterChips.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+          <span className="text-sm text-muted-foreground">{t('activeFilters')}:</span>
           {activeFilterChips.map((chip, index) => (
             <Badge
               key={`${chip.key}-${chip.value}-${index}`}
@@ -217,7 +219,7 @@ export function FilterPanel({
             onClick={clearAllFilters}
             className="text-muted-foreground hover:text-destructive"
           >
-            Clear all
+            {t('clearAll')}
           </Button>
         </div>
       )}
@@ -229,10 +231,10 @@ export function FilterPanel({
       <Card className={cn("p-4 glass", className)}>
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
           <Filter className="h-4 w-4" />
-          Filters & Search
+          {t('filtersAndSearch')}
           {hasActiveFilters && (
             <Badge variant="secondary" className="text-xs">
-              {activeFilterChips.length + (searchValue ? 1 : 0)} active
+              {activeFilterChips.length + (searchValue ? 1 : 0)} {t('active_filters')}
             </Badge>
           )}
         </div>

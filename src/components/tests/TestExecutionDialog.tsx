@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,6 +27,7 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
 
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [stepResults, setStepResults] = useState<{ result: ComponentStepResult; notes?: string }[]>([]);
   const [globalNotes, setGlobalNotes] = useState('');
@@ -190,10 +192,10 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
       if (error) throw error;
 
       toast({
-        title: 'Success',
+        title: t('success'),
         description: finish 
-          ? 'Test execution completed and finalized' 
-          : 'Test execution progress saved successfully'
+          ? t('testCompleted')
+          : t('testProgressSaved')
       });
 
       if (finish) {
@@ -220,11 +222,11 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TestTube className="h-5 w-5" />
-            Manual Test Execution: {test.title}
+            {t('manualTestExecution')}: {test.title}
             {isFinished && (
               <Badge variant="secondary" className="ml-auto">
                 <CheckCircle className="h-3 w-3 mr-1" />
-                Finished
+                {t('finished')}
               </Badge>
             )}
           </DialogTitle>
@@ -235,8 +237,8 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
           <div className="bg-muted/50 p-4 rounded-lg">
             <p className="text-sm text-muted-foreground">
               {isFinished ? 
-                'This test has been completed and finalized. Results are read-only.' :
-                'Follow each test step below and record the results. Mark each step as passed, failed, or skipped based on your testing.'
+                t('testFinishedReadOnly') :
+                t('followSteps')
               }
             </p>
           </div>
@@ -244,7 +246,7 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
           {/* All Test Steps */}
           {test.steps && test.steps.length > 0 ? (
             <div className="space-y-4">
-              <h3 className="font-semibold">Test Steps</h3>
+              <h3 className="font-semibold">{t('testSteps')}</h3>
               {test.steps.map((step, index) => (
                 <Card key={index} className="bg-muted/30">
                   <CardHeader className="pb-3">
@@ -252,11 +254,11 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
                       <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs">
                         {index + 1}
                       </span>
-                      Step {index + 1}
+                      {t('testStep')} {index + 1}
                       {step.required && (
                         <Badge variant="outline" className="ml-auto">
                           <AlertCircle className="h-3 w-3 mr-1" />
-                          Required
+                          {t('required')}
                         </Badge>
                       )}
                     </CardTitle>
@@ -264,12 +266,12 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
                   <CardContent className="space-y-4 pt-0">
                     <div className="grid gap-3">
                       <div>
-                        <Label className="font-medium text-sm">Action</Label>
+                        <Label className="font-medium text-sm">{t('action')}</Label>
                         <p className="text-sm text-muted-foreground mt-1">{step.title}</p>
                       </div>
                       
                       <div>
-                        <Label className="font-medium text-sm">Expected Result</Label>
+                        <Label className="font-medium text-sm">{t('expectedResult')}</Label>
                         <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{step.expected}</p>
                       </div>
                     </div>
@@ -277,7 +279,7 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
                     {/* Result Selection */}
                     {!isFinished && (
                       <div className="space-y-3 pt-3 border-t">
-                        <Label className="text-sm font-medium">Test Result:</Label>
+                        <Label className="text-sm font-medium">{t('stepResult')}:</Label>
                         <div className="flex gap-2">
                           <Button
                             variant={stepResults[index]?.result === 'passed' ? 'default' : 'outline'}
