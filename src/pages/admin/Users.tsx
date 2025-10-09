@@ -14,7 +14,7 @@ import { AssignOrgsDialog } from '@/components/admin/AssignOrgsDialog';
 import { CreateOrgDialog } from '@/components/admin/CreateOrgDialog';
 import { UserOrgsDisplay } from '@/components/admin/UserOrgsDisplay';
 import { ResetPasswordDialog } from '@/components/admin/ResetPasswordDialog';
-import { Users, Shield, Trash2, Mail, Search, Building2, ChevronRight, UserCog } from 'lucide-react';
+import { Users, Shield, Trash2, Mail, Search, Building2, ChevronRight, UserCog, UserX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -26,15 +26,25 @@ type User = {
   org_role?: string;
 };
 
+type UserWithoutOrg = {
+  id: string;
+  email: string;
+  display_name: string;
+  created_at: string;
+};
+
 export function AdminUsers() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
+  const [usersWithoutOrg, setUsersWithoutOrg] = useState<UserWithoutOrg[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingUnassigned, setLoadingUnassigned] = useState(true);
   const [selectedOrg, setSelectedOrg] = useState<string>('');
   const [orgs, setOrgs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [unassignedSearchQuery, setUnassignedSearchQuery] = useState('');
   
   // Get user's org role for the selected org
   const { isAdmin: isOrgAdmin } = useUserRole(selectedOrg);
@@ -45,8 +55,14 @@ export function AdminUsers() {
     u.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredUnassignedUsers = usersWithoutOrg.filter(u => 
+    u.display_name?.toLowerCase().includes(unassignedSearchQuery.toLowerCase()) ||
+    u.email?.toLowerCase().includes(unassignedSearchQuery.toLowerCase())
+  );
+
   useEffect(() => {
     fetchOrgs();
+    fetchUsersWithoutOrg();
   }, []);
 
   useEffect(() => {
@@ -114,6 +130,45 @@ export function AdminUsers() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsersWithoutOrg = async () => {
+    setLoadingUnassigned(true);
+    try {
+      // Get all profiles that don't have any org membership
+      const { data: allProfiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, display_name, created_at')
+        .is('deleted_at', null);
+
+      if (profilesError) throw profilesError;
+
+      // Get all profile IDs that have org memberships
+      const { data: memberships, error: membershipsError } = await supabase
+        .from('org_members')
+        .select('profile_id')
+        .is('deleted_at', null);
+
+      if (membershipsError) throw membershipsError;
+
+      const memberProfileIds = new Set(memberships?.map(m => m.profile_id) || []);
+      
+      // Filter out users who have org memberships
+      const unassignedUsers = allProfiles?.filter(profile => 
+        !memberProfileIds.has(profile.id)
+      ) || [];
+
+      setUsersWithoutOrg(unassignedUsers);
+    } catch (error) {
+      console.error('Error fetching users without org:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch unassigned users',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingUnassigned(false);
     }
   };
 
@@ -228,6 +283,107 @@ export function AdminUsers() {
           </div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
         </div>
+
+        {/* Users Without Organization */}
+        <Card className="border-2 shadow-lg border-destructive/20">
+          <CardHeader className="bg-gradient-to-r from-destructive/10 to-transparent">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <UserX className="h-6 w-6 text-destructive" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl">Users Without Organization</CardTitle>
+                  <CardDescription className="mt-1">
+                    Users who are not assigned to any organization
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="destructive" className="text-lg px-4 py-1">
+                {usersWithoutOrg.length} Unassigned
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search unassigned users..."
+                  value={unassignedSearchQuery}
+                  onChange={(e) => setUnassignedSearchQuery(e.target.value)}
+                  className="pl-9 h-11"
+                />
+              </div>
+            </div>
+            {loadingUnassigned ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-destructive/20 border-t-destructive" />
+                  <UserX className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 text-destructive" />
+                </div>
+                <p className="text-muted-foreground mt-4 text-sm">Loading unassigned users...</p>
+              </div>
+            ) : filteredUnassignedUsers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="p-4 rounded-full bg-muted mb-3">
+                  <UserX className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold mb-1">
+                  {unassignedSearchQuery ? 'No matches found' : 'All users are assigned'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {unassignedSearchQuery 
+                    ? 'Try adjusting your search terms' 
+                    : 'Every user has been assigned to at least one organization'}
+                </p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[400px] pr-4">
+                <div className="space-y-3">
+                  {filteredUnassignedUsers.map((userItem) => (
+                    <div
+                      key={userItem.id}
+                      className="group p-4 rounded-xl border-2 border-destructive/20 hover:border-destructive/40 hover:bg-destructive/5 transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-destructive/80 to-destructive/60 flex items-center justify-center ring-2 ring-destructive/20 ring-offset-2 ring-offset-background">
+                            <span className="text-sm font-bold text-destructive-foreground">
+                              {userItem.display_name?.charAt(0).toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm truncate">
+                              {userItem.display_name || 'Unnamed User'}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                              <Mail className="h-3 w-3" />
+                              <span className="truncate">{userItem.email || 'No email'}</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground mt-1 inline-block">
+                              Joined {new Date(userItem.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <AssignOrgsDialog
+                            user={{
+                              id: userItem.id,
+                              email: userItem.email,
+                              display_name: userItem.display_name
+                            }}
+                            onAssignmentUpdated={fetchUsersWithoutOrg}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Organizations Grid */}
         <div className="grid grid-cols-1 gap-6">
