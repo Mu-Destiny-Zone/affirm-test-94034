@@ -420,19 +420,6 @@ export function Bugs() {
                       video
                     </span>
                   )}
-
-                  <div className="flex items-center gap-1 ml-auto">
-                    <span className={`w-1.5 h-1.5 rounded-full ${
-                      bug.status === 'new' ? 'bg-blue-500' :
-                      bug.status === 'triaged' ? 'bg-yellow-500' :
-                      bug.status === 'in_progress' ? 'bg-purple-500' :
-                      bug.status === 'fixed' ? 'bg-green-500' :
-                      bug.status === 'closed' ? 'bg-gray-400' :
-                      bug.status === 'duplicate' ? 'bg-gray-500' :
-                      'bg-red-500'
-                    }`}></span>
-                    <span className="capitalize text-[10px]">{bug.status.replace('_', ' ')}</span>
-                  </div>
                 </div>
 
                 <CardFooter

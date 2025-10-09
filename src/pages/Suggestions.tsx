@@ -423,24 +423,13 @@ export function Suggestions() {
                   />
 
                   {/* Compact Metadata Row */}
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
-                    {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
+                  {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
                       <span className="flex items-center gap-0.5">
                         <span className="font-medium">{suggestion.tags.length}</span> tags
                       </span>
-                    )}
-
-                    <div className="flex items-center gap-1 ml-auto">
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        suggestion.status === 'new' ? 'bg-blue-500' :
-                        suggestion.status === 'consider' ? 'bg-yellow-500' :
-                        suggestion.status === 'planned' ? 'bg-purple-500' :
-                        suggestion.status === 'done' ? 'bg-green-500' :
-                        'bg-red-500'
-                      }`}></span>
-                      <span className="capitalize text-[10px]">{suggestion.status.replace('_', ' ')}</span>
                     </div>
-                  </div>
+                  )}
 
                   <CardFooter
                     author={suggestion.profiles?.display_name || 'Unknown'}
