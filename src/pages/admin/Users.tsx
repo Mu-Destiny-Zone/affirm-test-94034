@@ -76,12 +76,12 @@ export function AdminUsers() {
 
   useEffect(() => {
     fetchOrgs();
-    fetchUsersWithoutOrg();
   }, []);
 
   useEffect(() => {
     if (selectedOrg) {
       fetchUsers();
+      fetchUsersWithoutOrg();
     }
   }, [selectedOrg]);
 
@@ -150,34 +150,21 @@ export function AdminUsers() {
   const fetchUsersWithoutOrg = async () => {
     setLoadingUnassigned(true);
     try {
-      // Get all profiles that don't have any org membership (including soft-deleted)
-      const { data: allProfiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, email, display_name, created_at, deleted_at');
+      if (!selectedOrg) return;
 
-      if (profilesError) throw profilesError;
+      const { data, error } = await supabase.functions.invoke('list-unassigned-users', {
+        body: { org_id: selectedOrg }
+      } as any);
 
-      // Get all profile IDs that have org memberships
-      const { data: memberships, error: membershipsError } = await supabase
-        .from('org_members')
-        .select('profile_id')
-        .is('deleted_at', null);
+      if (error) throw error;
 
-      if (membershipsError) throw membershipsError;
-
-      const memberProfileIds = new Set(memberships?.map(m => m.profile_id) || []);
-      
-      // Filter out users who have org memberships
-      const unassignedUsers = allProfiles?.filter(profile => 
-        !memberProfileIds.has(profile.id)
-      ) || [];
-
-      setUsersWithoutOrg(unassignedUsers);
-    } catch (error) {
+      const usersResp = (data as any)?.users || data || [];
+      setUsersWithoutOrg(usersResp);
+    } catch (error: any) {
       console.error('Error fetching users without org:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch unassigned users',
+        description: error.message || 'Failed to fetch unassigned users',
         variant: 'destructive'
       });
     } finally {
