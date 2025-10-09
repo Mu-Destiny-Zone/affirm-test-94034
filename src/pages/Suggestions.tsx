@@ -422,15 +422,6 @@ export function Suggestions() {
                     icon={<Lightbulb className="h-4 w-4 text-primary" />}
                   />
 
-                  {/* Compact Metadata Row */}
-                  {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
-                      <span className="flex items-center gap-0.5">
-                        <span className="font-medium">{suggestion.tags.length}</span> tags
-                      </span>
-                    </div>
-                  )}
-
                   <CardFooter
                     author={suggestion.profiles?.display_name || 'Unknown'}
                     date={new Date(suggestion.created_at).toLocaleDateString('en-US', { 
