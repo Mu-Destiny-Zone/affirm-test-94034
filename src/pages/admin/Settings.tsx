@@ -254,36 +254,31 @@ export function AdminSettings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto py-8 space-y-8">
-        {/* Modern Header */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-2 border-primary/20 p-8">
-          <div className="relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm">
-                    <Settings className="h-7 w-7 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                      Organization Settings
-                    </h1>
-                    <p className="text-muted-foreground mt-1">Manage all your organizations in one place</p>
-                  </div>
-                </div>
+    <div className="container mx-auto space-y-8 animate-fade-in">
+      {/* Enhanced Header */}
+      <div className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border/50">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="space-y-1">
+            <h1 className="flex items-center gap-2">
+              <div className="p-1.5 sm:p-2 bg-gradient-brand rounded-lg shadow-brand">
+                <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <Badge variant="secondary" className="text-lg px-4 py-2">
-                <Sparkles className="h-4 w-4 mr-2" />
-                {allOrgs.length} Organizations
-              </Badge>
-            </div>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-bold">Organization Settings</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Manage all your organizations in one place
+            </p>
           </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+          
+          <Badge variant="secondary" className="text-sm px-3 py-1">
+            <Building className="h-3.5 w-3.5 mr-1.5" />
+            {allOrgs.length} Organizations
+          </Badge>
         </div>
+      </div>
 
-        {/* Create New Organization */}
-        <Card className="border-2 shadow-lg">
+      {/* Create New Organization */}
+      <Card className="border-2 shadow-md">
           <CardHeader className="bg-gradient-to-r from-muted/50 to-transparent">
             <div className="flex items-center gap-3">
               <Plus className="h-6 w-6 text-primary" />
