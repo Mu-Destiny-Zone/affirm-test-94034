@@ -5,13 +5,15 @@ import { useCurrentOrgRole } from '@/hooks/useCurrentOrgRole';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings, Shield, Save, Building, Plus, Users, FolderOpen, Trash2, BarChart3 } from 'lucide-react';
+import { Settings, Shield, Save, Building, Plus, Users, FolderOpen, Trash2, BarChart3, Info, Database, Activity } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 type Organization = {
   id: string;
@@ -252,218 +254,305 @@ export function AdminSettings() {
   const selectedOrgData = organizations.find(org => org.id === selectedOrg);
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center gap-2">
-        <Settings className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">{t('orgManagement')}</h1>
+    <div className="container mx-auto py-8 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Settings className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t('orgManagement')}</h1>
+            <p className="text-muted-foreground">{t('configureOrgSettings')}</p>
+          </div>
+        </div>
       </div>
 
-      {/* Create New Organization */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            {t('newOrganization')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="new-org-name">{t('orgName')}</Label>
-              <Input
-                id="new-org-name"
-                value={newOrgData.name}
-                onChange={(e) => generateNewOrgSlug(e.target.value)}
-                placeholder="Enter organization name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="new-org-slug">{t('orgSlug')}</Label>
-              <Input
-                id="new-org-slug"
-                value={newOrgData.slug}
-                onChange={(e) => setNewOrgData({ ...newOrgData, slug: e.target.value })}
-                placeholder="organization-slug"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button 
-              onClick={handleCreateOrg} 
-              disabled={creatingOrg || !newOrgData.name || !newOrgData.slug}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {creatingOrg ? t('loading') : t('createOrganization')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:inline-flex">
+          <TabsTrigger value="overview" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            {t('overview')}
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="gap-2">
+            <Building className="h-4 w-4" />
+            {t('settings')}
+          </TabsTrigger>
+          <TabsTrigger value="system" className="gap-2">
+            <Database className="h-4 w-4" />
+            {t('system')}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Organization Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('organizations')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            {t('managingOrganization')}: <strong>{currentOrg?.name}</strong>
-          </p>
-        </CardContent>
-      </Card>
-
-      {selectedOrg && (
-        <div className="grid gap-6">
-          {/* Organization Statistics */}
-          <Card>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Current Organization */}
+          <Card className="border-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                {t('orgStats')}
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Building className="h-5 w-5 text-primary" />
+                <CardTitle>{t('currentOrganization')}</CardTitle>
+              </div>
+              <CardDescription>{t('viewingOrganization')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <Users className="h-8 w-8 text-blue-600" />
-                  <div>
-                    <p className="text-2xl font-bold text-blue-800">{orgStats.userCount}</p>
-                    <p className="text-sm text-blue-600">{t('totalUsers')}</p>
-                  </div>
+              <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Building className="h-6 w-6 text-primary" />
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <FolderOpen className="h-8 w-8 text-green-600" />
-                  <div>
-                    <p className="text-2xl font-bold text-green-800">{orgStats.projectCount}</p>
-                    <p className="text-sm text-green-600">{t('totalProjects')}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                  <Building className="h-8 w-8 text-purple-600" />
-                  <div>
-                    <p className="text-sm font-medium text-purple-800">{t('createdOn')}</p>
-                    <p className="text-sm text-purple-600">
-                      {selectedOrgData ? new Date(selectedOrgData.created_at).toLocaleDateString() : '-'}
-                    </p>
-                  </div>
+                <div>
+                  <p className="font-semibold text-lg">{currentOrg?.name}</p>
+                  <p className="text-sm text-muted-foreground">{currentOrg?.slug}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Organization Settings */}
+          {/* Statistics */}
+          {selectedOrg && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  {t('orgStats')}
+                </CardTitle>
+                <CardDescription>{t('keyMetrics')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-4 p-6 rounded-xl border-2 bg-card hover:shadow-md transition-shadow">
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <Users className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold">{orgStats.userCount}</p>
+                      <p className="text-sm text-muted-foreground">{t('totalUsers')}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-6 rounded-xl border-2 bg-card hover:shadow-md transition-shadow">
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <FolderOpen className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold">{orgStats.projectCount}</p>
+                      <p className="text-sm text-muted-foreground">{t('totalProjects')}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-6 rounded-xl border-2 bg-card hover:shadow-md transition-shadow">
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <Activity className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{t('createdOn')}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedOrgData ? new Date(selectedOrgData.created_at).toLocaleDateString() : '-'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Create New Organization */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                {t('organizationSettings')}
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                <CardTitle>{t('newOrganization')}</CardTitle>
+              </div>
+              <CardDescription>{t('createNewOrgDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="org-name">{t('orgName')}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="new-org-name">{t('orgName')}</Label>
                   <Input
-                    id="org-name"
-                    value={orgData.name}
-                    onChange={(e) => handleNameChange(e.target.value)}
-                    placeholder={t('enterOrganizationName')}
-                    disabled={!isOrgAdmin}
+                    id="new-org-name"
+                    value={newOrgData.name}
+                    onChange={(e) => generateNewOrgSlug(e.target.value)}
+                    placeholder="Enter organization name"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="org-slug">{t('urlSlug')}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="new-org-slug">{t('orgSlug')}</Label>
                   <Input
-                    id="org-slug"
-                    value={orgData.slug}
-                    onChange={(e) => setOrgData({ ...orgData, slug: e.target.value })}
-                    placeholder={t('orgSlug')}
-                    disabled={!isOrgAdmin}
+                    id="new-org-slug"
+                    value={newOrgData.slug}
+                    onChange={(e) => setNewOrgData({ ...newOrgData, slug: e.target.value })}
+                    placeholder="organization-slug"
                   />
+                  <p className="text-xs text-muted-foreground">{t('slugDescription')}</p>
                 </div>
               </div>
-
-              {selectedOrgData && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>{t('organizationId')}</Label>
-                    <Input value={selectedOrgData.id} disabled />
-                  </div>
-                  <div>
-                    <Label>{t('created')}</Label>
-                    <Input 
-                      value={new Date(selectedOrgData.created_at).toLocaleDateString()} 
-                      disabled 
-                    />
-                  </div>
-                </div>
-              )}
-
-              {isOrgAdmin && (
-                <div className="flex justify-between">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t('deleteOrg')}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t('deleteOrg')}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {t('confirmDeleteOrg')}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteOrg} className="bg-destructive text-destructive-foreground">
-                          {t('delete')}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  
-                    <Button 
-                      onClick={handleSaveOrg} 
-                      disabled={loading || !orgData.name || !orgData.slug}
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      {loading ? t('saving') : t('saveChanges')}
-                    </Button>
-                </div>
-              )}
+              <div className="flex justify-end">
+                <Button 
+                  onClick={handleCreateOrg} 
+                  disabled={creatingOrg || !newOrgData.name || !newOrgData.slug}
+                  size="lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {creatingOrg ? t('loading') : t('createOrganization')}
+                </Button>
+              </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* System Information */}
+        <TabsContent value="settings" className="space-y-6">
+          {selectedOrg ? (
+            <>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Building className="h-5 w-5 text-primary" />
+                    <CardTitle>{t('organizationSettings')}</CardTitle>
+                  </div>
+                  <CardDescription>{t('updateOrgDetails')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="org-name">{t('orgName')}</Label>
+                      <Input
+                        id="org-name"
+                        value={orgData.name}
+                        onChange={(e) => handleNameChange(e.target.value)}
+                        placeholder={t('enterOrganizationName')}
+                        disabled={!isOrgAdmin}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="org-slug">{t('urlSlug')}</Label>
+                      <Input
+                        id="org-slug"
+                        value={orgData.slug}
+                        onChange={(e) => setOrgData({ ...orgData, slug: e.target.value })}
+                        placeholder={t('orgSlug')}
+                        disabled={!isOrgAdmin}
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {selectedOrgData && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t('organizationId')}</Label>
+                        <Input value={selectedOrgData.id} disabled className="font-mono text-xs" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t('created')}</Label>
+                        <Input 
+                          value={new Date(selectedOrgData.created_at).toLocaleDateString()} 
+                          disabled 
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {isOrgAdmin && (
+                    <>
+                      <Separator />
+                      <div className="flex flex-col sm:flex-row justify-between gap-4">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              {t('deleteOrg')}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t('deleteOrg')}</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t('confirmDeleteOrg')}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleDeleteOrg} className="bg-destructive text-destructive-foreground">
+                                {t('delete')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                        
+                        <Button 
+                          onClick={handleSaveOrg} 
+                          disabled={loading || !orgData.name || !orgData.slug}
+                          size="lg"
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          {loading ? t('saving') : t('saveChanges')}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="py-12">
+                <div className="flex flex-col items-center justify-center">
+                  <div className="p-4 rounded-full bg-muted mb-4">
+                    <Building className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground">{t('noOrgSelected')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t('systemInformation')}</CardTitle>
+              <div className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-primary" />
+                <CardTitle>{t('systemInformation')}</CardTitle>
+              </div>
+              <CardDescription>{t('techDetails')}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="space-y-2">
                   <Label>{t('applicationVersion')}</Label>
                   <Input value="1.0.0" disabled />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label>{t('databaseStatus')}</Label>
-                  <Input value={t('connected')} disabled className="text-green-600" />
+                  <div className="flex items-center gap-2 p-3 rounded-lg border bg-success/5 border-success/20">
+                    <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                    <span className="text-sm font-medium text-success">{t('connected')}</span>
+                  </div>
                 </div>
               </div>
               
-              <div>
-                <Label>{t('systemHealth')}</Label>
-                <div className="mt-2 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 text-sm">
-                    ✅ {t('allSystemsOperational')}
-                  </p>
+              <Separator />
+              
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  {t('systemHealth')}
+                </Label>
+                <div className="p-4 rounded-lg border-2 bg-success/5 border-success/20">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-success/10">
+                      <Activity className="h-5 w-5 text-success" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-success">✅ {t('allSystemsOperational')}</p>
+                      <p className="text-sm text-muted-foreground">{t('noIssuesDetected')}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
