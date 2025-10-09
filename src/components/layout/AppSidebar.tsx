@@ -142,7 +142,7 @@ export function AppSidebar() {
             <SidebarSeparator className="my-4" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+                <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} py-2 px-2 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer`}>
                   <Avatar className="h-9 w-9 border-2 border-primary/20">
                     <AvatarImage src={profile.avatar_url || undefined} />
                     <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
