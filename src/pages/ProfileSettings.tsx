@@ -165,38 +165,38 @@ export function ProfileSettings() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl space-y-6 py-6">
+    <div className="container mx-auto max-w-4xl space-y-4 sm:space-y-6 py-3 sm:py-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-          <User className="h-6 w-6 sm:h-8 sm:w-8" />
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold flex items-center gap-2">
+          <User className="h-5 w-5 sm:h-6 sm:w-6" />
           Profile Settings
         </h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
+        <p className="text-muted-foreground text-xs sm:text-sm">
           Manage your profile information and preferences
         </p>
       </div>
 
       {/* Profile Picture */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Camera className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Camera className="h-4 w-4 sm:h-5 sm:w-5" />
             Profile Picture
           </CardTitle>
-          <CardDescription>Upload a profile picture</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Upload a profile picture</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-6">
-            <Avatar className="h-24 w-24 border-4 border-primary/20">
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-primary/20">
               <AvatarImage src={avatarUrl || undefined} />
-              <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+              <AvatarFallback className="text-xl sm:text-2xl bg-primary text-primary-foreground">
                 {displayName?.charAt(0) || profile?.email?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 w-full space-y-2">
               <Label htmlFor="avatar-upload" className="cursor-pointer">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Upload className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                  <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                   Click to upload a new picture
                 </div>
               </Label>
@@ -213,15 +213,16 @@ export function ProfileSettings() {
                 size="sm"
                 onClick={() => document.getElementById('avatar-upload')?.click()}
                 disabled={uploading}
+                className="w-full sm:w-auto"
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                     Uploading...
                   </>
                 ) : (
                   <>
-                    <Upload className="mr-2 h-4 w-4" />
+                    <Upload className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                     Upload Picture
                   </>
                 )}
@@ -233,39 +234,40 @@ export function ProfileSettings() {
 
       {/* Display Name */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <User className="h-4 w-4 sm:h-5 sm:w-5" />
             Display Name
           </CardTitle>
-          <CardDescription>Update your display name</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Update your display name</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="displayName">Display Name</Label>
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="displayName" className="text-xs sm:text-sm">Display Name</Label>
             <Input
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Enter your display name"
+              className="h-9 sm:h-10"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
             <Input
               id="email"
               value={profile?.email || ''}
               disabled
-              className="bg-muted"
+              className="bg-muted h-9 sm:h-10"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               Email cannot be changed
             </p>
           </div>
-          <Button onClick={handleSaveProfile} disabled={saving}>
+          <Button onClick={handleSaveProfile} disabled={saving} size="sm" className="w-full sm:w-auto">
             {saving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                 Saving...
               </>
             ) : (
@@ -277,38 +279,40 @@ export function ProfileSettings() {
 
       {/* Change Password */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Lock className="h-4 w-4 sm:h-5 sm:w-5" />
             Change Password
           </CardTitle>
-          <CardDescription>Update your account password</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Update your account password</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newPassword">New Password</Label>
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="newPassword" className="text-xs sm:text-sm">New Password</Label>
             <Input
               id="newPassword"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password"
+              className="h-9 sm:h-10"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="confirmPassword" className="text-xs sm:text-sm">Confirm Password</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
+              className="h-9 sm:h-10"
             />
           </div>
-          <Button onClick={handleChangePassword} disabled={changingPassword}>
+          <Button onClick={handleChangePassword} disabled={changingPassword} size="sm" className="w-full sm:w-auto">
             {changingPassword ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                 Changing...
               </>
             ) : (

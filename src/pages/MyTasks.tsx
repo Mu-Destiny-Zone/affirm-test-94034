@@ -338,46 +338,46 @@ export function MyTasks() {
       </div>
 
       {/* Modern Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <div className="stat-card p-4 sm:p-5 cursor-pointer" onClick={() => setActiveTab('tests')}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 sm:p-2.5 bg-primary/10 rounded-lg">
-              <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+        <div className="stat-card p-3 sm:p-5 cursor-pointer" onClick={() => setActiveTab('tests')}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="p-1.5 sm:p-2.5 bg-primary/10 rounded-lg">
+              <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
             </div>
-            <Badge variant="secondary" className="text-xs">Pending</Badge>
+            <Badge variant="secondary" className="text-[10px] sm:text-xs">Pending</Badge>
           </div>
-          <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground">Assigned Tests</p>
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">{stats.pendingTests}</p>
-            <p className="text-xs text-muted-foreground">Awaiting execution</p>
+          <div className="space-y-0">
+            <p className="text-[10px] sm:text-sm font-medium text-muted-foreground">Assigned Tests</p>
+            <p className="text-xl sm:text-3xl font-bold tracking-tight text-primary">{stats.pendingTests}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Awaiting execution</p>
           </div>
         </div>
 
-        <div className="stat-card p-4 sm:p-5 cursor-pointer" onClick={() => setActiveTab('bugs')}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 sm:p-2.5 bg-destructive/10 rounded-lg">
-              <Bug className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
+        <div className="stat-card p-3 sm:p-5 cursor-pointer" onClick={() => setActiveTab('bugs')}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="p-1.5 sm:p-2.5 bg-destructive/10 rounded-lg">
+              <Bug className="h-4 w-4 sm:h-6 sm:w-6 text-destructive" />
             </div>
-            <Badge variant="destructive" className="text-xs">Open</Badge>
+            <Badge variant="destructive" className="text-[10px] sm:text-xs">Open</Badge>
           </div>
-          <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground">Open Bugs</p>
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-destructive">{stats.openBugs}</p>
-            <p className="text-xs text-muted-foreground">Bugs you reported</p>
+          <div className="space-y-0">
+            <p className="text-[10px] sm:text-sm font-medium text-muted-foreground">Open Bugs</p>
+            <p className="text-xl sm:text-3xl font-bold tracking-tight text-destructive">{stats.openBugs}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Bugs you reported</p>
           </div>
         </div>
 
-        <div className="stat-card p-4 sm:p-5 cursor-pointer" onClick={() => setActiveTab('suggestions')}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 sm:p-2.5 bg-warning/10 rounded-lg">
-              <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
+        <div className="stat-card p-3 sm:p-5 cursor-pointer" onClick={() => setActiveTab('suggestions')}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="p-1.5 sm:p-2.5 bg-warning/10 rounded-lg">
+              <Lightbulb className="h-4 w-4 sm:h-6 sm:w-6 text-warning" />
             </div>
-            <Badge variant="secondary" className="text-xs">Pending</Badge>
+            <Badge variant="secondary" className="text-[10px] sm:text-xs">Pending</Badge>
           </div>
-          <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground">Suggestions</p>
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-warning">{stats.pendingSuggestions}</p>
-            <p className="text-xs text-muted-foreground">Pending review</p>
+          <div className="space-y-0">
+            <p className="text-[10px] sm:text-sm font-medium text-muted-foreground">Suggestions</p>
+            <p className="text-xl sm:text-3xl font-bold tracking-tight text-warning">{stats.pendingSuggestions}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Pending review</p>
           </div>
         </div>
       </div>
