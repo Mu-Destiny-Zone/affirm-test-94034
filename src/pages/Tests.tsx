@@ -438,15 +438,15 @@ export function Tests() {
     <div className="space-y-8 animate-fade-in">
       {/* Enhanced Header */}
       <div className="page-header">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="space-y-2">
             <h1 className="page-title flex items-center gap-3">
               <div className="p-2 bg-gradient-brand rounded-lg shadow-brand">
-                <TestTube className="h-8 w-8 text-white" />
+                <TestTube className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              {t('tests')}
+              <span className="text-2xl sm:text-3xl lg:text-4xl">{t('tests')}</span>
             </h1>
-            <p className="page-subtitle">
+            <p className="page-subtitle text-sm sm:text-base">
               {canManage 
                 ? `Create and manage test cases for ${currentOrg.name}`
                 : `View and execute tests assigned to you in ${currentOrg.name}`
@@ -455,16 +455,16 @@ export function Tests() {
           </div>
           
           {activeTab === 'tests' && (
-            <Button onClick={() => setCreateDialogOpen(true)} size="lg" className="btn-gradient shadow-lg">
-              <Plus className="h-5 w-5 mr-2" />
-              New Test
+            <Button onClick={() => setCreateDialogOpen(true)} size="default" className="btn-gradient shadow-lg w-full lg:w-auto">
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+              <span className="text-sm sm:text-base">New Test</span>
             </Button>
           )}
         </div>
       </div>
 
       {/* Stats Cards with Modern Design */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="stat-card p-6">
           <div className="flex items-center justify-between mb-3">
             <div className="p-3 bg-primary/10 rounded-xl">

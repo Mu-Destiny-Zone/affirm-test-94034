@@ -242,15 +242,15 @@ export function Suggestions() {
     <div className="container mx-auto space-y-8 animate-fade-in">
       {/* Enhanced Header */}
       <div className="page-header">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="space-y-2">
             <h1 className="page-title flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg">
-                <Lightbulb className="h-8 w-8 text-white" />
+                <Lightbulb className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              {t('suggestions')}
+              <span className="text-2xl sm:text-3xl lg:text-4xl">{t('suggestions')}</span>
             </h1>
-            <p className="page-subtitle">
+            <p className="page-subtitle text-sm sm:text-base">
               {t('shareAndDiscuss')} {currentOrg.name}
             </p>
           </div>
@@ -258,9 +258,9 @@ export function Suggestions() {
           <Button onClick={() => {
             setEditingSuggestion(null);
             setFormDialogOpen(true);
-          }} size="lg" className="btn-gradient shadow-lg">
-            <Plus className="h-5 w-5 mr-2" />
-            {t('addSuggestion')}
+          }} size="default" className="btn-gradient shadow-lg w-full lg:w-auto">
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+            <span className="text-sm sm:text-base">{t('addSuggestion')}</span>
           </Button>
         </div>
       </div>
@@ -324,7 +324,7 @@ export function Suggestions() {
       />
 
       {/* Suggestions List */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {filteredSuggestions.length === 0 ? (
           <div className="col-span-full">
             <Card className="text-center py-12 animate-fade-in glass">

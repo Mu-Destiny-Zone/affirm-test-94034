@@ -301,37 +301,37 @@ export function MyTasks() {
     <div className="space-y-8 animate-fade-in">
       {/* Enhanced Header with Quick Actions */}
       <div className="page-header">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="space-y-2">
             <h1 className="page-title flex items-center gap-3">
               <div className="p-2 bg-gradient-brand rounded-lg shadow-brand">
-                <CheckCircle className="h-8 w-8 text-white" />
+                <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              My Tasks
+              <span className="text-2xl sm:text-3xl lg:text-4xl">My Tasks</span>
             </h1>
-            <p className="page-subtitle">
+            <p className="page-subtitle text-sm sm:text-base">
               View and manage your assigned tests, bugs, and suggestions
             </p>
           </div>
           
           {/* Quick Actions */}
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Button 
               onClick={() => navigate('/bugs')} 
               variant="destructive" 
-              size="lg"
-              className="shadow-lg hover:shadow-xl transition-all"
+              size="default"
+              className="shadow-lg hover:shadow-xl transition-all flex-1 sm:flex-none"
             >
-              <Bug className="h-5 w-5 mr-2" />
-              Report Bug
+              <Bug className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+              <span className="hidden sm:inline">Report Bug</span>
             </Button>
             <Button 
               onClick={() => navigate('/suggestions')} 
-              size="lg"
-              className="btn-gradient shadow-lg"
+              size="default"
+              className="btn-gradient shadow-lg flex-1 sm:flex-none"
             >
-              <Lightbulb className="h-5 w-5 mr-2" />
-              Add Suggestion
+              <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+              <span className="hidden sm:inline">Add Suggestion</span>
             </Button>
           </div>
         </div>
@@ -398,38 +398,43 @@ export function MyTasks() {
 
       {/* Enhanced Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-card border border-border/60 p-1.5 rounded-xl shadow-sm h-auto">
-          <TabsTrigger 
-            value="tests" 
-            className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-6 py-3 transition-all"
-          >
-            <TestTube className="h-4 w-4 mr-2" />
-            <span className="font-medium">Assigned Tests</span>
-            <Badge variant="secondary" className="ml-2 bg-background/20 text-current border-0">
-              {assignedTests.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="bugs" 
-            className="data-[state=active]:bg-destructive data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-6 py-3 transition-all"
-          >
-            <Bug className="h-4 w-4 mr-2" />
-            <span className="font-medium">My Bugs</span>
-            <Badge variant="secondary" className="ml-2 bg-background/20 text-current border-0">
-              {userBugs.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="suggestions" 
-            className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-6 py-3 transition-all"
-          >
-            <Lightbulb className="h-4 w-4 mr-2" />
-            <span className="font-medium">My Suggestions</span>
-            <Badge variant="secondary" className="ml-2 bg-background/20 text-current border-0">
-              {userSuggestions.length}
-            </Badge>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="bg-card border border-border/60 p-1.5 rounded-xl shadow-sm h-auto inline-flex w-auto min-w-full sm:min-w-0">
+            <TabsTrigger 
+              value="tests" 
+              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-3 sm:px-6 py-2 sm:py-3 transition-all text-xs sm:text-sm whitespace-nowrap"
+            >
+              <TestTube className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline font-medium">Assigned Tests</span>
+              <span className="sm:hidden font-medium">Tests</span>
+              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-xs">
+                {assignedTests.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="bugs" 
+              className="data-[state=active]:bg-destructive data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-3 sm:px-6 py-2 sm:py-3 transition-all text-xs sm:text-sm whitespace-nowrap"
+            >
+              <Bug className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline font-medium">My Bugs</span>
+              <span className="sm:hidden font-medium">Bugs</span>
+              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-xs">
+                {userBugs.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="suggestions" 
+              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-3 sm:px-6 py-2 sm:py-3 transition-all text-xs sm:text-sm whitespace-nowrap"
+            >
+              <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline font-medium">My Suggestions</span>
+              <span className="sm:hidden font-medium">Ideas</span>
+              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-xs">
+                {userSuggestions.length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="tests" className="space-y-4 animate-fade-in">
           {assignedTests.length === 0 ? (

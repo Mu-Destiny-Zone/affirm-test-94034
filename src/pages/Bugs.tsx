@@ -239,15 +239,15 @@ export function Bugs() {
     <div className="container mx-auto space-y-8 animate-fade-in">
       {/* Enhanced Header */}
       <div className="page-header">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="space-y-2">
             <h1 className="page-title flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg">
-                <Bug className="h-8 w-8 text-white" />
+                <Bug className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              {t('bugReports')}
+              <span className="text-2xl sm:text-3xl lg:text-4xl">{t('bugReports')}</span>
             </h1>
-            <p className="page-subtitle">
+            <p className="page-subtitle text-sm sm:text-base">
               {t('trackAndManageBugs')} {currentOrg.name}
             </p>
           </div>
@@ -255,9 +255,9 @@ export function Bugs() {
           <Button onClick={() => {
             setEditingBug(null);
             setFormDialogOpen(true);
-          }} variant="destructive" size="lg" className="shadow-lg hover:shadow-xl transition-all">
-            <Plus className="h-5 w-5 mr-2" />
-            {t('reportBug')}
+          }} variant="destructive" size="default" className="shadow-lg hover:shadow-xl transition-all w-full lg:w-auto">
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+            <span className="text-sm sm:text-base">{t('reportBug')}</span>
           </Button>
         </div>
       </div>
@@ -354,7 +354,7 @@ export function Bugs() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredBugs.map((bug, index) => {
             const quickActions = (
               <div className="flex gap-1">

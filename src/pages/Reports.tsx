@@ -240,19 +240,19 @@ export function Reports() {
 
   return (
     <div className="container mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-8 w-8" />
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8" />
             {t('reportsAndAnalytics')}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {t('comprehensiveInsights')} {currentOrg.name}
           </p>
         </div>
 
         <Select value={selectedProject} onValueChange={setSelectedProject}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="Select project" />
           </SelectTrigger>
           <SelectContent>
@@ -267,7 +267,7 @@ export function Reports() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('totalTests')}</CardTitle>
