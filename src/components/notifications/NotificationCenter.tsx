@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Check, X, CircleAlert as AlertCircle, Info, CircleCheck as CheckCircle } from 'lucide-react';
+import { Bell, X, CircleAlert as AlertCircle, Info, CircleCheck as CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -37,6 +37,13 @@ export function NotificationCenter() {
       subscribeToNotifications();
     }
   }, [user]);
+
+  // Auto-mark all as read when popup opens
+  useEffect(() => {
+    if (isOpen && unreadCount > 0) {
+      markAllAsRead();
+    }
+  }, [isOpen]);
 
   const fetchNotifications = async () => {
     if (!user) return;
@@ -81,28 +88,6 @@ export function NotificationCenter() {
     return () => {
       supabase.removeChannel(channel);
     };
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read_at: new Date().toISOString() })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === notificationId
-            ? { ...n, read_at: new Date().toISOString() }
-            : n
-        )
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
   };
 
   const markAllAsRead = async () => {
@@ -178,17 +163,6 @@ export function NotificationCenter() {
         <SheetHeader>
           <div className="flex items-center justify-between">
             <SheetTitle>Notifications</SheetTitle>
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={markAllAsRead}
-                className="text-xs"
-              >
-                <Check className="h-4 w-4 mr-1" />
-                Mark all read
-              </Button>
-            )}
           </div>
         </SheetHeader>
 
@@ -232,23 +206,13 @@ export function NotificationCenter() {
                           {notification.message}
                         </p>
                       )}
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(notification.created_at), {
-                            addSuffix: true,
-                          })}
-                        </span>
-                        {!notification.read_at && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs"
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            Mark read
-                          </Button>
-                        )}
-                      </div>
+                       <div className="flex items-center gap-2 mt-2">
+                         <span className="text-xs text-muted-foreground">
+                           {formatDistanceToNow(new Date(notification.created_at), {
+                             addSuffix: true,
+                           })}
+                         </span>
+                       </div>
                     </div>
                   </div>
                 </div>

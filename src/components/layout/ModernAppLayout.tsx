@@ -1,9 +1,9 @@
-import { Bell, Building2, Check, MoveHorizontal as MoreHorizontal } from "lucide-react";
+import { Bell, Building2, MoveHorizontal as MoreHorizontal } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useNotifications } from "@/hooks/useNotifications";
-import { DesktopNotificationSettings } from "@/components/notifications/DesktopNotificationSettings";
+import { useState, useEffect } from "react";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -38,13 +38,18 @@ interface ModernAppLayoutProps {
 function LayoutContent({ children }: ModernAppLayoutProps) {
   const { t } = useTranslation();
   const { organizations, currentOrg, setCurrentOrg } = useOrganization();
-  const { notifications, loading: notificationsLoading, unreadCount, markAsRead, markAllAsRead, getNotificationIcon, getNotificationUrl } = useNotifications();
+  const { notifications, loading: notificationsLoading, unreadCount, markAllAsRead, getNotificationIcon, getNotificationUrl } = useNotifications();
   const navigate = useNavigate();
+  const [notificationMenuOpen, setNotificationMenuOpen] = useState(false);
+
+  // Auto-mark all as read when dropdown opens
+  useEffect(() => {
+    if (notificationMenuOpen && unreadCount > 0) {
+      markAllAsRead();
+    }
+  }, [notificationMenuOpen]);
 
   const handleNotificationClick = (notification: any) => {
-    if (!notification.read_at) {
-      markAsRead(notification.id);
-    }
     const url = getNotificationUrl(notification);
     if (url !== '/') {
       navigate(url);
@@ -86,7 +91,7 @@ function LayoutContent({ children }: ModernAppLayoutProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                <DropdownMenu>
+                <DropdownMenu open={notificationMenuOpen} onOpenChange={setNotificationMenuOpen}>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
@@ -109,21 +114,6 @@ function LayoutContent({ children }: ModernAppLayoutProps) {
                       <DropdownMenuLabel className="text-sm font-medium">
                         {t('notifications')}
                       </DropdownMenuLabel>
-                      {unreadCount > 0 && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={markAllAsRead}
-                          className="h-6 px-2 text-xs"
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          {t('markAllRead')}
-                        </Button>
-                      )}
-                    </div>
-                    
-                    <div className="px-2 pb-2">
-                      <DesktopNotificationSettings />
                     </div>
                     
                     <DropdownMenuSeparator />

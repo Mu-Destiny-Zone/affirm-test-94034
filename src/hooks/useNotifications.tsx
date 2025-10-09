@@ -3,11 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useNavigate } from 'react-router-dom';
-import { 
-  requestNotificationPermission, 
-  showDesktopNotification,
-  isNotificationSupported 
-} from '@/lib/desktopNotifications';
 
 export interface Notification {
   id: string;
@@ -26,19 +21,9 @@ export interface Notification {
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [desktopNotificationsEnabled, setDesktopNotificationsEnabled] = useState(false);
   const { user } = useAuth();
   const { currentOrg } = useOrganization();
   const navigate = useNavigate();
-
-  // Request desktop notification permission on mount
-  useEffect(() => {
-    if (isNotificationSupported()) {
-      requestNotificationPermission().then(permission => {
-        setDesktopNotificationsEnabled(permission === 'granted');
-      });
-    }
-  }, []);
 
   const fetchNotifications = async () => {
     if (!user || !currentOrg) {
@@ -128,22 +113,6 @@ export function useNotifications() {
           const newNotification = payload.new as Notification;
           if (newNotification.org_id === currentOrg.id) {
             setNotifications(prev => [newNotification, ...prev]);
-            
-            // Show desktop notification
-            if (desktopNotificationsEnabled) {
-              const notificationUrl = getNotificationUrl(newNotification);
-              showDesktopNotification(
-                newNotification.title,
-                {
-                  body: newNotification.message || undefined,
-                  icon: '/favicon.ico',
-                  tag: newNotification.id,
-                  onClick: () => {
-                    navigate(notificationUrl);
-                  }
-                }
-              );
-            }
           }
         }
       )
@@ -171,7 +140,7 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, currentOrg?.id, desktopNotificationsEnabled, navigate]);
+  }, [user?.id, currentOrg?.id, navigate]);
 
   // Fetch notifications when user or org changes
   useEffect(() => {
@@ -210,12 +179,6 @@ export function useNotifications() {
     }
   };
 
-  const enableDesktopNotifications = async () => {
-    const permission = await requestNotificationPermission();
-    setDesktopNotificationsEnabled(permission === 'granted');
-    return permission === 'granted';
-  };
-
   return {
     notifications,
     loading,
@@ -224,8 +187,6 @@ export function useNotifications() {
     markAllAsRead,
     getNotificationIcon,
     getNotificationUrl,
-    refetch: fetchNotifications,
-    desktopNotificationsEnabled,
-    enableDesktopNotifications
+    refetch: fetchNotifications
   };
 }
