@@ -104,34 +104,18 @@ export function BugDetailDialog({
                 )}
               </div>
 
-              {/* Context & Tags Row */}
-              {((bug as any).projects?.name || (bug.tags && bug.tags.length > 0)) && (
+              {/* Tags Row */}
+              {bug.tags && bug.tags.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50">
-                  {/* Project Context */}
-                  {(bug as any).projects?.name && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-secondary/10 border border-secondary/20 rounded-lg">
-                      <div className="w-2 h-2 bg-secondary rounded-full"></div>
-                      <span className="text-xs font-medium text-secondary-foreground">
-                        {(bug as any).projects.name}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Tags */}
-                  {bug.tags && Array.isArray(bug.tags) && bug.tags.length > 0 && (
-                    <>
-                      {(bug as any).projects?.name && <div className="w-px h-4 bg-border mx-1"></div>}
-                      {bug.tags.map((tag: string, index: number) => (
-                        <Badge 
-                          key={index} 
-                          variant="outline" 
-                          className="text-xs px-2 py-0.5 bg-background/50 hover:bg-background transition-colors"
-                        >
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </>
-                  )}
+                  {bug.tags.map((tag: string, index: number) => (
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="text-xs px-2 py-0.5 bg-background/50 hover:bg-background transition-colors"
+                    >
+                      #{tag}
+                    </Badge>
+                  ))}
                 </div>
               )}
             </div>

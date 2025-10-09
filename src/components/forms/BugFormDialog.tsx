@@ -218,44 +218,22 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Project</Label>
-              <Select 
-                value={formData.project_id} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="General bug or select project..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="general">General Bug</SelectItem>
-                  {projects.map(project => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Severity</Label>
-              <Select 
-                value={formData.severity} 
-                onValueChange={(value: BugSeverity) => setFormData(prev => ({ ...prev, severity: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label>Severity</Label>
+            <Select 
+              value={formData.severity} 
+              onValueChange={(value: BugSeverity) => setFormData(prev => ({ ...prev, severity: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {bug && (

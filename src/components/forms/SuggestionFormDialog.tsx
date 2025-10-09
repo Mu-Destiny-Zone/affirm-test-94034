@@ -264,43 +264,21 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Project</Label>
-              <Select 
-                value={formData.project_id} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value, test_id: 'none' }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="General suggestion or select project..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="general">General Suggestion</SelectItem>
-                  {projects.map(project => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Impact Level</Label>
-              <Select 
-                value={formData.impact} 
-                onValueChange={(value: 'low' | 'medium' | 'high') => setFormData(prev => ({ ...prev, impact: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low Impact</SelectItem>
-                  <SelectItem value="medium">Medium Impact</SelectItem>
-                  <SelectItem value="high">High Impact</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label>Impact Level</Label>
+            <Select 
+              value={formData.impact} 
+              onValueChange={(value: 'low' | 'medium' | 'high') => setFormData(prev => ({ ...prev, impact: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low Impact</SelectItem>
+                <SelectItem value="medium">Medium Impact</SelectItem>
+                <SelectItem value="high">High Impact</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {suggestion && (

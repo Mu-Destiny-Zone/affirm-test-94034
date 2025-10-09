@@ -227,12 +227,8 @@ export function TestDetailDialog({ test, project, open, onOpenChange, onEdit, on
               </div>
             )}
 
-            {/* Project Info */}
+            {/* Metadata */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <h4 className="font-medium">Project</h4>
-                <p className="text-muted-foreground">{project?.name || 'Unknown Project'}</p>
-              </div>
               <div className="space-y-2">
                 <h4 className="font-medium">Created</h4>
                 <p className="text-muted-foreground">{new Date(test.created_at).toLocaleString()}</p>

@@ -165,18 +165,8 @@ export function SuggestionDetailDialog({
               </div>
 
               {/* Context & Tags Row */}
-              {(suggestion.projects || suggestion.tests || (suggestion.tags && suggestion.tags.length > 0)) && (
+              {(suggestion.tests || (suggestion.tags && suggestion.tags.length > 0)) && (
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50">
-                  {/* Project Context */}
-                  {suggestion.projects && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-secondary/10 border border-secondary/20 rounded-lg">
-                      <div className="w-2 h-2 bg-secondary rounded-full"></div>
-                      <span className="text-xs font-medium text-secondary-foreground">
-                        {suggestion.projects.name}
-                      </span>
-                    </div>
-                  )}
-
                   {/* Test Context */}
                   {suggestion.tests && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-secondary/10 border border-secondary/20 rounded-lg">
@@ -190,7 +180,7 @@ export function SuggestionDetailDialog({
                   {/* Tags */}
                   {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
                     <>
-                      <div className="w-px h-4 bg-border mx-1"></div>
+                      {suggestion.tests && <div className="w-px h-4 bg-border mx-1"></div>}
                       {suggestion.tags.map((tag: string, index: number) => (
                         <Badge 
                           key={index} 

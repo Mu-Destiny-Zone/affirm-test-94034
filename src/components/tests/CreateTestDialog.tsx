@@ -142,25 +142,6 @@ export function CreateTestDialog({ open, onOpenChange, onTestCreated, projects }
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="project">Project *</Label>
-              <Select
-                value={newTest.project_id}
-                onValueChange={(value) => setNewTest(prev => ({ ...prev, project_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
               <Label htmlFor="priority">Priority</Label>
               <Select
                 value={newTest.priority.toString()}

@@ -151,23 +151,7 @@ export function EditTestDialog({ test, open, onOpenChange, projects, onTestUpdat
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-project">Project *</Label>
-                <Select value={editedTest.project_id} onValueChange={(value) => setEditedTest(prev => ({ ...prev, project_id: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
+            <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-priority">Priority</Label>
                 <Select 
