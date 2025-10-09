@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Test, Project } from '@/lib/types';
+import { Test } from '@/lib/types';
 
 interface Organization {
   id: string;
@@ -17,6 +17,7 @@ interface Organization {
   updated_at: string;
   deleted_at: string | null;
 }
+
 import { Copy } from 'lucide-react';
 
 interface CopyTestDialogProps {
@@ -31,24 +32,13 @@ export function CopyTestDialog({ test, open, onOpenChange, onTestCopied }: CopyT
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   useEffect(() => {
     if (open) {
       fetchOrganizations();
     }
   }, [open]);
-
-  useEffect(() => {
-    if (selectedOrgId) {
-      fetchProjects(selectedOrgId);
-    } else {
-      setProjects([]);
-      setSelectedProjectId('');
-    }
-  }, [selectedOrgId]);
 
   const fetchOrganizations = async () => {
     try {
@@ -70,44 +60,21 @@ export function CopyTestDialog({ test, open, onOpenChange, onTestCopied }: CopyT
     }
   };
 
-  const fetchProjects = async (orgId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('org_id', orgId)
-        .is('deleted_at', null)
-        .order('name');
-
-      if (error) throw error;
-      setProjects(data || []);
-      setSelectedProjectId('');
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load projects',
-        variant: 'destructive',
-      });
-    }
-  };
-
   const handleCopy = async () => {
-    if (!test || !selectedOrgId || !selectedProjectId) return;
+    if (!test || !selectedOrgId) return;
 
     setLoading(true);
 
     try {
-      // Create a copy of the test with new org and project
+      // Create a copy of the test with new org
       const testCopy = {
         title: test.title,
         description: test.description,
-        steps: test.steps as any, // Convert to JSON
-        status: 'draft' as const, // New copies start as draft
+        steps: test.steps as any,
+        status: 'draft' as const,
         priority: test.priority,
         tags: test.tags,
         org_id: selectedOrgId,
-        project_id: selectedProjectId,
       };
 
       const { error } = await supabase
@@ -128,7 +95,6 @@ export function CopyTestDialog({ test, open, onOpenChange, onTestCopied }: CopyT
 
       // Reset form
       setSelectedOrgId('');
-      setSelectedProjectId('');
     } catch (error: any) {
       console.error('Error copying test:', error);
       toast({
@@ -144,13 +110,11 @@ export function CopyTestDialog({ test, open, onOpenChange, onTestCopied }: CopyT
   const handleClose = () => {
     onOpenChange(false);
     setSelectedOrgId('');
-    setSelectedProjectId('');
   };
 
   if (!test) return null;
 
   const targetOrg = organizations.find(org => org.id === selectedOrgId);
-  const targetProject = projects.find(project => project.id === selectedProjectId);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,28 +152,10 @@ export function CopyTestDialog({ test, open, onOpenChange, onTestCopied }: CopyT
               </Select>
             </div>
 
-            {selectedOrgId && (
-              <div>
-                <Label htmlFor="target-project">Target Project</Label>
-                <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {targetOrg && targetProject && (
+            {targetOrg && (
               <div className="p-3 bg-primary/10 rounded-lg border">
                 <div className="text-sm">
-                  <p><strong>Destination:</strong> {targetOrg.name} → {targetProject.name}</p>
+                  <p><strong>Destination:</strong> {targetOrg.name}</p>
                 <p className="text-muted-foreground mt-1">
                   The copy will be created as a draft test with the same title.
                 </p>
@@ -224,7 +170,7 @@ export function CopyTestDialog({ test, open, onOpenChange, onTestCopied }: CopyT
             </Button>
             <Button
               onClick={handleCopy}
-              disabled={loading || !selectedOrgId || !selectedProjectId}
+              disabled={loading || !selectedOrgId}
             >
               {loading ? 'Copying...' : 'Copy Test'}
             </Button>

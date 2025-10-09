@@ -225,7 +225,6 @@ export function SuggestionDetailDialog({
             <Comments 
               targetType="suggestion"
               targetId={suggestion.id}
-              projectId={suggestion.project_id}
             />
           </div>
 

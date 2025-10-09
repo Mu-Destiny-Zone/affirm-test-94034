@@ -41,22 +41,9 @@ export interface OrgMember {
   profiles?: Profile;
 }
 
-export interface Project {
-  id: string;
-  org_id: string;
-  owner_id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
 export interface Test {
   id: string;
   org_id: string;
-  project_id: string;
   title: string;
   description: string | null;
   status: TestStatus;
@@ -77,7 +64,6 @@ export interface TestStep {
 export interface TestAssignment {
   id: string;
   org_id: string;
-  project_id: string;
   test_id: string;
   assignee_id: string;
   due_date: string | null;
@@ -101,7 +87,6 @@ export interface StepResult {
 export interface BugReport {
   id: string;
   org_id: string;
-  project_id: string | null;
   reporter_id: string;
   test_id: string | null;
   assignment_id: string | null;
@@ -125,7 +110,6 @@ export interface BugReport {
 export interface Suggestion {
   id: string;
   org_id: string;
-  project_id: string | null;
   author_id: string;
   test_id: string | null;
   title: string;
@@ -143,7 +127,6 @@ export interface Suggestion {
 export interface Comment {
   id: string;
   org_id: string;
-  project_id: string | null;
   author_id: string;
   target_type: TargetType;
   target_id: string;

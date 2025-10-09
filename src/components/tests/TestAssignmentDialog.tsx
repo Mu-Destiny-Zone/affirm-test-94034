@@ -134,7 +134,6 @@ export function TestAssignmentDialog({ test, open, onOpenChange, onAssignmentUpd
         .from('test_assignments')
         .insert({
           org_id: test.org_id,
-          project_id: test.project_id,
           test_id: test.id,
           assignee_id: newAssignment.assignee_id,
           state: 'assigned',

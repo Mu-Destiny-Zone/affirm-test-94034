@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Test, Project } from '@/lib/types';
+import { Test } from '@/lib/types';
 import { Clock, Play, XCircle, TestTube, MoreHorizontal, Edit, Trash2, Users, PlayCircle, AlertTriangle, Copy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';

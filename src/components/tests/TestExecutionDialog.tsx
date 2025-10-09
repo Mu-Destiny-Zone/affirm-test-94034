@@ -156,11 +156,10 @@ export function TestExecutionDialog({ test, open, onOpenChange, onExecutionCompl
       
       const assignmentData = {
         org_id: test.org_id,
-        project_id: test.project_id,
         test_id: test.id,
         assignee_id: user.id,
         state,
-        step_results: dbStepResults as any, // Cast to Json type
+        step_results: dbStepResults as any,
         notes: globalNotes.trim() || null
       };
 

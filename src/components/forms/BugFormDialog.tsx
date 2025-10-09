@@ -20,8 +20,9 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { BugReport, Project, BugSeverity } from '@/lib/types';
+import { BugReport, BugSeverity } from '@/lib/types';
 import { Plus, X } from 'lucide-react';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface BugFormDialogProps {
   open: boolean;
@@ -32,14 +33,13 @@ interface BugFormDialogProps {
 
 export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDialogProps) {
   const { user } = useAuth();
+  const { currentOrg } = useOrganization();
   const { toast } = useToast();
-  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    project_id: 'general',
     severity: 'medium' as BugSeverity,
     status: 'new' as 'new' | 'in_progress' | 'fixed' | 'closed',
     youtube_url: '',
@@ -48,12 +48,10 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
 
   useEffect(() => {
     if (open) {
-      fetchProjects();
       if (bug) {
         setFormData({
           title: bug.title,
           description: bug.description || '',
-          project_id: bug.project_id || 'general',
           severity: bug.severity,
           status: bug.status as 'new' | 'in_progress' | 'fixed' | 'closed',
           youtube_url: bug.youtube_url || '',
@@ -65,26 +63,10 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
     }
   }, [open, bug]);
 
-  const fetchProjects = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .is('deleted_at', null)
-        .order('name');
-
-      if (error) throw error;
-      setProjects(data || []);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
-  };
-
   const resetForm = () => {
     setFormData({
       title: '',
       description: '',
-      project_id: 'general',
       severity: 'medium',
       status: 'new',
       youtube_url: '',
@@ -116,7 +98,7 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
   };
 
   const handleSubmit = async () => {
-    if (!user || !formData.title.trim()) {
+    if (!user || !currentOrg || !formData.title.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in the title',
@@ -128,29 +110,8 @@ export function BugFormDialog({ open, onOpenChange, bug, onSuccess }: BugFormDia
     setLoading(true);
     
     try {
-      let orgId = null;
-      
-      if (formData.project_id && formData.project_id !== 'general') {
-        const project = projects.find(p => p.id === formData.project_id);
-        if (project) {
-          orgId = project.org_id;
-        }
-      } else {
-        // For general bugs, get user's org
-        const { data: orgMember } = await supabase
-          .from('org_members')
-          .select('org_id')
-          .eq('profile_id', user.id)
-          .single();
-        
-        if (orgMember) {
-          orgId = orgMember.org_id;
-        }
-      }
-
       const bugData = {
-        org_id: orgId,
-        project_id: formData.project_id === 'general' ? null : formData.project_id || null,
+        org_id: currentOrg.id,
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         severity: formData.severity,

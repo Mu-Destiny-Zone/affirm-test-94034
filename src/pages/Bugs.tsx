@@ -402,13 +402,6 @@ export function Bugs() {
 
                 {/* Unified Metadata Row */}
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
-                  {(bug as any).projects?.name && (
-                    <div className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-accent"></span>
-                      <span className="font-medium">{(bug as any).projects.name}</span>
-                    </div>
-                  )}
-                  
                   {bug.tags && Array.isArray(bug.tags) && bug.tags.length > 0 && (
                     <div className="flex items-center gap-1">
                       <span>{bug.tags.length} tags</span>

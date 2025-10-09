@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Test, Project } from '@/lib/types';
+import { Test } from '@/lib/types';
 import { Clock, Play, XCircle, TestTube, CheckCircle2, AlertCircle, Users, Calendar, BarChart3, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { TestExecutionResultDialog } from '@/components/tests/TestExecutionResultDialog';
@@ -14,7 +14,6 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface TestDetailDialogProps {
   test: Test | null;
-  project?: Project;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEdit: (test: Test) => void;

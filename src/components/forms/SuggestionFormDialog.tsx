@@ -21,8 +21,8 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { Project } from '@/lib/types';
 import { Plus, X, Tag } from 'lucide-react';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface SuggestionWithDetails {
   id: string;
@@ -34,7 +34,6 @@ interface SuggestionWithDetails {
   created_at: string;
   updated_at: string;
   author_id: string;
-  project_id: string;
   org_id: string;
   test_id: string | null;
 }
@@ -48,8 +47,9 @@ interface SuggestionFormDialogProps {
 
 export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess }: SuggestionFormDialogProps) {
   const { user } = useAuth();
+  const { currentOrg } = useOrganization();
   const { toast } = useToast();
-  const [projects, setProjects] = useState<Project[]>([]);
+  
   const [tests, setTests] = useState<Array<{id: string, title: string}>>([]);
   const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState('');
@@ -59,21 +59,19 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
     description: '',
     impact: 'medium' as 'low' | 'medium' | 'high',
     status: 'new' as 'new' | 'consider' | 'planned' | 'done' | 'rejected',
-    project_id: 'general',
     test_id: 'none',
     tags: [] as string[]
   });
 
   useEffect(() => {
-    if (open) {
-      fetchProjects();
+    if (open && currentOrg) {
+      fetchTests();
       if (suggestion) {
         setFormData({
           title: suggestion.title,
           description: suggestion.description || '',
           impact: suggestion.impact,
           status: suggestion.status,
-          project_id: suggestion.project_id || 'general',
           test_id: suggestion.test_id || 'none',
           tags: suggestion.tags || []
         });
@@ -81,38 +79,15 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
         resetForm();
       }
     }
-  }, [open, suggestion]);
+  }, [open, suggestion, currentOrg]);
 
-  useEffect(() => {
-    if (formData.project_id && formData.project_id !== 'general') {
-      fetchTests(formData.project_id);
-    } else {
-      setTests([]);
-      setFormData(prev => ({ ...prev, test_id: 'none' }));
-    }
-  }, [formData.project_id]);
-
-  const fetchProjects = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .is('deleted_at', null)
-        .order('name');
-
-      if (error) throw error;
-      setProjects(data || []);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
-  };
-
-  const fetchTests = async (projectId: string) => {
+  const fetchTests = async () => {
+    if (!currentOrg) return;
     try {
       const { data, error } = await supabase
         .from('tests')
         .select('id, title')
-        .eq('project_id', projectId)
+        .eq('org_id', currentOrg.id)
         .is('deleted_at', null)
         .order('title');
 
@@ -129,7 +104,6 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
       description: '',
       impact: 'medium',
       status: 'new',
-      project_id: 'general',
       test_id: 'none',
       tags: []
     });
@@ -162,7 +136,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
   };
 
   const handleSubmit = async () => {
-    if (!user || !formData.title.trim()) {
+    if (!user || !currentOrg || !formData.title.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in the title',
@@ -174,29 +148,8 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
     setLoading(true);
     
     try {
-      let orgId = null;
-      
-      if (formData.project_id && formData.project_id !== 'general') {
-        const project = projects.find(p => p.id === formData.project_id);
-        if (project) {
-          orgId = project.org_id;
-        }
-      } else {
-        // For general suggestions, get user's org
-        const { data: orgMember } = await supabase
-          .from('org_members')
-          .select('org_id')
-          .eq('profile_id', user.id)
-          .single();
-        
-        if (orgMember) {
-          orgId = orgMember.org_id;
-        }
-      }
-
       const suggestionData = {
-        org_id: orgId,
-        project_id: formData.project_id === 'general' ? null : formData.project_id || null,
+        org_id: currentOrg.id,
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         impact: formData.impact,
@@ -302,7 +255,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
             </div>
           )}
 
-          {formData.project_id && formData.project_id !== 'general' && tests.length > 0 && (
+          {tests.length > 0 && (
             <div className="space-y-2">
               <Label>Related Test (Optional)</Label>
               <Select 

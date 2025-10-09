@@ -187,7 +187,7 @@ export type Database = {
           id: string
           mentions: string[] | null
           org_id: string
-          project_id: string
+          project_id: string | null
           reactions: Json | null
           target_id: string
           target_type: Database["public"]["Enums"]["target_type"]
@@ -201,7 +201,7 @@ export type Database = {
           id?: string
           mentions?: string[] | null
           org_id: string
-          project_id: string
+          project_id?: string | null
           reactions?: Json | null
           target_id: string
           target_type: Database["public"]["Enums"]["target_type"]
@@ -215,7 +215,7 @@ export type Database = {
           id?: string
           mentions?: string[] | null
           org_id?: string
-          project_id?: string
+          project_id?: string | null
           reactions?: Json | null
           target_id?: string
           target_type?: Database["public"]["Enums"]["target_type"]
@@ -255,7 +255,7 @@ export type Database = {
           is_system: boolean | null
           name: string
           org_id: string
-          project_id: string
+          project_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -267,7 +267,7 @@ export type Database = {
           is_system?: boolean | null
           name: string
           org_id: string
-          project_id: string
+          project_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -279,7 +279,7 @@ export type Database = {
           is_system?: boolean | null
           name?: string
           org_id?: string
-          project_id?: string
+          project_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -661,7 +661,7 @@ export type Database = {
           id: string
           notes: string | null
           org_id: string
-          project_id: string
+          project_id: string | null
           state: Database["public"]["Enums"]["assignment_state"] | null
           step_results: Json | null
           test_id: string
@@ -675,7 +675,7 @@ export type Database = {
           id?: string
           notes?: string | null
           org_id: string
-          project_id: string
+          project_id?: string | null
           state?: Database["public"]["Enums"]["assignment_state"] | null
           step_results?: Json | null
           test_id: string
@@ -689,7 +689,7 @@ export type Database = {
           id?: string
           notes?: string | null
           org_id?: string
-          project_id?: string
+          project_id?: string | null
           state?: Database["public"]["Enums"]["assignment_state"] | null
           step_results?: Json | null
           test_id?: string
@@ -734,7 +734,7 @@ export type Database = {
           id: string
           org_id: string
           priority: number | null
-          project_id: string
+          project_id: string | null
           status: Database["public"]["Enums"]["test_status"] | null
           steps: Json | null
           tags: string[] | null
@@ -748,7 +748,7 @@ export type Database = {
           id?: string
           org_id: string
           priority?: number | null
-          project_id: string
+          project_id?: string | null
           status?: Database["public"]["Enums"]["test_status"] | null
           steps?: Json | null
           tags?: string[] | null
@@ -762,7 +762,7 @@ export type Database = {
           id?: string
           org_id?: string
           priority?: number | null
-          project_id?: string
+          project_id?: string | null
           status?: Database["public"]["Enums"]["test_status"] | null
           steps?: Json | null
           tags?: string[] | null

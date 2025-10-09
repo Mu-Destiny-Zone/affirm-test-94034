@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Test, Project } from '@/lib/types';
+import { Test } from '@/lib/types';
 import { Plus, Search, Filter, TestTube, Users, TrendingUp, UserPlus, ClipboardList, CheckCircle, XCircle, MinusCircle, Clock, User, Calendar, FileText } from 'lucide-react';
 import { CreateTestDialog } from '@/components/tests/CreateTestDialog';
 import { TestCard } from '@/components/tests/TestCard';
@@ -33,12 +33,10 @@ export function Tests() {
   const { currentOrg } = useOrganization();
   const { toast } = useToast();
   const [tests, setTests] = useState<Test[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [projectFilter, setProjectFilter] = useState<string>('all');
   const [currentOrgId, setCurrentOrgId] = useState<string>('');
   
   // Get user role for the current org
@@ -623,7 +621,6 @@ export function Tests() {
                   <TestCard
                     key={test.id}
                     test={test}
-                    project={projects.find(p => p.id === test.project_id)}
                     onEdit={handleEditTest}
                     onDelete={(test) => setDeleteDialogTest(test)}
                     onExecute={(test) => setExecutionDialogTest(test)}
@@ -664,7 +661,6 @@ export function Tests() {
 
       <TestDetailDialog
         test={detailDialogTest}
-        project={projects.find(p => p.id === detailDialogTest?.project_id)}
         open={!!detailDialogTest}
         onOpenChange={(open) => !open && setDetailDialogTest(null)}
         onEdit={handleEditTest}

@@ -419,22 +419,11 @@ export function Suggestions() {
 
                 {/* Unified Metadata Row */}
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
-                  {suggestion.projects && (
-                    <div className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-accent"></span>
-                      <span className="font-medium">{suggestion.projects.name}</span>
-                    </div>
-                  )}
-                  
                   {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
                     <div className="flex items-center gap-1">
                       <span>{suggestion.tags.length} {t('tags').toLowerCase()}</span>
                     </div>
                   )}
-
-                    <div className="flex items-center gap-1">
-                      <span>{t('linkedTest')}</span>
-                    </div>
 
                   <div className="flex items-center gap-1 ml-auto">
                     <span className={`w-2 h-2 rounded-full ${

@@ -190,7 +190,6 @@ export function BugDetailDialog({
             <Comments 
               targetType="bug"
               targetId={bug.id}
-              projectId={bug.project_id}
             />
           </div>
 

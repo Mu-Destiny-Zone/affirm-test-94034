@@ -26,7 +26,6 @@ interface Comment {
 interface CommentsProps {
   targetType: 'bug' | 'suggestion' | 'test';
   targetId: string;
-  projectId?: string | null;
 }
 
 const commentSchema = z.object({
@@ -36,7 +35,7 @@ const commentSchema = z.object({
     .max(2000, 'Comment must be less than 2000 characters')
 });
 
-export function Comments({ targetType, targetId, projectId }: CommentsProps) {
+export function Comments({ targetType, targetId }: CommentsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { currentOrg } = useOrganization();
@@ -95,7 +94,6 @@ export function Comments({ targetType, targetId, projectId }: CommentsProps) {
         .from('comments')
         .insert({
           org_id: currentOrg.id,
-          project_id: projectId || null,
           author_id: user.id,
           target_type: targetType,
           target_id: targetId,

@@ -11,24 +11,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, X, GripVertical, Save } from 'lucide-react';
-import { Test, TestStep, Project } from '@/lib/types';
+import { Test, TestStep } from '@/lib/types';
 
 interface EditTestDialogProps {
   test: Test | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projects: Project[];
   onTestUpdated: () => void;
 }
 
-export function EditTestDialog({ test, open, onOpenChange, projects, onTestUpdated }: EditTestDialogProps) {
+export function EditTestDialog({ test, open, onOpenChange, onTestUpdated }: EditTestDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [editedTest, setEditedTest] = useState({
     title: '',
     description: '',
-    project_id: '',
     priority: 0,
     status: 'draft' as 'draft' | 'active' | 'archived',
     steps: [] as TestStep[]
@@ -40,7 +38,6 @@ export function EditTestDialog({ test, open, onOpenChange, projects, onTestUpdat
       setEditedTest({
         title: test.title || '',
         description: test.description || '',
-        project_id: test.project_id || '',
         priority: test.priority || 0,
         status: test.status || 'draft',
         steps: test.steps ? [...test.steps] : []
@@ -76,7 +73,7 @@ export function EditTestDialog({ test, open, onOpenChange, projects, onTestUpdat
   };
 
   const handleSave = async () => {
-    if (!user || !editedTest.project_id || !editedTest.title.trim()) {
+    if (!user || !editedTest.title.trim()) {
       toast({
         title: 'Error',
         description: 'Please fill in all required fields',
@@ -92,7 +89,6 @@ export function EditTestDialog({ test, open, onOpenChange, projects, onTestUpdat
         .update({
           title: editedTest.title.trim(),
           description: editedTest.description.trim() || null,
-          project_id: editedTest.project_id,
           priority: editedTest.priority,
           status: editedTest.status,
           steps: editedTest.steps as any,
