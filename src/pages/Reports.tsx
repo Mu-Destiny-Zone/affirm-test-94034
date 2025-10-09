@@ -36,6 +36,19 @@ interface ReportData {
   activeUsers: number;
   topContributors: Array<{ name: string; contributions: number }>;
   userActivity: Array<{ name: string; tests: number; bugs: number; suggestions: number }>;
+  individualUsers: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    testsCreated: number;
+    bugsReported: number;
+    suggestionsMade: number;
+    assignmentsCompleted: number;
+    commentsPosted: number;
+    lastActive: string;
+    activityScore: number;
+  }>;
   
   // Test stats
   totalTests: number;
@@ -141,7 +154,7 @@ export function Reports() {
         supabase.from('bug_reports').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('suggestions').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('test_assignments').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
-        supabase.from('org_members').select('*, profiles(display_name)').eq('org_id', currentOrg.id).is('deleted_at', null),
+        supabase.from('org_members').select('*, profiles(id, display_name, email)').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('projects').select('id, name').eq('org_id', currentOrg.id).is('deleted_at', null)
       ]);
 
@@ -166,9 +179,78 @@ export function Reports() {
         return userTests.length > 0 || userBugs.length > 0;
       }).length;
 
-      const topContributors = members.slice(0, 5).map(m => ({
-        name: m.profiles?.display_name || 'Unknown',
-        contributions: Math.floor(Math.random() * 50) + 10
+      // Calculate individual user stats
+      const individualUsers = await Promise.all(members.map(async (m) => {
+        const userId = m.profile_id;
+        const userName = (m.profiles as any)?.display_name || 'Unknown User';
+        const userEmail = (m.profiles as any)?.email || '';
+        
+        const userTests = tests?.filter(t => t.created_at && new Date(t.created_at).getTime() > 0) || [];
+        const userBugs = bugs?.filter(b => b.reporter_id === userId) || [];
+        const userSuggestions = suggestions?.filter(s => s.author_id === userId) || [];
+        const userAssignments = assignments?.filter(a => a.assignee_id === userId && a.state === 'done') || [];
+        
+        // Fetch comments
+        const { data: userComments } = await supabase
+          .from('comments')
+          .select('id')
+          .eq('author_id', userId)
+          .is('deleted_at', null);
+        
+        const testsCreated = userTests.length;
+        const bugsReported = userBugs.length;
+        const suggestionsMade = userSuggestions.length;
+        const assignmentsCompleted = userAssignments.length;
+        const commentsPosted = userComments?.length || 0;
+        
+        // Calculate last active date
+        const allDates = [
+          ...userTests.map(t => t.created_at),
+          ...userBugs.map(b => b.created_at),
+          ...userSuggestions.map(s => s.created_at),
+          ...userAssignments.map(a => a.updated_at),
+        ].filter(Boolean);
+        
+        const lastActiveDate = allDates.length > 0
+          ? new Date(Math.max(...allDates.map(d => new Date(d!).getTime())))
+          : new Date(m.created_at);
+        
+        const daysSinceActive = Math.floor((Date.now() - lastActiveDate.getTime()) / (1000 * 60 * 60 * 24));
+        const lastActive = daysSinceActive === 0 ? 'Today' : 
+                          daysSinceActive === 1 ? 'Yesterday' :
+                          daysSinceActive < 7 ? `${daysSinceActive}d ago` :
+                          daysSinceActive < 30 ? `${Math.floor(daysSinceActive / 7)}w ago` :
+                          `${Math.floor(daysSinceActive / 30)}mo ago`;
+        
+        // Calculate activity score (weighted)
+        const activityScore = 
+          (testsCreated * 3) + 
+          (bugsReported * 2) + 
+          (suggestionsMade * 2) + 
+          (assignmentsCompleted * 5) + 
+          (commentsPosted * 1);
+        
+        return {
+          id: userId,
+          name: userName,
+          email: userEmail,
+          role: m.role,
+          testsCreated,
+          bugsReported,
+          suggestionsMade,
+          assignmentsCompleted,
+          commentsPosted,
+          lastActive,
+          activityScore,
+        };
+      }));
+      
+      // Sort by activity score
+      individualUsers.sort((a, b) => b.activityScore - a.activityScore);
+      
+      const topContributors = individualUsers.slice(0, 5).map(u => ({
+        name: u.name,
+        contributions: u.activityScore
       }));
 
       // Test stats
@@ -293,6 +375,7 @@ export function Reports() {
         activeUsers,
         topContributors,
         userActivity: [],
+        individualUsers,
         totalTests,
         activeTests,
         completedTests,
@@ -707,6 +790,87 @@ export function Reports() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Individual User Statistics Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Flame className="h-5 w-5" />
+                Individual User Statistics
+              </CardTitle>
+              <CardDescription>Detailed metrics for each team member</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-2 font-semibold text-sm">User</th>
+                      <th className="text-left py-3 px-2 font-semibold text-sm">Role</th>
+                      <th className="text-center py-3 px-2 font-semibold text-sm">Tests</th>
+                      <th className="text-center py-3 px-2 font-semibold text-sm">Bugs</th>
+                      <th className="text-center py-3 px-2 font-semibold text-sm">Suggestions</th>
+                      <th className="text-center py-3 px-2 font-semibold text-sm">Completed</th>
+                      <th className="text-center py-3 px-2 font-semibold text-sm">Comments</th>
+                      <th className="text-center py-3 px-2 font-semibold text-sm">Score</th>
+                      <th className="text-left py-3 px-2 font-semibold text-sm">Last Active</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.individualUsers.map((user, index) => (
+                      <tr key={user.id} className="border-b hover:bg-muted/50 transition-colors">
+                        <td className="py-3 px-2">
+                          <div className="flex items-center gap-2">
+                            {index < 3 && (
+                              <Flame className="h-4 w-4 text-warning" />
+                            )}
+                            <div>
+                              <div className="font-medium text-sm">{user.name}</div>
+                              <div className="text-xs text-muted-foreground">{user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2">
+                          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          <span className="text-sm font-semibold">{user.testsCreated}</span>
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          <span className="text-sm font-semibold">{user.bugsReported}</span>
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          <span className="text-sm font-semibold">{user.suggestionsMade}</span>
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          <span className="text-sm font-semibold text-success">{user.assignmentsCompleted}</span>
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          <span className="text-sm font-semibold">{user.commentsPosted}</span>
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          <Badge variant="outline" className="text-xs font-bold">
+                            {user.activityScore}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-xs text-muted-foreground">{user.lastActive}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {reportData.individualUsers.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No user data available
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Tests Tab */}
