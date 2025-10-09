@@ -1,0 +1,411 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Project } from '@/lib/types';
+import { Plus, X, Tag } from 'lucide-react';
+
+interface SuggestionWithDetails {
+  id: string;
+  title: string;
+  description: string | null;
+  status: 'new' | 'consider' | 'planned' | 'done' | 'rejected';
+  impact: 'low' | 'medium' | 'high';
+  tags: string[] | null;
+  created_at: string;
+  updated_at: string;
+  author_id: string;
+  project_id: string;
+  org_id: string;
+  test_id: string | null;
+}
+
+interface SuggestionFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  suggestion?: SuggestionWithDetails | null;
+  onSuccess: () => void;
+}
+
+export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess }: SuggestionFormDialogProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tests, setTests] = useState<Array<{id: string, title: string}>>([]);
+  const [loading, setLoading] = useState(false);
+  const [tagInput, setTagInput] = useState('');
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    impact: 'medium' as 'low' | 'medium' | 'high',
+    status: 'new' as 'new' | 'consider' | 'planned' | 'done' | 'rejected',
+    project_id: 'general',
+    test_id: 'none',
+    tags: [] as string[]
+  });
+
+  useEffect(() => {
+    if (open) {
+      fetchProjects();
+      if (suggestion) {
+        setFormData({
+          title: suggestion.title,
+          description: suggestion.description || '',
+          impact: suggestion.impact,
+          status: suggestion.status,
+          project_id: suggestion.project_id || 'general',
+          test_id: suggestion.test_id || 'none',
+          tags: suggestion.tags || []
+        });
+      } else {
+        resetForm();
+      }
+    }
+  }, [open, suggestion]);
+
+  useEffect(() => {
+    if (formData.project_id && formData.project_id !== 'general') {
+      fetchTests(formData.project_id);
+    } else {
+      setTests([]);
+      setFormData(prev => ({ ...prev, test_id: 'none' }));
+    }
+  }, [formData.project_id]);
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .is('deleted_at', null)
+        .order('name');
+
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
+
+  const fetchTests = async (projectId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('tests')
+        .select('id, title')
+        .eq('project_id', projectId)
+        .is('deleted_at', null)
+        .order('title');
+
+      if (error) throw error;
+      setTests(data || []);
+    } catch (error) {
+      console.error('Error fetching tests:', error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      impact: 'medium',
+      status: 'new',
+      project_id: 'general',
+      test_id: 'none',
+      tags: []
+    });
+    setTagInput('');
+  };
+
+  const addTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !formData.tags.includes(trimmedTag)) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, trimmedTag]
+      }));
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const handleTagKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!user || !formData.title.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in the title',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      let orgId = null;
+      
+      if (formData.project_id && formData.project_id !== 'general') {
+        const project = projects.find(p => p.id === formData.project_id);
+        if (project) {
+          orgId = project.org_id;
+        }
+      } else {
+        // For general suggestions, get user's org
+        const { data: orgMember } = await supabase
+          .from('org_members')
+          .select('org_id')
+          .eq('profile_id', user.id)
+          .single();
+        
+        if (orgMember) {
+          orgId = orgMember.org_id;
+        }
+      }
+
+      const suggestionData = {
+        org_id: orgId,
+        project_id: formData.project_id === 'general' ? null : formData.project_id || null,
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        impact: formData.impact,
+        status: formData.status,
+        test_id: formData.test_id === 'none' ? null : formData.test_id || null,
+        tags: formData.tags.length > 0 ? formData.tags : null,
+        author_id: user.id
+      };
+
+      const { error } = suggestion 
+        ? await supabase.from('suggestions').update(suggestionData).eq('id', suggestion.id)
+        : await supabase.from('suggestions').insert(suggestionData);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: `Suggestion ${suggestion ? 'updated' : 'created'} successfully`
+      });
+      
+      onOpenChange(false);
+      onSuccess();
+    } catch (error: any) {
+      console.error('Error saving suggestion:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save suggestion',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {suggestion ? 'Edit Suggestion' : 'Create New Suggestion'}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title *</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="Brief, descriptive title for your suggestion..."
+              className="text-base"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Detailed description of your suggestion..."
+              rows={4}
+              className="text-base resize-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Project</Label>
+              <Select 
+                value={formData.project_id} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value, test_id: 'none' }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="General suggestion or select project..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General Suggestion</SelectItem>
+                  {projects.map(project => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Impact Level</Label>
+              <Select 
+                value={formData.impact} 
+                onValueChange={(value: 'low' | 'medium' | 'high') => setFormData(prev => ({ ...prev, impact: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low Impact</SelectItem>
+                  <SelectItem value="medium">Medium Impact</SelectItem>
+                  <SelectItem value="high">High Impact</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {suggestion && (
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select 
+                value={formData.status} 
+                onValueChange={(value: 'new' | 'consider' | 'planned' | 'done' | 'rejected') => setFormData(prev => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="consider">Under Consideration</SelectItem>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="done">Done</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {formData.project_id && formData.project_id !== 'general' && tests.length > 0 && (
+            <div className="space-y-2">
+              <Label>Related Test (Optional)</Label>
+              <Select 
+                value={formData.test_id} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, test_id: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select related test..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No related test</SelectItem>
+                  {tests.map(test => (
+                    <SelectItem key={test.id} value={test.id}>
+                      {test.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  <Label>Tags</Label>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    placeholder="Add tag..."
+                    onKeyPress={handleTagKeyPress}
+                    className="flex-1 text-base"
+                  />
+                  <Button type="button" variant="outline" onClick={addTag} disabled={!tagInput.trim()}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {formData.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1 px-3 py-1">
+                        {tag}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeTag(tag)}
+                          className="h-auto p-0 hover:bg-transparent text-muted-foreground hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              disabled={loading || !formData.title.trim()}
+            >
+              {loading ? 'Saving...' : (suggestion ? 'Update Suggestion' : 'Create Suggestion')}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

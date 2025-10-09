@@ -1,0 +1,460 @@
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useOrganization } from '@/contexts/OrganizationContext';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Lightbulb, Plus, Edit, User, Sparkles, Flame, Target } from 'lucide-react';
+import { SuggestionFormDialog } from '@/components/forms/SuggestionFormDialog';
+import { SuggestionDetailDialog } from '@/components/suggestions/SuggestionDetailDialog';
+import { EnhancedCard, CardHeader, CardFooter } from '@/components/ui/enhanced-card';
+import { FilterPanel } from '@/components/ui/filter-panel';
+import { LoadingGrid, LoadingState } from '@/components/ui/enhanced-loading';
+
+interface SuggestionWithDetails {
+  id: string;
+  title: string;
+  description: string | null;
+  status: 'new' | 'consider' | 'planned' | 'done' | 'rejected';
+  impact: 'low' | 'medium' | 'high';
+  tags: string[] | null;
+  created_at: string;
+  updated_at: string;
+  author_id: string;
+  project_id: string;
+  org_id: string;
+  test_id: string | null;
+  profiles?: {
+    id: string;
+    display_name: string | null;
+    email: string;
+  };
+  projects?: {
+    id: string;
+    name: string;
+  };
+  tests?: {
+    id: string;
+    title: string;
+  };
+}
+
+export function Suggestions() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const { currentOrg } = useOrganization();
+  const { toast } = useToast();
+  
+  const [suggestions, setSuggestions] = useState<SuggestionWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [editingSuggestion, setEditingSuggestion] = useState<SuggestionWithDetails | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [impactFilter, setImpactFilter] = useState<string>('all');
+  const [tagFilter, setTagFilter] = useState<string>('all');
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<SuggestionWithDetails | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (user && currentOrg) {
+      fetchSuggestions();
+    }
+  }, [user, currentOrg]);
+
+  useEffect(() => {
+    const tags = suggestions.reduce((acc: string[], suggestion) => {
+      if (suggestion.tags && Array.isArray(suggestion.tags)) {
+        suggestion.tags.forEach((tag: string) => {
+          if (tag && !acc.includes(tag)) {
+            acc.push(tag);
+          }
+        });
+      }
+      return acc;
+    }, []);
+    setAllTags(tags.sort());
+  }, [suggestions]);
+
+  const fetchSuggestions = async () => {
+    if (!currentOrg) {
+      setSuggestions([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('suggestions')
+        .select(`
+          *,
+          profiles!suggestions_author_id_fkey(id, display_name, email),
+          projects(id, name),
+          tests(id, title)
+        `)
+        .eq('org_id', currentOrg.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching suggestions:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load suggestions",
+          variant: "destructive"
+        });
+      } else {
+        setSuggestions(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchSuggestions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditSuggestion = (suggestion: SuggestionWithDetails) => {
+    setEditingSuggestion(suggestion);
+    setFormDialogOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    setEditingSuggestion(null);
+    fetchSuggestions();
+  };
+
+  const handleCardClick = (suggestion: SuggestionWithDetails) => {
+    setSelectedSuggestion(suggestion);
+    setDetailDialogOpen(true);
+  };
+
+  const handleDetailEdit = (suggestion: SuggestionWithDetails) => {
+    setEditingSuggestion(suggestion);
+    setFormDialogOpen(true);
+    setDetailDialogOpen(false);
+  };
+
+  const filteredSuggestions = suggestions.filter(suggestion => {
+    const matchesSearch = suggestion.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         suggestion.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || suggestion.status === statusFilter;
+    const matchesImpact = impactFilter === 'all' || suggestion.impact === impactFilter;
+    const matchesTag = tagFilter === 'all' || (suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.includes(tagFilter));
+    
+    return matchesSearch && matchesStatus && matchesImpact && matchesTag;
+  });
+
+  // Enhanced filter options with counts
+  const filterOptions = {
+    impact: [
+      { value: 'low', label: 'Low Impact', count: suggestions.filter(s => s.impact === 'low').length },
+      { value: 'medium', label: 'Medium Impact', count: suggestions.filter(s => s.impact === 'medium').length },
+      { value: 'high', label: 'High Impact', count: suggestions.filter(s => s.impact === 'high').length },
+    ],
+    status: [
+      { value: 'new', label: 'New', count: suggestions.filter(s => s.status === 'new').length },
+      { value: 'consider', label: 'Under Consideration', count: suggestions.filter(s => s.status === 'consider').length },
+      { value: 'planned', label: 'Planned', count: suggestions.filter(s => s.status === 'planned').length },
+      { value: 'done', label: 'Done', count: suggestions.filter(s => s.status === 'done').length },
+      { value: 'rejected', label: 'Rejected', count: suggestions.filter(s => s.status === 'rejected').length },
+    ],
+    tags: allTags.map(tag => ({
+      value: tag,
+      label: tag,
+      count: suggestions.filter(s => s.tags && Array.isArray(s.tags) && s.tags.includes(tag)).length
+    }))
+  };
+
+  const quickFilters = [
+    {
+      label: 'My Ideas',
+      onClick: () => {
+        // Filter logic could be added here
+      },
+      active: false
+    },
+    {
+      label: 'High Impact',
+      onClick: () => {
+        setImpactFilter('high')
+      },
+      active: impactFilter === 'high'
+    },
+    {
+      label: 'In Progress',
+      onClick: () => {
+        setStatusFilter('planned')
+      },
+      active: statusFilter === 'planned'
+    }
+  ];
+
+  if (loading || !currentOrg) {
+    return (
+      <div className="container mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Lightbulb className="h-8 w-8 text-primary" />
+              {t('suggestions')}
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              {!currentOrg ? t('selectOrgMsg') : t('shareAndDiscuss')}
+            </p>
+          </div>
+          <Button disabled>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('addSuggestion')}
+          </Button>
+        </div>
+
+        {!currentOrg ? (
+          <Card className="text-center py-12">
+            <CardContent>
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                <Lightbulb className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">{t('noOrgSelected')}</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                {t('selectOrgMsg')}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <LoadingState
+              icon={<Lightbulb className="h-8 w-8" />}
+              title={t('loading')}
+              description={t('shareAndDiscuss')}
+            />
+            <LoadingGrid count={6} columns={3} />
+          </>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Lightbulb className="h-8 w-8 text-blue-600" />
+            {t('suggestions')}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {t('shareAndDiscuss')} {currentOrg.name}
+          </p>
+        </div>
+
+        <Button onClick={() => {
+          setEditingSuggestion(null);
+          setFormDialogOpen(true);
+        }}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t('addSuggestion')}
+        </Button>
+      </div>
+
+      {/* Enhanced Filters Card */}
+      <FilterPanel
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder={t('search') + ' ' + t('suggestions').toLowerCase() + '...'}
+        filters={[
+          { key: 'impact', label: t('impact'), options: filterOptions.impact, type: 'select' },
+          { key: 'status', label: t('status'), options: filterOptions.status, type: 'select' },
+          { key: 'tags', label: t('tags'), options: filterOptions.tags, type: 'select' },
+        ]}
+        activeFilters={{ impact: impactFilter, status: statusFilter, tags: tagFilter }}
+        onFilterChange={(key, value) => {
+          if (key === 'impact') setImpactFilter(value as string);
+          if (key === 'status') setStatusFilter(value as string);
+          if (key === 'tags') setTagFilter(value as string);
+        }}
+        quickFilters={[
+          {
+            label: t('myIdeas'),
+            onClick: () => {
+              // Filter logic could be added here
+            },
+            active: false
+          },
+          {
+            label: t('highImpactFilter'),
+            onClick: () => {
+              setImpactFilter('high')
+            },
+            active: impactFilter === 'high'
+          },
+          {
+            label: t('inProgressFilter'),
+            onClick: () => {
+              setStatusFilter('planned')
+            },
+            active: statusFilter === 'planned'
+          }
+        ]}
+        collapsible={true}
+        defaultExpanded={true}
+      />
+
+      <SuggestionFormDialog
+        open={formDialogOpen}
+        onOpenChange={setFormDialogOpen}
+        suggestion={editingSuggestion}
+        onSuccess={handleFormSuccess}
+      />
+
+      <SuggestionDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        suggestion={selectedSuggestion}
+        onEdit={handleDetailEdit}
+        onStatusChange={fetchSuggestions}
+      />
+
+      {/* Suggestions List */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {filteredSuggestions.length === 0 ? (
+          <div className="col-span-full">
+            <Card className="text-center py-12 animate-fade-in glass">
+              <CardContent>
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                  <Lightbulb className="h-10 w-10 text-primary animate-bounce" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">
+                  {searchTerm || statusFilter !== 'all' || impactFilter !== 'all' || tagFilter !== 'all'
+                    ? t('noSuggestionsMatchFilter')
+                    : t('noSuggestionsYet')
+                  }
+                </h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  {searchTerm || statusFilter !== 'all' || impactFilter !== 'all' || tagFilter !== 'all'
+                    ? t('adjustFilters')
+                    : t('shareImprovementIdea')
+                  }
+                </p>
+                <Button 
+                  onClick={() => {
+                    setEditingSuggestion(null);
+                    setFormDialogOpen(true);
+                  }}
+                  size="lg"
+                  className="animate-bounce-in"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  {searchTerm || statusFilter !== 'all' || impactFilter !== 'all' || tagFilter !== 'all'
+                    ? t('addSuggestion')
+                    : t('shareFirstIdea')
+                  }
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          filteredSuggestions.map((suggestion, index) => {
+            const quickActions = (
+              <div className="flex gap-1">
+                {suggestion.author_id === user?.id && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditSuggestion(suggestion);
+                    }}
+                    className="h-8 w-8 p-0 bg-background/80 hover:bg-background shadow-sm"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            );
+
+            const getImpactIcon = () => {
+              switch (suggestion.impact) {
+                case 'high': return <Flame className="h-3 w-3 mr-1" />
+                case 'medium': return <Target className="h-3 w-3 mr-1" />
+                case 'low': return <Sparkles className="h-3 w-3 mr-1" />
+                default: return null
+              }
+            };
+
+            return (
+              <EnhancedCard
+                key={suggestion.id}
+                priority={suggestion.impact}
+                quickActions={quickActions}
+                animationDelay={index * 50}
+                onClick={() => handleCardClick(suggestion)}
+                className="hover:shadow-primary/5"
+                topBadge={
+                  <Badge 
+                    variant={
+                      suggestion.impact === 'high' ? 'destructive' :
+                      suggestion.impact === 'medium' ? 'default' : 'secondary'
+                    }
+                    className="text-xs px-2 py-1 font-medium shadow-sm"
+                  >
+                      {getImpactIcon()}
+                      {suggestion.impact} {t('impact').toLowerCase()}
+                  </Badge>
+                }
+              >
+                <CardHeader
+                  title={suggestion.title}
+                  subtitle={suggestion.description || undefined}
+                  icon={<Lightbulb className="h-5 w-5 text-primary" />}
+                />
+
+                {/* Unified Metadata Row */}
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
+                  {suggestion.projects && (
+                    <div className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-accent"></span>
+                      <span className="font-medium">{suggestion.projects.name}</span>
+                    </div>
+                  )}
+                  
+                  {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span>{suggestion.tags.length} {t('tags').toLowerCase()}</span>
+                    </div>
+                  )}
+
+                    <div className="flex items-center gap-1">
+                      <span>{t('linkedTest')}</span>
+                    </div>
+
+                  <div className="flex items-center gap-1 ml-auto">
+                    <span className={`w-2 h-2 rounded-full ${
+                      suggestion.status === 'new' ? 'bg-primary' :
+                      suggestion.status === 'consider' ? 'bg-warning' :
+                      suggestion.status === 'planned' ? 'bg-accent' :
+                      suggestion.status === 'done' ? 'bg-success' :
+                      'bg-destructive'
+                    }`}></span>
+                    <span className="capitalize">{suggestion.status.replace('_', ' ')}</span>
+                  </div>
+                </div>
+
+                <CardFooter
+                  author={suggestion.profiles?.display_name || 'Unknown'}
+                  date={new Date(suggestion.created_at).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                />
+              </EnhancedCard>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
