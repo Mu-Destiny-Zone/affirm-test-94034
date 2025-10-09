@@ -9,7 +9,6 @@ import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { ModernAppLayout } from "@/components/layout/ModernAppLayout";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
-import { Dashboard } from "./pages/Dashboard";
 import { Tests } from "./pages/Tests";
 import { Bugs } from "./pages/Bugs";
 import { Suggestions } from "./pages/Suggestions";
@@ -51,7 +50,6 @@ function AppContent() {
           <ModernAppLayout>
             <Routes>
               <Route path="/" element={<MyTasks />} />
-              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tests" element={<Tests />} />
               <Route path="/bugs" element={<Bugs />} />
               <Route path="/suggestions" element={<Suggestions />} />

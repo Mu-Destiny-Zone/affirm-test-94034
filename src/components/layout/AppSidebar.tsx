@@ -32,7 +32,6 @@ import {
 
 const navigation = [
   { name: 'myTasks', href: '/', icon: ClipboardList },
-  { name: 'dashboard', href: '/dashboard', icon: Home },
   { name: 'tests', href: '/tests', icon: TestTube },
   { name: 'bugs', href: '/bugs', icon: Bug },
   { name: 'suggestions', href: '/suggestions', icon: Lightbulb },
