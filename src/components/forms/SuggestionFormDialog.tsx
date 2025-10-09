@@ -34,6 +34,7 @@ interface SuggestionWithDetails {
   created_at: string;
   updated_at: string;
   author_id: string;
+  owner_id: string | null;
   org_id: string;
   test_id: string | null;
 }
@@ -77,7 +78,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
           impact: suggestion.impact,
           status: suggestion.status,
           test_id: suggestion.test_id || 'none',
-          owner_id: (suggestion as any).owner_id || '',
+          owner_id: suggestion.owner_id || '',
           tags: suggestion.tags || []
         });
       } else {

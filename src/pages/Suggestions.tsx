@@ -25,6 +25,7 @@ interface SuggestionWithDetails {
   created_at: string;
   updated_at: string;
   author_id: string;
+  owner_id: string | null;
   project_id: string;
   org_id: string;
   test_id: string | null;
@@ -33,6 +34,11 @@ interface SuggestionWithDetails {
     display_name: string | null;
     email: string;
   };
+  owner?: {
+    id: string;
+    display_name: string | null;
+    email: string;
+  } | null;
   projects?: {
     id: string;
     name: string;
@@ -366,7 +372,7 @@ export function Suggestions() {
           </div>
         ) : (
           filteredSuggestions.map((suggestion, index) => {
-              const quickActions = (suggestion.author_id === user?.id || (suggestion as any).owner_id === user?.id) && (
+              const quickActions = (suggestion.author_id === user?.id || suggestion.owner_id === user?.id) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -431,10 +437,10 @@ export function Suggestions() {
 
                   {/* Compact Metadata Row */}
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2 flex-wrap">
-                    {(suggestion as any).owner && (
+                    {suggestion.owner && (
                       <span className="flex items-center gap-1 bg-primary/10 text-primary rounded px-1.5 py-0.5 font-medium">
                         <User className="h-2.5 w-2.5" />
-                        {(suggestion as any).owner.display_name || (suggestion as any).owner.email}
+                        {suggestion.owner.display_name || suggestion.owner.email}
                       </span>
                     )}
                     

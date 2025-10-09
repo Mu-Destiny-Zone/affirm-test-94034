@@ -105,8 +105,10 @@ export interface BugReport {
   updated_at: string;
   deleted_at: string | null;
   profiles?: Profile;
+  owner?: Profile | null;
   tests?: Test;
   test_assignments?: TestAssignment;
+  projects?: { name: string } | null;
 }
 
 export interface Suggestion {
@@ -124,6 +126,7 @@ export interface Suggestion {
   updated_at: string;
   deleted_at: string | null;
   profiles?: Profile;
+  owner?: Profile | null;
   tests?: Test;
 }
 
