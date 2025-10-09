@@ -22,7 +22,7 @@ interface OrganizationContextType {
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
@@ -33,7 +33,11 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     setLoading(true);
 
     if (!user) {
-      // When signed out, clear org state and stop loading
+      // If auth is still loading, keep org loading true to avoid false "no org" screens
+      if (authLoading) {
+        return;
+      }
+      // When fully signed out, clear and stop loading
       setOrganizations([]);
       setCurrentOrg(null);
       setLoading(false);
@@ -89,8 +93,9 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     fetchOrganizations();
-  }, [user]);
+  }, [user, authLoading]);
 
   return (
     <OrganizationContext.Provider value={{
