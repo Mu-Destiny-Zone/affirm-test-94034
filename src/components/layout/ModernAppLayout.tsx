@@ -35,29 +35,11 @@ interface ModernAppLayoutProps {
   children: React.ReactNode;
 }
 
-export function ModernAppLayout({ children }: ModernAppLayoutProps) {
-  const { profile, loading: authLoading } = useAuth();
+function LayoutContent({ children }: ModernAppLayoutProps) {
   const { t } = useTranslation();
-  const { organizations, currentOrg, setCurrentOrg, loading: orgLoading } = useOrganization();
+  const { organizations, currentOrg, setCurrentOrg } = useOrganization();
   const { notifications, loading: notificationsLoading, unreadCount, markAsRead, markAllAsRead, getNotificationIcon, getNotificationUrl } = useNotifications();
   const navigate = useNavigate();
-
-  // Show loading state while auth or organizations are loading
-  if (authLoading || orgLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If user has no organizations, show the "Profile Under Review" screen
-  if (organizations.length === 0) {
-    return <NoOrganizationAccess />;
-  }
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read_at) {
@@ -206,4 +188,28 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
       </div>
     </SidebarProvider>
   );
+}
+
+export function ModernAppLayout({ children }: ModernAppLayoutProps) {
+  const { profile, loading: authLoading } = useAuth();
+  const { organizations, loading: orgLoading } = useOrganization();
+
+  // Show loading state while auth or organizations are loading
+  if (authLoading || orgLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user has no organizations, show the "Profile Under Review" screen
+  if (organizations.length === 0) {
+    return <NoOrganizationAccess />;
+  }
+
+  return <LayoutContent>{children}</LayoutContent>;
 }
