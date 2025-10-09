@@ -40,7 +40,7 @@ export function Tests() {
   const [currentOrgId, setCurrentOrgId] = useState<string>('');
   
   // Get user role for the current org
-  const { canManage, loading: roleLoading, isAdmin, isManager } = useUserRole(currentOrg?.id);
+  const { canManage, loading: roleLoading, isAdmin, isManager, orgRole } = useUserRole(currentOrg?.id);
   
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -395,7 +395,10 @@ export function Tests() {
     const matchesStatus = statusFilter === 'all' || test.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || test.priority.toString() === priorityFilter;
     
-    return matchesSearch && matchesStatus && matchesPriority;
+    // Testers and viewers should not see draft or archived tests
+    const matchesRole = canManage || (test.status !== 'draft' && test.status !== 'archived');
+    
+    return matchesSearch && matchesStatus && matchesPriority && matchesRole;
   });
 
   if (loading || !currentOrg) {
