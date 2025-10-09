@@ -123,13 +123,11 @@ export function AssignOrgsDialog({ user, onAssignmentUpdated }: AssignOrgsDialog
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('org_members')
-        .insert({
-          org_id: newOrgId,
-          profile_id: user.id,
-          role: newOrgRole
-        });
+      const { error } = await supabase.rpc('add_org_member' as any, {
+        p_org_id: newOrgId,
+        p_profile_id: user.id,
+        p_role: newOrgRole
+      });
 
       if (error) throw error;
 
@@ -157,11 +155,10 @@ export function AssignOrgsDialog({ user, onAssignmentUpdated }: AssignOrgsDialog
   const handleRemoveOrg = async (orgId: string) => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('org_members')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('org_id', orgId)
-        .eq('profile_id', user.id);
+      const { error } = await supabase.rpc('soft_remove_org_member' as any, {
+        p_org_id: orgId,
+        p_profile_id: user.id
+      });
 
       if (error) throw error;
 
@@ -187,11 +184,11 @@ export function AssignOrgsDialog({ user, onAssignmentUpdated }: AssignOrgsDialog
   const handleRoleChange = async (orgId: string, newRole: 'admin' | 'manager' | 'tester' | 'viewer') => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('org_members')
-        .update({ role: newRole })
-        .eq('org_id', orgId)
-        .eq('profile_id', user.id);
+      const { error } = await supabase.rpc('update_org_member_role' as any, {
+        p_org_id: orgId,
+        p_profile_id: user.id,
+        p_role: newRole
+      });
 
       if (error) throw error;
 

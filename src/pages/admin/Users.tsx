@@ -174,11 +174,11 @@ export function AdminUsers() {
 
   const handleRoleChange = async (userId: string, newRole: 'admin' | 'manager' | 'tester' | 'viewer') => {
     try {
-      const { error } = await supabase
-        .from('org_members')
-        .update({ role: newRole })
-        .eq('org_id', selectedOrg)
-        .eq('profile_id', userId);
+      const { error } = await supabase.rpc('update_org_member_role' as any, {
+        p_org_id: selectedOrg,
+        p_profile_id: userId,
+        p_role: newRole
+      });
 
       if (error) throw error;
 
@@ -205,11 +205,10 @@ export function AdminUsers() {
     }
 
     try {
-      const { error } = await supabase
-        .from('org_members')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('org_id', selectedOrg)
-        .eq('profile_id', userId);
+      const { error } = await supabase.rpc('soft_remove_org_member' as any, {
+        p_org_id: selectedOrg,
+        p_profile_id: userId
+      });
 
       if (error) throw error;
 
@@ -225,6 +224,36 @@ export function AdminUsers() {
       toast({
         title: 'Error',
         description: error.message || 'Failed to remove user',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDisableUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to remove "${userName}" from all organizations you manage?`)) {
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('remove_user_from_all_managed_orgs' as any, {
+        p_profile_id: userId
+      });
+
+      if (error) throw error;
+
+      const count = data || 0;
+      toast({ 
+        title: t('success'), 
+        description: `"${userName}" removed from ${count} organization${count !== 1 ? 's' : ''}` 
+      });
+      
+      fetchUsers();
+      fetchUsersWithoutOrg();
+    } catch (error: any) {
+      console.error('Error disabling user:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to disable user',
         variant: 'destructive'
       });
     }
