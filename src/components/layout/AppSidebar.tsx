@@ -53,8 +53,14 @@ export function AppSidebar() {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   const location = useLocation();
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   // Check if user is admin in any org
   const [isAdmin, setIsAdmin] = useState(false);
@@ -166,16 +172,16 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.name}>
                   <Tooltip delayDuration={collapsed ? 0 : 999999}>
                     <TooltipTrigger asChild>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive(item.href)}
-                        className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
-                      >
-                        <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2">
-                          <item.icon className="h-5 w-5 flex-shrink-0" />
-                          {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
-                        </NavLink>
-                      </SidebarMenuButton>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive(item.href)}
+                          className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
+                        >
+                          <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2" onClick={handleNavClick}>
+                            <item.icon className="h-5 w-5 flex-shrink-0" />
+                            {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
+                          </NavLink>
+                        </SidebarMenuButton>
                     </TooltipTrigger>
                     {collapsed && (
                       <TooltipContent side="right" className="font-medium">
@@ -200,16 +206,16 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.name}>
                     <Tooltip delayDuration={collapsed ? 0 : 999999}>
                       <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive(item.href)}
-                          className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
-                        >
-                          <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2">
-                            <item.icon className="h-5 w-5 flex-shrink-0" />
-                            {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
-                          </NavLink>
-                        </SidebarMenuButton>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive(item.href)}
+                            className="hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md font-medium"
+                          >
+                            <NavLink to={item.href} className="flex items-center gap-3 px-3 py-2" onClick={handleNavClick}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                              {!collapsed && <span className="text-sm transition-opacity duration-300">{t(item.name)}</span>}
+                            </NavLink>
+                          </SidebarMenuButton>
                       </TooltipTrigger>
                       {collapsed && (
                         <TooltipContent side="right" className="font-medium">
