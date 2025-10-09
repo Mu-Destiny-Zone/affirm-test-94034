@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useNotifications } from "@/hooks/useNotifications";
+import { DesktopNotificationSettings } from "@/components/notifications/DesktopNotificationSettings";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -138,6 +139,11 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
                         </Button>
                       )}
                     </div>
+                    
+                    <div className="px-2 pb-2">
+                      <DesktopNotificationSettings />
+                    </div>
+                    
                     <DropdownMenuSeparator />
                     
                     {notificationsLoading ? (
