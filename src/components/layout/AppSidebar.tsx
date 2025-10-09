@@ -103,14 +103,14 @@ export function AppSidebar() {
   return <Sidebar className="border-r border-border/60 bg-card transition-all duration-300 ease-in-out" collapsible="icon">
       <SidebarHeader className={`p-4 border-b border-border/40 ${collapsed ? 'flex justify-center' : ''}`}>
         {!collapsed ? <div className="flex items-center gap-3">
-            <div className="w-14 h-14 bg-white dark:bg-white/95 rounded-xl flex items-center justify-center overflow-hidden shadow-xl shadow-primary/30 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-300">
+            <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center overflow-hidden shadow-xl shadow-primary/30 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-300">
               <img src="/lovable-uploads/5dc1400a-d879-4c3c-a68e-15d5b86bbafb.png" alt="Mu Destiny Zone Logo" className="w-12 h-12 object-contain filter brightness-110 contrast-110" />
             </div>
             <div>
               <h2 className="font-bold text-base text-foreground leading-tight">Mu Destiny Zone</h2>
               <p className="text-xs text-muted-foreground font-medium">Test Management</p>
             </div>
-          </div> : <div className="w-12 h-12 bg-white dark:bg-white/95 rounded-lg flex items-center justify-center self-center overflow-hidden shadow-lg shadow-primary/20 mx-0 hover:shadow-xl transition-all duration-300">
+          </div> : <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center self-center overflow-hidden shadow-lg shadow-primary/20 mx-0 hover:shadow-xl transition-all duration-300">
             <img src="/lovable-uploads/5dc1400a-d879-4c3c-a68e-15d5b86bbafb.png" alt="Mu Destiny Zone Logo" className="w-10 h-10 object-contain filter brightness-110" />
           </div>}
 
