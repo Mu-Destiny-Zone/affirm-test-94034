@@ -35,14 +35,26 @@ interface ModernAppLayoutProps {
 }
 
 export function ModernAppLayout({ children }: ModernAppLayoutProps) {
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const { t } = useTranslation();
-  const { organizations, currentOrg, setCurrentOrg, loading } = useOrganization();
+  const { organizations, currentOrg, setCurrentOrg, loading: orgLoading } = useOrganization();
   const { notifications, loading: notificationsLoading, unreadCount, markAsRead, markAllAsRead, getNotificationIcon, getNotificationUrl } = useNotifications();
   const navigate = useNavigate();
 
+  // Show loading state while auth or organizations are loading
+  if (authLoading || orgLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   // If user has no organizations, show the "Profile Under Review" screen
-  if (!loading && organizations.length === 0) {
+  if (organizations.length === 0) {
     return <NoOrganizationAccess />;
   }
 
@@ -67,32 +79,27 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
 
             <div className="flex-1 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {!loading && organizations.length > 0 && (
-                  <Select
-                    value={currentOrg?.id || ""}
-                    onValueChange={(value) => {
-                      const org = organizations.find(o => o.id === value);
-                      if (org) {
-                        setCurrentOrg(org);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-[220px] bg-background border-border/60 hover:border-primary/30 transition-colors font-medium">
-                      <Building2 className="h-4 w-4 mr-2 text-primary" />
-                      <SelectValue placeholder="Select organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {organizations.map((org) => (
-                        <SelectItem key={org.id} value={org.id} className="font-medium">
-                          {org.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                {loading && (
-                  <div className="w-[220px] h-10 bg-muted animate-pulse rounded-md" />
-                )}
+                <Select
+                  value={currentOrg?.id || ""}
+                  onValueChange={(value) => {
+                    const org = organizations.find(o => o.id === value);
+                    if (org) {
+                      setCurrentOrg(org);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[220px] bg-background border-border/60 hover:border-primary/30 transition-colors font-medium">
+                    <Building2 className="h-4 w-4 mr-2 text-primary" />
+                    <SelectValue placeholder="Select organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id} className="font-medium">
+                        {org.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2">
