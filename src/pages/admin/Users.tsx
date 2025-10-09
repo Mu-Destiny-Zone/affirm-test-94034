@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
 import { EditUserDialog } from '@/components/admin/EditUserDialog';
 import { AssignOrgsDialog } from '@/components/admin/AssignOrgsDialog';
@@ -259,43 +260,27 @@ export function AdminUsers() {
     }
   };
 
-  const handleHardDeleteUser = async (userId: string, userName: string) => {
-    if (!confirm(
-      `⚠️ PERMANENT DELETION WARNING ⚠️\n\n` +
-      `Are you absolutely sure you want to PERMANENTLY delete "${userName}"?\n\n` +
-      `This action will:\n` +
-      `• Permanently delete the user account\n` +
-      `• Remove ALL associated data\n` +
-      `• CANNOT be undone\n\n` +
-      `Type the user's name to confirm deletion.`
-    )) {
-      return;
-    }
+  const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-    const typedName = prompt(`Please type "${userName}" to confirm permanent deletion:`);
+  const handleHardDeleteUser = async () => {
+    if (!userToDelete) return;
     
-    if (typedName !== userName) {
-      toast({
-        title: 'Deletion cancelled',
-        description: 'Name did not match. User was not deleted.',
-        variant: 'default'
-      });
-      return;
-    }
-
+    setIsDeleting(true);
     try {
       const { data, error } = await supabase.functions.invoke('hard-delete-user', {
-        body: { user_id: userId }
+        body: { user_id: userToDelete.id }
       } as any);
 
       if (error) throw error;
 
       toast({
         title: 'User Permanently Deleted',
-        description: `"${userName}" has been permanently removed from the system.`,
+        description: `"${userToDelete.name}" has been permanently removed from the system.`,
         variant: 'default'
       });
 
+      setUserToDelete(null);
       fetchUsersWithoutOrg();
     } catch (error: any) {
       console.error('Error hard deleting user:', error);
@@ -304,6 +289,8 @@ export function AdminUsers() {
         description: error.message || 'Failed to permanently delete user',
         variant: 'destructive'
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -432,7 +419,7 @@ export function AdminUsers() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleHardDeleteUser(userItem.id, userItem.display_name || userItem.email)}
+                            onClick={() => setUserToDelete({ id: userItem.id, name: userItem.display_name || userItem.email })}
                             className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
                             title="Permanently delete user"
                           >
@@ -680,6 +667,32 @@ export function AdminUsers() {
             </CardContent>
           </Card>
         )}
+
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Permanently Delete User?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                You are about to permanently delete <strong>{userToDelete?.name}</strong>.
+              </p>
+              <p className="text-destructive font-medium">
+                This action cannot be undone. All user data will be permanently removed.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleHardDeleteUser}
+              disabled={isDeleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
