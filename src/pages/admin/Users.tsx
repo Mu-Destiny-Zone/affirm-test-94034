@@ -14,7 +14,7 @@ import { AssignOrgsDialog } from '@/components/admin/AssignOrgsDialog';
 import { CreateOrgDialog } from '@/components/admin/CreateOrgDialog';
 import { UserOrgsDisplay } from '@/components/admin/UserOrgsDisplay';
 import { ResetPasswordDialog } from '@/components/admin/ResetPasswordDialog';
-import { Users, Shield, Trash2, Mail, Search, Building2, ChevronRight, UserCog, UserX, Filter, SortAsc, Download, BarChart3 } from 'lucide-react';
+import { Users, Shield, Trash2, Mail, Search, Building2, ChevronRight, UserCog, UserX, Filter, SortAsc, Download, BarChart3, Skull } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -259,6 +259,54 @@ export function AdminUsers() {
     }
   };
 
+  const handleHardDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(
+      `⚠️ PERMANENT DELETION WARNING ⚠️\n\n` +
+      `Are you absolutely sure you want to PERMANENTLY delete "${userName}"?\n\n` +
+      `This action will:\n` +
+      `• Permanently delete the user account\n` +
+      `• Remove ALL associated data\n` +
+      `• CANNOT be undone\n\n` +
+      `Type the user's name to confirm deletion.`
+    )) {
+      return;
+    }
+
+    const typedName = prompt(`Please type "${userName}" to confirm permanent deletion:`);
+    
+    if (typedName !== userName) {
+      toast({
+        title: 'Deletion cancelled',
+        description: 'Name did not match. User was not deleted.',
+        variant: 'default'
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('hard-delete-user', {
+        body: { user_id: userId }
+      } as any);
+
+      if (error) throw error;
+
+      toast({
+        title: 'User Permanently Deleted',
+        description: `"${userName}" has been permanently removed from the system.`,
+        variant: 'default'
+      });
+
+      fetchUsersWithoutOrg();
+    } catch (error: any) {
+      console.error('Error hard deleting user:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to permanently delete user',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'admin': return 'destructive';
@@ -380,14 +428,25 @@ export function AdminUsers() {
                           </div>
                           <p className="text-[10px] text-muted-foreground truncate leading-tight">{userItem.email}</p>
                         </div>
-                        <AssignOrgsDialog
-                          user={{
-                            id: userItem.id,
-                            email: userItem.email,
-                            display_name: userItem.display_name
-                          }}
-                          onAssignmentUpdated={fetchUsersWithoutOrg}
-                        />
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleHardDeleteUser(userItem.id, userItem.display_name || userItem.email)}
+                            className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                            title="Permanently delete user"
+                          >
+                            <Skull className="h-3 w-3" />
+                          </Button>
+                          <AssignOrgsDialog
+                            user={{
+                              id: userItem.id,
+                              email: userItem.email,
+                              display_name: userItem.display_name
+                            }}
+                            onAssignmentUpdated={fetchUsersWithoutOrg}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
