@@ -236,25 +236,30 @@ export function Bugs() {
   }
 
   return (
-    <div className="container mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Bug className="h-8 w-8 text-red-600" />
-            {t('bugReports')}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {t('trackAndManageBugs')} {currentOrg.name}
-          </p>
+    <div className="container mx-auto space-y-8 animate-fade-in">
+      {/* Enhanced Header */}
+      <div className="page-header">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h1 className="page-title flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg">
+                <Bug className="h-8 w-8 text-white" />
+              </div>
+              {t('bugReports')}
+            </h1>
+            <p className="page-subtitle">
+              {t('trackAndManageBugs')} {currentOrg.name}
+            </p>
+          </div>
+          
+          <Button onClick={() => {
+            setEditingBug(null);
+            setFormDialogOpen(true);
+          }} variant="destructive" size="lg" className="shadow-lg hover:shadow-xl transition-all">
+            <Plus className="h-5 w-5 mr-2" />
+            {t('reportBug')}
+          </Button>
         </div>
-        
-        <Button onClick={() => {
-          setEditingBug(null);
-          setFormDialogOpen(true);
-        }} variant="destructive">
-          <Plus className="h-4 w-4 mr-2" />
-          {t('reportBug')}
-        </Button>
       </div>
 
       <FilterPanel

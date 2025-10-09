@@ -453,80 +453,87 @@ export function Tests() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{t('tests')}</h1>
-          <p className="text-muted-foreground">
-            {canManage 
-              ? `Create and manage test cases for ${currentOrg.name}`
-              : `View and execute tests assigned to you in ${currentOrg.name}`
-            }
-          </p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Enhanced Header */}
+      <div className="page-header">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h1 className="page-title flex items-center gap-3">
+              <div className="p-2 bg-gradient-brand rounded-lg shadow-brand">
+                <TestTube className="h-8 w-8 text-white" />
+              </div>
+              {t('tests')}
+            </h1>
+            <p className="page-subtitle">
+              {canManage 
+                ? `Create and manage test cases for ${currentOrg.name}`
+                : `View and execute tests assigned to you in ${currentOrg.name}`
+              }
+            </p>
+          </div>
+          
+          {activeTab === 'tests' && (
+            <Button onClick={() => setCreateDialogOpen(true)} size="lg" className="btn-gradient shadow-lg">
+              <Plus className="h-5 w-5 mr-2" />
+              New Test
+            </Button>
+          )}
         </div>
-        
-        {activeTab === 'tests' && (
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Test
-          </Button>
-        )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex gap-2">
-      </div>
+      {/* Stats Cards with Modern Design */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="stat-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-primary/10 rounded-xl">
+              <ClipboardList className="h-6 w-6 text-primary" />
+            </div>
+            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Total Tests</p>
+            <p className="text-3xl font-bold tracking-tight">{stats.total}</p>
+          </div>
+        </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Tests</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
-              </div>
-              <TestTube className="h-8 w-8 text-muted-foreground" />
+        <div className="stat-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-success/10 rounded-xl">
+              <CheckCircle className="h-6 w-6 text-success" />
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-primary">{stats.active}</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-primary" />
+            <Badge variant="secondary" className="text-xs">Active</Badge>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Active Tests</p>
+            <p className="text-3xl font-bold tracking-tight text-success">{stats.active}</p>
+          </div>
+        </div>
+
+        <div className="stat-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-warning/10 rounded-xl">
+              <FileText className="h-6 w-6 text-warning" />
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Draft</p>
-                <p className="text-2xl font-bold text-secondary-foreground">{stats.draft}</p>
-              </div>
-              <Users className="h-8 w-8 text-muted-foreground" />
+            <Badge variant="secondary" className="text-xs">Draft</Badge>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Draft Tests</p>
+            <p className="text-3xl font-bold tracking-tight text-warning">{stats.draft}</p>
+          </div>
+        </div>
+
+        <div className="stat-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-muted rounded-xl">
+              <MinusCircle className="h-6 w-6 text-muted-foreground" />
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Archived</p>
-                <p className="text-2xl font-bold text-muted-foreground">{stats.archived}</p>
-              </div>
-              <Filter className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
+            <Badge variant="secondary" className="text-xs">Archived</Badge>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Archived</p>
+            <p className="text-3xl font-bold tracking-tight">{stats.archived}</p>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}

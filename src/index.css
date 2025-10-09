@@ -216,6 +216,20 @@
     @apply bg-background/80 backdrop-blur-md border-border/50;
   }
   
+  /* Modern Stats Card */
+  .stat-card {
+    @apply relative overflow-hidden bg-gradient-to-br from-card via-card to-card/95 border border-border/60 rounded-xl shadow-md hover:shadow-xl transition-all duration-300;
+  }
+  
+  .stat-card::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-primary/10 opacity-0 transition-opacity duration-300;
+  }
+  
+  .stat-card:hover::before {
+    @apply opacity-100;
+  }
+  
   /* Loading States */
   .skeleton {
     @apply animate-pulse bg-muted rounded;
@@ -241,6 +255,19 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  
+  /* Page Header */
+  .page-header {
+    @apply mb-8 pb-6 border-b border-border/50;
+  }
+  
+  .page-title {
+    @apply text-4xl font-bold tracking-tight text-gradient;
+  }
+  
+  .page-subtitle {
+    @apply text-muted-foreground mt-2 text-base;
   }
 }
 

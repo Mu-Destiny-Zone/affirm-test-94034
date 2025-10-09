@@ -239,25 +239,30 @@ export function Suggestions() {
   }
 
   return (
-    <div className="container mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Lightbulb className="h-8 w-8 text-blue-600" />
-            {t('suggestions')}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {t('shareAndDiscuss')} {currentOrg.name}
-          </p>
-        </div>
+    <div className="container mx-auto space-y-8 animate-fade-in">
+      {/* Enhanced Header */}
+      <div className="page-header">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h1 className="page-title flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg">
+                <Lightbulb className="h-8 w-8 text-white" />
+              </div>
+              {t('suggestions')}
+            </h1>
+            <p className="page-subtitle">
+              {t('shareAndDiscuss')} {currentOrg.name}
+            </p>
+          </div>
 
-        <Button onClick={() => {
-          setEditingSuggestion(null);
-          setFormDialogOpen(true);
-        }}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t('addSuggestion')}
-        </Button>
+          <Button onClick={() => {
+            setEditingSuggestion(null);
+            setFormDialogOpen(true);
+          }} size="lg" className="btn-gradient shadow-lg">
+            <Plus className="h-5 w-5 mr-2" />
+            {t('addSuggestion')}
+          </Button>
+        </div>
       </div>
 
       {/* Enhanced Filters Card */}
