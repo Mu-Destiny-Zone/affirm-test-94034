@@ -406,6 +406,14 @@ export function Bugs() {
                   icon={<Bug className="h-4 w-4 text-destructive" />}
                 />
 
+                <CardFooter
+                  author={bug.profiles?.display_name || 'Unknown'}
+                  date={new Date(bug.created_at).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                />
+
                 {/* Compact Metadata Row */}
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
                   {bug.tags && Array.isArray(bug.tags) && bug.tags.length > 0 && (
@@ -421,14 +429,6 @@ export function Bugs() {
                     </span>
                   )}
                 </div>
-
-                <CardFooter
-                  author={bug.profiles?.display_name || 'Unknown'}
-                  date={new Date(bug.created_at).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                />
               </EnhancedCard>
             );
           })}
