@@ -10,6 +10,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, FolderKanban, Users, Settings, Search } from 'lucide-react';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface Command {
   id: string;
@@ -23,6 +24,8 @@ interface Command {
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { organizations, loading: orgLoading } = useOrganization();
+  const showHint = !orgLoading && organizations.length > 0;
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -159,11 +162,13 @@ export function CommandPalette() {
         </CommandList>
       </CommandDialog>
 
-      <div className="fixed bottom-4 right-4 bg-muted/80 backdrop-blur-sm text-muted-foreground text-xs px-3 py-2 rounded-lg shadow-sm pointer-events-none">
-        Press <kbd className="px-1.5 py-0.5 bg-background rounded border">⌘</kbd>{' '}
-        <kbd className="px-1.5 py-0.5 bg-background rounded border">K</kbd> to open
-        command palette
-      </div>
+{showHint && (
+  <div className="fixed bottom-4 right-4 bg-muted/80 backdrop-blur-sm text-muted-foreground text-xs px-3 py-2 rounded-lg shadow-sm pointer-events-none">
+    Press <kbd className="px-1.5 py-0.5 bg-background rounded border">⌘</kbd>{' '}
+    <kbd className="px-1.5 py-0.5 bg-background rounded border">K</kbd> to open
+    command palette
+  </div>
+)}
     </>
   );
 }
