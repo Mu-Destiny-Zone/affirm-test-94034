@@ -168,10 +168,6 @@ export function SignInForm() {
             </form>
           </CardContent>
         </Card>
-
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Secure authentication powered by Supabase
-        </p>
       </div>
     </div>
   );
