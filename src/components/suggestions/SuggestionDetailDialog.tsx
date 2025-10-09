@@ -203,7 +203,7 @@ export function SuggestionDetailDialog({
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2">
-                  {suggestion.author_id === user?.id && onEdit && (
+                  {(suggestion.author_id === user?.id || (suggestion as any).owner_id === user?.id) && onEdit && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -268,6 +268,32 @@ export function SuggestionDetailDialog({
               <p className="text-sm text-muted-foreground leading-relaxed bg-muted/50 p-3 rounded-lg">
                 {suggestion.description}
               </p>
+            </div>
+          )}
+
+          {/* Author Info */}
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Suggested By
+            </h4>
+            <div className="bg-muted/50 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{suggestion.profiles?.display_name || suggestion.profiles?.email || 'Unknown'}</span>
+            </div>
+          </div>
+
+          {/* Owner Info */}
+          {(suggestion as any).owner && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <User className="h-4 w-4 text-primary" />
+                Owner / Responsible
+              </h4>
+              <div className="bg-primary/10 px-3 py-2 rounded-lg text-sm flex items-center gap-2 border border-primary/20">
+                <User className="h-4 w-4 text-primary" />
+                <span className="font-medium text-primary">{(suggestion as any).owner.display_name || (suggestion as any).owner.email}</span>
+              </div>
             </div>
           )}
 

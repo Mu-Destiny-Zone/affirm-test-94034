@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Plus, Edit, User, Sparkles, Flame, Target } from 'lucide-react';
+import { Lightbulb, Plus, Edit, User, Sparkles, Flame, Target, TestTube } from 'lucide-react';
 import { SuggestionFormDialog } from '@/components/forms/SuggestionFormDialog';
 import { SuggestionDetailDialog } from '@/components/suggestions/SuggestionDetailDialog';
 import { EnhancedCard, CardHeader } from '@/components/ui/enhanced-card';
@@ -94,6 +94,7 @@ export function Suggestions() {
         .select(`
           *,
           profiles!suggestions_author_id_fkey(id, display_name, email),
+          owner:profiles!suggestions_owner_id_fkey(id, display_name, email),
           projects(id, name),
           tests(id, title)
         `)
@@ -365,7 +366,7 @@ export function Suggestions() {
           </div>
         ) : (
           filteredSuggestions.map((suggestion, index) => {
-              const quickActions = suggestion.author_id === user?.id && (
+              const quickActions = (suggestion.author_id === user?.id || (suggestion as any).owner_id === user?.id) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -427,6 +428,29 @@ export function Suggestions() {
                       day: 'numeric' 
                     })}
                   />
+
+                  {/* Compact Metadata Row */}
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2 flex-wrap">
+                    {(suggestion as any).owner && (
+                      <span className="flex items-center gap-1 bg-primary/10 text-primary rounded px-1.5 py-0.5 font-medium">
+                        <User className="h-2.5 w-2.5" />
+                        {(suggestion as any).owner.display_name || (suggestion as any).owner.email}
+                      </span>
+                    )}
+                    
+                    {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
+                      <span className="flex items-center gap-0.5">
+                        <span className="font-medium">{suggestion.tags.length}</span> tags
+                      </span>
+                    )}
+
+                    {suggestion.tests && (
+                      <span className="flex items-center gap-0.5">
+                        <TestTube className="h-2.5 w-2.5" />
+                        linked
+                      </span>
+                    )}
+                  </div>
 
                 </EnhancedCard>
               );
