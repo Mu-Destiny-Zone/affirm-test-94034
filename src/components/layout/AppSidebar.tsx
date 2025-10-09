@@ -108,7 +108,7 @@ export function AppSidebar() {
             </div>
             <div>
               <h2 className="font-bold text-base text-foreground leading-tight">Mu Destiny Zone</h2>
-              <p className="text-xs text-muted-foreground font-medium">test system</p>
+              <p className="text-xs text-muted-foreground font-medium">Test System</p>
             </div>
           </div> : <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center self-center overflow-hidden shadow-lg shadow-primary/20 mx-0 hover:shadow-xl transition-all duration-300">
             <img src="/lovable-uploads/5dc1400a-d879-4c3c-a68e-15d5b86bbafb.png" alt="Mu Destiny Zone Logo" className="w-10 h-10 object-contain filter brightness-110" />
