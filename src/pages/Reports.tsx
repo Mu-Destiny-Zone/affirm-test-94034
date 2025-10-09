@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -21,7 +22,8 @@ import {
   Building2,
   Zap,
   Award,
-  Flame
+  Flame,
+  RefreshCw
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
@@ -537,19 +539,32 @@ export function Reports() {
           </p>
         </div>
 
-        <Select value={selectedProject} onValueChange={setSelectedProject}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Select project" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allProjects')}</SelectItem>
-            {projects.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select value={selectedProject} onValueChange={setSelectedProject}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Select project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('allProjects')}</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            onClick={() => {
+              setLoading(true);
+              fetchReportData();
+            }}
+            disabled={loading}
+            size="default"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline ml-2">Refresh</span>
+          </Button>
+        </div>
       </div>
 
       {/* System Health Overview */}
