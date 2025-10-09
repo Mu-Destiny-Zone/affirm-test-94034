@@ -99,8 +99,8 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
         description: `Test status updated to ${newStatus}`,
       });
 
-      // Trigger parent refresh
-      onEdit(test);
+      // Reload page to refresh test list
+      window.location.reload();
     } catch (error) {
       console.error('Error updating test status:', error);
       toast({
