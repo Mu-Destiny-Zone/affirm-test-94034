@@ -65,7 +65,7 @@ export function Bugs() {
         .from('bug_reports')
         .select(`
           *,
-          profiles(display_name, email),
+          profiles!bug_reports_reporter_id_fkey(id, display_name, email, avatar_url),
           projects(name)
         `)
         .eq('org_id', currentOrg.id)
