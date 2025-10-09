@@ -47,7 +47,7 @@ export function AdminUsers() {
   const [unassignedSearchQuery, setUnassignedSearchQuery] = useState('');
   
   // Get user's org role for the selected org
-  const { isAdmin: isOrgAdmin } = useUserRole(selectedOrg);
+  const { canManage: isOrgAdmin } = useUserRole(selectedOrg);
 
   // Filter users based on search
   const filteredUsers = users.filter(u => 
