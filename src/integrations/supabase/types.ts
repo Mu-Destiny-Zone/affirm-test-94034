@@ -845,6 +845,10 @@ export type Database = {
         Args: { test_id: string }
         Returns: undefined
       }
+      soft_remove_org_member: {
+        Args: { p_org_id: string; p_profile_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "tester" | "viewer"
