@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TestTube, Bug, Lightbulb, Clock, CircleCheck as CheckCircle, CircleAlert as AlertCircle, ExternalLink } from 'lucide-react';
+import { TestTube, Bug, Lightbulb, Clock, CircleCheck as CheckCircle, CircleAlert as AlertCircle, ExternalLink, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -214,157 +214,224 @@ supabase
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold tracking-tight">My Tasks</h1>
-        <p className="text-muted-foreground text-lg mt-2">
-          View and manage your assigned tests, bugs, and suggestions
-        </p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Enhanced Header with Quick Actions */}
+      <div className="page-header">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h1 className="page-title flex items-center gap-3">
+              <div className="p-2 bg-gradient-brand rounded-lg shadow-brand">
+                <CheckCircle className="h-8 w-8 text-white" />
+              </div>
+              My Tasks
+            </h1>
+            <p className="page-subtitle">
+              View and manage your assigned tests, bugs, and suggestions
+            </p>
+          </div>
+          
+          {/* Quick Actions */}
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => navigate('/bugs')} 
+              variant="destructive" 
+              size="lg"
+              className="shadow-lg hover:shadow-xl transition-all"
+            >
+              <Bug className="h-5 w-5 mr-2" />
+              Report Bug
+            </Button>
+            <Button 
+              onClick={() => navigate('/suggestions')} 
+              size="lg"
+              className="btn-gradient shadow-lg"
+            >
+              <Lightbulb className="h-5 w-5 mr-2" />
+              Add Suggestion
+            </Button>
+          </div>
+        </div>
       </div>
 
+      {/* Modern Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-border/60 hover:border-primary/30 transition-all hover:shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-              <Clock className="h-4 w-4 text-primary" />
-              Assigned Tests
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">{stats.pendingTests}</div>
-            <p className="text-sm text-muted-foreground mt-2">Awaiting execution</p>
-          </CardContent>
-        </Card>
+        <div className="stat-card p-6 cursor-pointer" onClick={() => setActiveTab('tests')}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-primary/10 rounded-xl">
+              <Clock className="h-6 w-6 text-primary" />
+            </div>
+            <Badge variant="secondary" className="text-xs">Pending</Badge>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Assigned Tests</p>
+            <p className="text-3xl font-bold tracking-tight text-primary">{stats.pendingTests}</p>
+            <p className="text-xs text-muted-foreground">Awaiting execution</p>
+          </div>
+        </div>
 
-        <Card className="border-border/60 hover:border-info/30 transition-all hover:shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-              <TestTube className="h-4 w-4 text-info" />
-              In Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">{stats.inProgressTests}</div>
-            <p className="text-sm text-muted-foreground mt-2">Currently testing</p>
-          </CardContent>
-        </Card>
+        <div className="stat-card p-6 cursor-pointer" onClick={() => setActiveTab('tests')}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-info/10 rounded-xl">
+              <TestTube className="h-6 w-6 text-info" />
+            </div>
+            <Badge variant="secondary" className="text-xs">Active</Badge>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">In Progress</p>
+            <p className="text-3xl font-bold tracking-tight text-info">{stats.inProgressTests}</p>
+            <p className="text-xs text-muted-foreground">Currently testing</p>
+          </div>
+        </div>
 
-        <Card className="border-border/60 hover:border-destructive/30 transition-all hover:shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-              <Bug className="h-4 w-4 text-destructive" />
-              Open Bugs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">{stats.openBugs}</div>
-            <p className="text-sm text-muted-foreground mt-2">Bugs you reported</p>
-          </CardContent>
-        </Card>
+        <div className="stat-card p-6 cursor-pointer" onClick={() => setActiveTab('bugs')}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-destructive/10 rounded-xl">
+              <Bug className="h-6 w-6 text-destructive" />
+            </div>
+            <Badge variant="destructive" className="text-xs">Open</Badge>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Open Bugs</p>
+            <p className="text-3xl font-bold tracking-tight text-destructive">{stats.openBugs}</p>
+            <p className="text-xs text-muted-foreground">Bugs you reported</p>
+          </div>
+        </div>
 
-        <Card className="border-border/60 hover:border-warning/30 transition-all hover:shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-              <Lightbulb className="h-4 w-4 text-warning" />
-              Suggestions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">{stats.pendingSuggestions}</div>
-            <p className="text-sm text-muted-foreground mt-2">Pending review</p>
-          </CardContent>
-        </Card>
+        <div className="stat-card p-6 cursor-pointer" onClick={() => setActiveTab('suggestions')}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-3 bg-warning/10 rounded-xl">
+              <Lightbulb className="h-6 w-6 text-warning" />
+            </div>
+            <Badge variant="secondary" className="text-xs">Pending</Badge>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Suggestions</p>
+            <p className="text-3xl font-bold tracking-tight text-warning">{stats.pendingSuggestions}</p>
+            <p className="text-xs text-muted-foreground">Pending review</p>
+          </div>
+        </div>
       </div>
 
+      {/* Enhanced Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-muted/50 p-1">
-          <TabsTrigger value="tests" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+        <TabsList className="bg-card border border-border/60 p-1.5 rounded-xl shadow-sm h-auto">
+          <TabsTrigger 
+            value="tests" 
+            className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-6 py-3 transition-all"
+          >
             <TestTube className="h-4 w-4 mr-2" />
-            Assigned Tests ({assignedTests.length})
+            <span className="font-medium">Assigned Tests</span>
+            <Badge variant="secondary" className="ml-2 bg-background/20 text-current border-0">
+              {assignedTests.length}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="bugs" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger 
+            value="bugs" 
+            className="data-[state=active]:bg-destructive data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-6 py-3 transition-all"
+          >
             <Bug className="h-4 w-4 mr-2" />
-            My Bugs ({userBugs.length})
+            <span className="font-medium">My Bugs</span>
+            <Badge variant="secondary" className="ml-2 bg-background/20 text-current border-0">
+              {userBugs.length}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="suggestions" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger 
+            value="suggestions" 
+            className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-6 py-3 transition-all"
+          >
             <Lightbulb className="h-4 w-4 mr-2" />
-            My Suggestions ({userSuggestions.length})
+            <span className="font-medium">My Suggestions</span>
+            <Badge variant="secondary" className="ml-2 bg-background/20 text-current border-0">
+              {userSuggestions.length}
+            </Badge>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tests" className="space-y-4">
+        <TabsContent value="tests" className="space-y-4 animate-fade-in">
           {assignedTests.length === 0 ? (
-            <Card className="border-border/60">
+            <Card className="glass border-border/60">
               <CardContent className="flex flex-col items-center justify-center py-16">
-                <TestTube className="h-16 w-16 text-muted-foreground mb-4" />
+                <div className="p-4 bg-primary/10 rounded-full mb-4">
+                  <TestTube className="h-16 w-16 text-primary" />
+                </div>
                 <h3 className="text-xl font-semibold mb-2">No assigned tests</h3>
-                <p className="text-muted-foreground text-center">
-                  You don't have any tests assigned to you at the moment
+                <p className="text-muted-foreground text-center max-w-md">
+                  You don't have any tests assigned to you at the moment. Check back later or contact your project manager.
                 </p>
+                <Button onClick={() => navigate('/tests')} className="mt-6 btn-gradient">
+                  <TestTube className="h-4 w-4 mr-2" />
+                  Browse All Tests
+                </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4">
-              {assignedTests.map((assignment) => (
-                <Card key={assignment.id} className="border-border/60 hover:border-primary/30 transition-all hover:shadow-lg">
+              {assignedTests.map((assignment, index) => (
+                <Card 
+                  key={assignment.id} 
+                  className="card-interactive border-border/60 hover:border-primary/30 animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl font-bold">{assignment.tests.title}</CardTitle>
-                          <Badge variant={getPriorityColor(assignment.tests.priority)}>
-                            {getPriorityLabel(assignment.tests.priority)}
-                          </Badge>
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <TestTube className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-xl font-bold mb-1">{assignment.tests.title}</CardTitle>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={getPriorityColor(assignment.tests.priority)} className="text-xs">
+                                {getPriorityLabel(assignment.tests.priority)}
+                              </Badge>
+                              {assignment.state === 'assigned' && (
+                                <Badge variant="outline" className="text-xs bg-primary/5 border-primary/20">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  Assigned
+                                </Badge>
+                              )}
+                              {assignment.state === 'in_progress' && (
+                                <Badge variant="outline" className="text-xs bg-info/5 border-info/20">
+                                  <TestTube className="h-3 w-3 mr-1" />
+                                  In Progress
+                                </Badge>
+                              )}
+                              {assignment.state === 'done' && (
+                                <Badge variant="outline" className="text-xs bg-success/5 border-success/20">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Completed
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 ml-14">
                           {assignment.tests.description}
                         </p>
                       </div>
                       <Button
-                        size="sm"
+                        size="lg"
                         onClick={() => navigate('/tests')}
-                        className="gap-2"
+                        className="btn-gradient gap-2 shadow-md"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        View
+                        Execute Test
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-6 text-sm">
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
                       <div className="flex items-center gap-2">
-                        {assignment.state === 'assigned' && (
-                          <>
-                            <Clock className="h-4 w-4 text-primary" />
-                            <span className="font-medium">Assigned</span>
-                          </>
-                        )}
-                        {assignment.state === 'in_progress' && (
-                          <>
-                            <TestTube className="h-4 w-4 text-info" />
-                            <span className="font-medium">In Progress</span>
-                          </>
-                        )}
-                        {assignment.state === 'blocked' && (
-                          <>
-                            <AlertCircle className="h-4 w-4 text-warning" />
-                            <span className="font-medium">Blocked</span>
-                          </>
-                        )}
-                        {assignment.state === 'done' && (
-                          <>
-                            <CheckCircle className="h-4 w-4 text-success" />
-                            <span className="font-medium">Completed</span>
-                          </>
-                        )}
-                      </div>
-                      <div className="text-muted-foreground">
-                        {assignment.tests.steps?.length || 0} steps
+                        <div className="p-1.5 bg-background rounded">
+                          <FileText className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="font-medium">{assignment.tests.steps?.length || 0} steps</span>
                       </div>
                       {assignment.due_date && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <AlertCircle className="h-4 w-4" />
-                          Due: {format(new Date(assignment.due_date), 'MMM dd, yyyy')}
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-warning" />
+                          <span>Due: {format(new Date(assignment.due_date), 'MMM dd, yyyy')}</span>
                         </div>
                       )}
                     </div>
@@ -375,63 +442,83 @@ supabase
           )}
         </TabsContent>
 
-        <TabsContent value="bugs" className="space-y-4">
+        <TabsContent value="bugs" className="space-y-4 animate-fade-in">
           {userBugs.length === 0 ? (
-            <Card className="border-border/60">
+            <Card className="glass border-border/60">
               <CardContent className="flex flex-col items-center justify-center py-16">
-                <Bug className="h-16 w-16 text-muted-foreground mb-4" />
+                <div className="p-4 bg-destructive/10 rounded-full mb-4">
+                  <Bug className="h-16 w-16 text-destructive" />
+                </div>
                 <h3 className="text-xl font-semibold mb-2">No bugs reported</h3>
-                <p className="text-muted-foreground text-center">
-                  You haven't reported any bugs yet
+                <p className="text-muted-foreground text-center max-w-md">
+                  You haven't reported any bugs yet. Found an issue? Report it now!
                 </p>
+                <Button onClick={() => navigate('/bugs')} variant="destructive" className="mt-6 shadow-md">
+                  <Bug className="h-4 w-4 mr-2" />
+                  Report Your First Bug
+                </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4">
-              {userBugs.map((bug) => (
-                <Card key={bug.id} className="border-border/60 hover:border-destructive/30 transition-all hover:shadow-lg">
+              {userBugs.map((bug, index) => (
+                <Card 
+                  key={bug.id} 
+                  className="card-interactive border-border/60 hover:border-destructive/30 animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl font-bold">{bug.title}</CardTitle>
-                          <Badge variant={getSeverityColor(bug.severity)}>
-                            {bug.severity}
-                          </Badge>
+                          <div className="p-2 bg-destructive/10 rounded-lg">
+                            <Bug className="h-5 w-5 text-destructive" />
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-xl font-bold mb-1">{bug.title}</CardTitle>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={getSeverityColor(bug.severity)} className="text-xs">
+                                {bug.severity}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                <span className={`w-2 h-2 rounded-full mr-1.5 ${
+                                  bug.status === 'new' ? 'bg-primary' :
+                                  bug.status === 'triaged' ? 'bg-warning' :
+                                  bug.status === 'in_progress' ? 'bg-info' :
+                                  bug.status === 'fixed' ? 'bg-success' :
+                                  'bg-muted-foreground'
+                                }`}></span>
+                                {bug.status.replace('_', ' ')}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 ml-14">
                           {bug.description}
                         </p>
                       </div>
                       <Button
-                        size="sm"
+                        size="lg"
+                        variant="destructive"
                         onClick={() => navigate('/bugs')}
-                        className="gap-2"
+                        className="gap-2 shadow-md"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        View
+                        View Details
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-6 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${
-                          bug.status === 'new' ? 'bg-primary' :
-                          bug.status === 'triaged' ? 'bg-warning' :
-                          bug.status === 'in_progress' ? 'bg-info' :
-                          bug.status === 'fixed' ? 'bg-success' :
-                          bug.status === 'closed' ? 'bg-muted-foreground' :
-                          'bg-destructive'
-                        }`}></span>
-                        <span className="font-medium capitalize">{bug.status.replace('_', ' ')}</span>
-                      </div>
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
                       {bug.projects && (
-                        <div className="text-muted-foreground">
-                          Project: {bug.projects.name}
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-background rounded">
+                            <FileText className="h-3.5 w-3.5" />
+                          </div>
+                          <span className="font-medium">{bug.projects.name}</span>
                         </div>
                       )}
-                      <div className="text-muted-foreground ml-auto">
+                      <div className="ml-auto">
                         {format(new Date(bug.created_at), 'MMM dd, yyyy')}
                       </div>
                     </div>
