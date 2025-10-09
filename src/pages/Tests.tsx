@@ -463,61 +463,6 @@ export function Tests() {
         </div>
       </div>
 
-      {/* Stats Cards with Modern Design */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="stat-card p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <ClipboardList className="h-6 w-6 text-primary" />
-            </div>
-            <TrendingUp className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Total Tests</p>
-            <p className="text-3xl font-bold tracking-tight">{stats.total}</p>
-          </div>
-        </div>
-
-        <div className="stat-card p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-success/10 rounded-xl">
-              <CheckCircle className="h-6 w-6 text-success" />
-            </div>
-            <Badge variant="secondary" className="text-xs">Active</Badge>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Active Tests</p>
-            <p className="text-3xl font-bold tracking-tight text-success">{stats.active}</p>
-          </div>
-        </div>
-
-        <div className="stat-card p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-warning/10 rounded-xl">
-              <FileText className="h-6 w-6 text-warning" />
-            </div>
-            <Badge variant="secondary" className="text-xs">Draft</Badge>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Draft Tests</p>
-            <p className="text-3xl font-bold tracking-tight text-warning">{stats.draft}</p>
-          </div>
-        </div>
-
-        <div className="stat-card p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-muted rounded-xl">
-              <MinusCircle className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <Badge variant="secondary" className="text-xs">Archived</Badge>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Archived</p>
-            <p className="text-3xl font-bold tracking-tight">{stats.archived}</p>
-          </div>
-        </div>
-      </div>
-
       {/* Filters */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="relative flex-1 max-w-md">
