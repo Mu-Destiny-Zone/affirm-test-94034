@@ -556,6 +556,7 @@ export function Tests() {
                     onAssign={(test) => setAssignmentDialogTest(test)}
                     onCopy={(test) => setCopyDialogTest(test)}
                     onViewExecution={handleViewExecution}
+                    onStatusChange={fetchData}
                     canManage={canManage}
                     isAdmin={isAdmin}
                     isManager={isManager}

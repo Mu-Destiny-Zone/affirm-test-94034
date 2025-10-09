@@ -45,12 +45,13 @@ interface TestCardProps {
   onAssign: (test: Test) => void;
   onCopy?: (test: Test) => void;
   onViewExecution?: (execution: any, test: any) => void;
+  onStatusChange?: () => void;
   canManage: boolean;
   isAdmin?: boolean;
   isManager?: boolean;
 }
 
-export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onAssign, onCopy, onViewExecution, canManage, isAdmin, isManager }: TestCardProps) {
+export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onAssign, onCopy, onViewExecution, onStatusChange, canManage, isAdmin, isManager }: TestCardProps) {
   const [assignees, setAssignees] = useState<TestAssignee[]>([]);
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -99,8 +100,8 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
         description: `Test status updated to ${newStatus}`,
       });
 
-      // Reload page to refresh test list
-      window.location.reload();
+      // Refresh test list via callback
+      onStatusChange?.();
     } catch (error) {
       console.error('Error updating test status:', error);
       toast({

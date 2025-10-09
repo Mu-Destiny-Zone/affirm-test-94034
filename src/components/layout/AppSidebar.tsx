@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, Settings, Users, User, LogOut, Moon, Sun, Monitor, Languages, ClipboardList, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -59,6 +59,7 @@ export function AppSidebar() {
     setTheme
   } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const {
     state,
     isMobile,
@@ -142,7 +143,7 @@ export function AppSidebar() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = '/profile'} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profile Settings
                 </DropdownMenuItem>
