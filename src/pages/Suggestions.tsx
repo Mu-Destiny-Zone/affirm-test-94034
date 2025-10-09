@@ -421,7 +421,7 @@ export function Suggestions() {
                     title={suggestion.title}
                     subtitle={suggestion.description || undefined}
                     icon={<Lightbulb className="h-4 w-4 text-primary" />}
-                    author={suggestion.profiles?.display_name || 'Unknown'}
+                    author={suggestion.profiles?.display_name || suggestion.profiles?.email || 'Unknown'}
                     date={new Date(suggestion.created_at).toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric' 

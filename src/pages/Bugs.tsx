@@ -405,7 +405,7 @@ export function Bugs() {
                   title={bug.title}
                   subtitle={bug.description || undefined}
                   icon={<Bug className="h-4 w-4 text-destructive" />}
-                  author={bug.profiles?.display_name || 'Unknown'}
+                  author={bug.profiles?.display_name || bug.profiles?.email || 'Unknown'}
                   date={new Date(bug.created_at).toLocaleDateString('en-US', { 
                     month: 'short', 
                     day: 'numeric' 
