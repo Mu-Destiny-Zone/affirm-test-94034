@@ -242,16 +242,16 @@ export function Suggestions() {
   return (
     <div className="container mx-auto space-y-8 animate-fade-in">
       {/* Enhanced Header */}
-      <div className="page-header">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-          <div className="space-y-2">
-            <h1 className="page-title flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg">
-                <Lightbulb className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+      <div className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border/50">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="space-y-1">
+            <h1 className="flex items-center gap-2">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg">
+                <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <span className="text-2xl sm:text-3xl lg:text-4xl">{t('suggestions')}</span>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-bold">{t('suggestions')}</span>
             </h1>
-            <p className="page-subtitle text-sm sm:text-base">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {t('shareAndDiscuss')} {currentOrg.name}
             </p>
           </div>
@@ -259,9 +259,9 @@ export function Suggestions() {
           <Button onClick={() => {
             setEditingSuggestion(null);
             setFormDialogOpen(true);
-          }} size="default" className="btn-gradient shadow-lg w-full lg:w-auto">
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
-            <span className="text-sm sm:text-base">{t('addSuggestion')}</span>
+          }} size="sm" className="btn-gradient shadow-lg w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="text-sm">{t('addSuggestion')}</span>
           </Button>
         </div>
       </div>
@@ -306,7 +306,7 @@ export function Suggestions() {
           }
         ]}
         collapsible={true}
-        defaultExpanded={true}
+        defaultExpanded={false}
       />
 
       <SuggestionFormDialog

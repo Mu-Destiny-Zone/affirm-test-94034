@@ -257,17 +257,15 @@
     background-clip: text;
   }
   
-  /* Page Header */
-  .page-header {
-    @apply mb-8 pb-6 border-b border-border/50;
-  }
-  
-  .page-title {
-    @apply text-4xl font-bold tracking-tight text-gradient;
-  }
-  
-  .page-subtitle {
-    @apply text-muted-foreground mt-2 text-base;
+  /* Responsive Container Spacing */
+  @media (max-width: 640px) {
+    .container {
+      @apply px-3;
+    }
+    
+    .space-y-8 {
+      @apply space-y-4;
+    }
   }
 }
 
