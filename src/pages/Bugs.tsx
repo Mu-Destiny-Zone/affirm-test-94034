@@ -318,6 +318,7 @@ export function Bugs() {
         onOpenChange={setDetailDialogOpen}
         bug={selectedBug}
         onEdit={handleDetailEdit}
+        onDelete={fetchBugs}
       />
 
       {filteredBugs.length === 0 ? (

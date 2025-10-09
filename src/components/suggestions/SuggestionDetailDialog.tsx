@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrentOrgRole } from '@/hooks/useCurrentOrgRole';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -10,13 +11,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { VotePanel } from '@/components/shared/VotePanel';
 import { Comments } from '@/components/ui/comments';
-import { Lightbulb, Edit, Target, Tag, User, Calendar, TestTube } from 'lucide-react';
+import { Lightbulb, Edit, Target, Tag, User, Calendar, TestTube, Trash2 } from 'lucide-react';
 
 interface SuggestionWithDetails {
   id: string;
@@ -52,6 +63,7 @@ interface SuggestionDetailDialogProps {
   suggestion: SuggestionWithDetails | null;
   onEdit?: (suggestion: SuggestionWithDetails) => void;
   onStatusChange?: () => void;
+  onDelete?: () => void;
 }
 
 export function SuggestionDetailDialog({ 
@@ -59,14 +71,53 @@ export function SuggestionDetailDialog({
   onOpenChange, 
   suggestion,
   onEdit,
-  onStatusChange 
+  onStatusChange,
+  onDelete
 }: SuggestionDetailDialogProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAdmin, isManager } = useCurrentOrgRole();
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (!suggestion) return null;
+
+  const canDelete = isAdmin || isManager;
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.rpc('soft_delete_suggestion', { suggestion_id: suggestion.id });
+
+      if (error) {
+        console.error('Error deleting suggestion:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete suggestion",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Suggestion deleted successfully"
+        });
+        setDeleteDialogOpen(false);
+        onOpenChange(false);
+        onDelete?.();
+      }
+    } catch (error) {
+      console.error('Error in handleDelete:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const updateSuggestionStatus = async (suggestionId: string, status: 'new' | 'consider' | 'planned' | 'done' | 'rejected') => {
     try {
@@ -150,18 +201,31 @@ export function SuggestionDetailDialog({
                   </Badge>
                 </div>
 
-                {/* Edit Button */}
-                {suggestion.author_id === user?.id && onEdit && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(suggestion)}
-                    className="hover:bg-primary/5 hover:border-primary/20 transition-all"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                )}
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2">
+                  {suggestion.author_id === user?.id && onEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(suggestion)}
+                      className="hover:bg-primary/5 hover:border-primary/20 transition-all"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className="hover:bg-destructive/10 hover:border-destructive/20 text-destructive transition-all"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Context & Tags Row */}
@@ -249,6 +313,28 @@ export function SuggestionDetailDialog({
           </div>
         </div>
       </DialogContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Suggestion?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{suggestion.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

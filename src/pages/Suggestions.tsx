@@ -322,6 +322,7 @@ export function Suggestions() {
         suggestion={selectedSuggestion}
         onEdit={handleDetailEdit}
         onStatusChange={fetchSuggestions}
+        onDelete={fetchSuggestions}
       />
 
       {/* Suggestions List */}
