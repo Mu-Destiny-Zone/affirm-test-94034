@@ -298,124 +298,124 @@ export function MyTasks() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-3 sm:space-y-8 animate-fade-in">
       {/* Enhanced Header with Quick Actions */}
-      <div className="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border/50">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div className="space-y-1">
-            <h1 className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-gradient-brand rounded-lg shadow-brand">
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+      <div className="mb-2 sm:mb-6 pb-2 sm:pb-4 border-b border-border/50">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+          <div className="space-y-0.5 sm:space-y-1">
+            <h1 className="flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1 sm:p-2 bg-gradient-brand rounded-lg shadow-brand">
+                <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
-              <span className="text-xl sm:text-2xl lg:text-3xl font-bold">My Tasks</span>
+              <span className="text-lg sm:text-2xl lg:text-3xl font-bold">My Tasks</span>
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
+            <p className="text-[10px] sm:text-sm text-muted-foreground ml-[26px] sm:ml-0">
               View and manage your assigned tests, bugs, and suggestions
             </p>
           </div>
           
           {/* Quick Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2">
             <Button 
               onClick={() => navigate('/bugs')} 
               variant="destructive" 
               size="sm"
-              className="shadow-lg hover:shadow-xl transition-all flex-1 sm:flex-none"
+              className="shadow-lg hover:shadow-xl transition-all flex-1 sm:flex-none h-8 sm:h-9 text-xs sm:text-sm"
             >
-              <Bug className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline text-sm">Report Bug</span>
+              <Bug className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Report Bug</span>
             </Button>
             <Button 
               onClick={() => navigate('/suggestions')} 
               size="sm"
-              className="btn-gradient shadow-lg flex-1 sm:flex-none"
+              className="btn-gradient shadow-lg flex-1 sm:flex-none h-8 sm:h-9 text-xs sm:text-sm"
             >
-              <Lightbulb className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline text-sm">Add Suggestion</span>
+              <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Add Suggestion</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Modern Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
-        <div className="stat-card p-3 sm:p-5 cursor-pointer" onClick={() => setActiveTab('tests')}>
-          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <div className="p-1.5 sm:p-2.5 bg-primary/10 rounded-lg">
-              <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+        <div className="stat-card p-2.5 sm:p-5 cursor-pointer" onClick={() => setActiveTab('tests')}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2.5 bg-primary/10 rounded-lg flex-shrink-0">
+              <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
-            <Badge variant="secondary" className="text-[10px] sm:text-xs">Pending</Badge>
-          </div>
-          <div className="space-y-0">
-            <p className="text-[10px] sm:text-sm font-medium text-muted-foreground">Assigned Tests</p>
-            <p className="text-xl sm:text-3xl font-bold tracking-tight text-primary">{stats.pendingTests}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Awaiting execution</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Assigned Tests</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">{stats.pendingTests}</p>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">awaiting</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="stat-card p-3 sm:p-5 cursor-pointer" onClick={() => setActiveTab('bugs')}>
-          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <div className="p-1.5 sm:p-2.5 bg-destructive/10 rounded-lg">
-              <Bug className="h-4 w-4 sm:h-6 sm:w-6 text-destructive" />
+        <div className="stat-card p-2.5 sm:p-5 cursor-pointer" onClick={() => setActiveTab('bugs')}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2.5 bg-destructive/10 rounded-lg flex-shrink-0">
+              <Bug className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
             </div>
-            <Badge variant="destructive" className="text-[10px] sm:text-xs">Open</Badge>
-          </div>
-          <div className="space-y-0">
-            <p className="text-[10px] sm:text-sm font-medium text-muted-foreground">Open Bugs</p>
-            <p className="text-xl sm:text-3xl font-bold tracking-tight text-destructive">{stats.openBugs}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Bugs you reported</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Open Bugs</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-destructive">{stats.openBugs}</p>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">reported</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="stat-card p-3 sm:p-5 cursor-pointer" onClick={() => setActiveTab('suggestions')}>
-          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <div className="p-1.5 sm:p-2.5 bg-warning/10 rounded-lg">
-              <Lightbulb className="h-4 w-4 sm:h-6 sm:w-6 text-warning" />
+        <div className="stat-card p-2.5 sm:p-5 cursor-pointer" onClick={() => setActiveTab('suggestions')}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2.5 bg-warning/10 rounded-lg flex-shrink-0">
+              <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
             </div>
-            <Badge variant="secondary" className="text-[10px] sm:text-xs">Pending</Badge>
-          </div>
-          <div className="space-y-0">
-            <p className="text-[10px] sm:text-sm font-medium text-muted-foreground">Suggestions</p>
-            <p className="text-xl sm:text-3xl font-bold tracking-tight text-warning">{stats.pendingSuggestions}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Pending review</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Suggestions</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-warning">{stats.pendingSuggestions}</p>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">pending</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Enhanced Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <TabsList className="bg-card border border-border/60 p-1.5 rounded-xl shadow-sm h-auto inline-flex w-auto min-w-full sm:min-w-0">
+          <TabsList className="bg-card border border-border/60 p-1 sm:p-1.5 rounded-xl shadow-sm h-auto inline-flex w-auto min-w-full sm:min-w-0">
             <TabsTrigger 
               value="tests" 
-              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-3 sm:px-6 py-2 sm:py-3 transition-all text-xs sm:text-sm whitespace-nowrap"
+              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-2 sm:px-6 py-1.5 sm:py-3 transition-all text-[10px] sm:text-sm whitespace-nowrap"
             >
               <TestTube className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="hidden sm:inline font-medium">Assigned Tests</span>
-              <span className="sm:hidden font-medium">Tests</span>
-              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-xs">
+              <span className="font-medium">Tests</span>
+              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
                 {assignedTests.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger 
               value="bugs" 
-              className="data-[state=active]:bg-destructive data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-3 sm:px-6 py-2 sm:py-3 transition-all text-xs sm:text-sm whitespace-nowrap"
+              className="data-[state=active]:bg-destructive data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-2 sm:px-6 py-1.5 sm:py-3 transition-all text-[10px] sm:text-sm whitespace-nowrap"
             >
               <Bug className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="hidden sm:inline font-medium">My Bugs</span>
-              <span className="sm:hidden font-medium">Bugs</span>
-              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-xs">
+              <span className="font-medium">Bugs</span>
+              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
                 {userBugs.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger 
               value="suggestions" 
-              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-3 sm:px-6 py-2 sm:py-3 transition-all text-xs sm:text-sm whitespace-nowrap"
+              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-2 sm:px-6 py-1.5 sm:py-3 transition-all text-[10px] sm:text-sm whitespace-nowrap"
             >
               <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="hidden sm:inline font-medium">My Suggestions</span>
-              <span className="sm:hidden font-medium">Ideas</span>
-              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-xs">
+              <span className="font-medium">Ideas</span>
+              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
                 {userSuggestions.length}
               </Badge>
             </TabsTrigger>
