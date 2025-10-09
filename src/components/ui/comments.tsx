@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send, Edit2, X, Check } from 'lucide-react';
 import { Button } from './button';
 import { Textarea } from './textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
@@ -43,6 +43,8 @@ export function Comments({ targetType, targetId }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
 
   useEffect(() => {
     fetchComments();
@@ -125,6 +127,55 @@ export function Comments({ targetType, targetId }: CommentsProps) {
     }
   };
 
+  const handleEditComment = async (commentId: string) => {
+    const validation = commentSchema.safeParse({ body: editText });
+    if (!validation.success) {
+      toast({
+        title: 'Invalid Comment',
+        description: validation.error.errors[0].message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .update({ body: editText.trim(), updated_at: new Date().toISOString() })
+        .eq('id', commentId);
+
+      if (error) throw error;
+
+      setEditingId(null);
+      setEditText('');
+      fetchComments();
+      toast({
+        title: 'Success',
+        description: 'Comment updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update comment',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startEdit = (comment: Comment) => {
+    setEditingId(comment.id);
+    setEditText(comment.body);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditText('');
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -152,15 +203,57 @@ export function Comments({ targetType, targetId }: CommentsProps) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">
-                        {comment.profiles?.display_name || comment.profiles?.email || 'Unknown User'}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(comment.created_at)}
-                      </span>
+                    <div className="flex items-center gap-2 justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">
+                          {comment.profiles?.display_name || comment.profiles?.email || 'Unknown User'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(comment.created_at)}
+                        </span>
+                      </div>
+                      {user && comment.author_id === user.id && editingId !== comment.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEdit(comment)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-sm">{comment.body}</p>
+                    {editingId === comment.id ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="resize-none"
+                          rows={2}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleEditComment(comment.id)}
+                            disabled={loading || !editText.trim()}
+                          >
+                            <Check className="h-4 w-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEdit}
+                            disabled={loading}
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm">{comment.body}</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
