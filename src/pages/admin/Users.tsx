@@ -26,112 +26,90 @@ type User = {
   org_role?: string;
 };
 
-type OrgWithUsers = {
-  id: string;
-  name: string;
-  users: User[];
-  isAdmin: boolean;
-};
-
 export function AdminUsers() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [allOrgsWithUsers, setAllOrgsWithUsers] = useState<OrgWithUsers[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrg, setSelectedOrg] = useState<string>('');
+  const [orgs, setOrgs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedOrgs, setExpandedOrgs] = useState<Set<string>>(new Set());
+  
+  // Get user's org role for the selected org
+  const { isAdmin: isOrgAdmin } = useUserRole(selectedOrg);
 
-  // Filter users across all orgs based on search
-  const filteredOrgs = allOrgsWithUsers.map(org => ({
-    ...org,
-    users: org.users.filter(u => 
-      u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })).filter(org => org.users.length > 0 || !searchQuery);
+  // Filter users based on search
+  const filteredUsers = users.filter(u => 
+    u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
-    if (user) {
-      fetchAllOrgsWithUsers();
-    }
-  }, [user]);
+    fetchOrgs();
+  }, []);
 
-  const fetchAllOrgsWithUsers = async () => {
-    if (!user) return;
+  useEffect(() => {
+    if (selectedOrg) {
+      fetchUsers();
+    }
+  }, [selectedOrg]);
+
+  const fetchOrgs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('orgs')
+        .select('id, name')
+        .order('name');
+      
+      if (error) throw error;
+      setOrgs(data || []);
+      
+      // Auto-select first org if available
+      if (data && data.length > 0) {
+        setSelectedOrg(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching orgs:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    if (!selectedOrg) return;
     
     setLoading(true);
     try {
-      // Fetch all orgs where user is admin
-      const { data: memberData, error: memberError } = await supabase
+      // Get org members with profile info
+      const { data, error } = await supabase
         .from('org_members')
-        .select('org_id, role')
-        .eq('profile_id', user.id)
-        .eq('role', 'admin')
+        .select(`
+          role,
+          profiles!inner(
+            id,
+            email,
+            display_name,
+            created_at
+          )
+        `)
+        .eq('org_id', selectedOrg)
         .is('deleted_at', null);
 
-      if (memberError) throw memberError;
+      if (error) throw error;
 
-      const orgIds = memberData?.map(m => m.org_id) || [];
+      const formattedUsers = data?.map((member: any) => ({
+        id: member.profiles.id,
+        email: member.profiles.email,
+        display_name: member.profiles.display_name,
+        created_at: member.profiles.created_at,
+        org_role: member.role
+      })) || [];
 
-      if (orgIds.length === 0) {
-        setAllOrgsWithUsers([]);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch org details
-      const { data: orgsData, error: orgsError } = await supabase
-        .from('orgs')
-        .select('id, name')
-        .in('id', orgIds)
-        .is('deleted_at', null)
-        .order('name');
-
-      if (orgsError) throw orgsError;
-
-      // Fetch users for each org
-      const orgsWithUsers: OrgWithUsers[] = await Promise.all(
-        (orgsData || []).map(async (org) => {
-          const { data: membersData, error: membersError } = await supabase
-            .from('org_members')
-            .select(`
-              role,
-              profiles!inner(
-                id,
-                email,
-                display_name,
-                created_at
-              )
-            `)
-            .eq('org_id', org.id)
-            .is('deleted_at', null);
-
-          if (membersError) {
-            console.error(`Error fetching users for org ${org.id}:`, membersError);
-            return { ...org, users: [], isAdmin: true };
-          }
-
-          const users = membersData?.map((member: any) => ({
-            id: member.profiles.id,
-            email: member.profiles.email,
-            display_name: member.profiles.display_name,
-            created_at: member.profiles.created_at,
-            org_role: member.role
-          })) || [];
-
-          return { ...org, users, isAdmin: true };
-        })
-      );
-
-      setAllOrgsWithUsers(orgsWithUsers);
-      // Auto-expand all orgs initially
-      setExpandedOrgs(new Set(orgsWithUsers.map(o => o.id)));
+      setUsers(formattedUsers);
     } catch (error) {
-      console.error('Error fetching orgs and users:', error);
+      console.error('Error fetching users:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch organizations and users',
+        description: 'Failed to fetch users',
         variant: 'destructive'
       });
     } finally {
@@ -139,7 +117,34 @@ export function AdminUsers() {
     }
   };
 
-  const handleRemoveUser = async (orgId: string, userId: string) => {
+  const handleRoleChange = async (userId: string, newRole: 'admin' | 'manager' | 'tester' | 'viewer') => {
+    try {
+      const { error } = await supabase
+        .from('org_members')
+        .update({ role: newRole })
+        .eq('org_id', selectedOrg)
+        .eq('profile_id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: t('success'),
+        description: t('userUpdated')
+      });
+
+      // Refresh users list
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error updating user role:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update user role',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleRemoveUser = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this user from the organization?')) {
       return;
     }
@@ -148,18 +153,18 @@ export function AdminUsers() {
       const { error } = await supabase
         .from('org_members')
         .update({ deleted_at: new Date().toISOString() })
-        .eq('org_id', orgId)
+        .eq('org_id', selectedOrg)
         .eq('profile_id', userId);
 
       if (error) throw error;
 
       toast({
         title: t('success'),
-        description: 'User removed from organization'
+        description: t('userRemoved')
       });
 
-      // Refresh data
-      fetchAllOrgsWithUsers();
+      // Refresh users list
+      fetchUsers();
     } catch (error: any) {
       console.error('Error removing user:', error);
       toast({
@@ -168,18 +173,6 @@ export function AdminUsers() {
         variant: 'destructive'
       });
     }
-  };
-
-  const toggleOrgExpansion = (orgId: string) => {
-    setExpandedOrgs(prev => {
-      const next = new Set(prev);
-      if (next.has(orgId)) {
-        next.delete(orgId);
-      } else {
-        next.add(orgId);
-      }
-      return next;
-    });
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -192,7 +185,23 @@ export function AdminUsers() {
     }
   };
 
-  const totalUsers = allOrgsWithUsers.reduce((sum, org) => sum + org.users.length, 0);
+  if (!isOrgAdmin && selectedOrg) {
+    return (
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">{t('accessDenied')}</h3>
+              <p className="text-muted-foreground">
+                {t('noAdminPrivileges')}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -208,199 +217,220 @@ export function AdminUsers() {
                   </div>
                   <div>
                     <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                      User Management
+                      {t('userManagement')}
                     </h1>
-                    <p className="text-muted-foreground mt-1">Manage users across all your organizations</p>
+                    <p className="text-muted-foreground mt-1">{t('manageUsersAcrossOrganizations')}</p>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  <Users className="h-4 w-4 mr-2" />
-                  {totalUsers} Users
-                </Badge>
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  <Building2 className="h-4 w-4 mr-2" />
-                  {allOrgsWithUsers.length} Orgs
-                </Badge>
-              </div>
+              <CreateOrgDialog onOrgCreated={fetchOrgs} />
             </div>
           </div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
         </div>
 
-        {/* Search Bar */}
-        <Card className="border-2">
-          <CardContent className="p-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Search users across all organizations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-14 text-base"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Organizations and Users */}
-        {loading ? (
-          <Card className="border-2">
-            <CardContent className="py-16">
-              <div className="flex flex-col items-center justify-center">
-                <div className="relative">
-                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary" />
-                  <Users className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+        {/* Organizations Grid */}
+        <div className="grid grid-cols-1 gap-6">
+          <Card className="border-2 shadow-lg">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Building2 className="h-6 w-6 text-primary" />
+                  <div>
+                    <CardTitle className="text-2xl">Organizations</CardTitle>
+                    <CardDescription className="mt-1">Select an organization to manage its users</CardDescription>
+                  </div>
                 </div>
-                <p className="text-muted-foreground mt-4 font-medium">Loading users...</p>
+                <Badge variant="secondary" className="text-lg px-4 py-1">
+                  {orgs.length} Orgs
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-        ) : allOrgsWithUsers.length === 0 ? (
-          <Card className="border-2">
-            <CardContent className="py-16">
-              <div className="flex flex-col items-center justify-center">
-                <div className="p-6 rounded-full bg-gradient-to-br from-muted to-muted/50 mb-4">
-                  <Building2 className="h-14 w-14 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">No organizations found</h3>
-                <p className="text-muted-foreground text-center mb-6 max-w-sm">
-                  You need to be an admin of at least one organization to manage users
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {filteredOrgs.map((org) => {
-              const isExpanded = expandedOrgs.has(org.id);
-              
-              return (
-                <Card key={org.id} className="border-2 shadow-lg overflow-hidden">
-                  <CardHeader 
-                    className="cursor-pointer bg-gradient-to-r from-muted/50 to-transparent hover:from-muted transition-colors"
-                    onClick={() => toggleOrgExpansion(org.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-primary/10">
-                          <Building2 className="h-6 w-6 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[200px] pr-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {orgs.map((org) => (
+                    <button
+                      key={org.id}
+                      onClick={() => setSelectedOrg(org.id)}
+                      className={`group relative p-5 rounded-xl border-2 transition-all duration-200 text-left ${
+                        selectedOrg === org.id
+                          ? 'border-primary bg-primary/5 shadow-lg scale-[1.02]'
+                          : 'border-border hover:border-primary/50 hover:bg-accent/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                          <Building2 className="h-5 w-5 text-primary" />
                         </div>
-                        <div>
-                          <CardTitle className="text-2xl flex items-center gap-2">
-                            {org.name}
-                            <ChevronRight className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                          </CardTitle>
-                          <CardDescription className="mt-1">
-                            {org.users.length} {org.users.length === 1 ? 'member' : 'members'}
-                          </CardDescription>
-                        </div>
+                        {selectedOrg === org.id && (
+                          <Badge variant="default" className="text-xs">Active</Badge>
+                        )}
                       </div>
-                      <CreateUserDialog onUserCreated={fetchAllOrgsWithUsers} />
+                      <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+                        {org.name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Users className="h-3 w-3" />
+                        <span>Click to manage</span>
+                      </div>
+                      <ChevronRight className={`absolute top-1/2 right-4 -translate-y-1/2 h-5 w-5 transition-all ${
+                        selectedOrg === org.id ? 'text-primary opacity-100' : 'opacity-0 group-hover:opacity-50'
+                      }`} />
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          {/* Users Section */}
+          {selectedOrg && (
+            <Card className="border-2 shadow-lg">
+              <CardHeader className="space-y-4 bg-gradient-to-r from-muted/50 to-transparent">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Users className="h-5 w-5 text-primary" />
                     </div>
-                  </CardHeader>
-                  
-                  {isExpanded && (
-                    <CardContent className="p-6">
-                      {org.users.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12">
-                          <div className="p-6 rounded-full bg-gradient-to-br from-muted to-muted/50 mb-4">
-                            <Users className="h-12 w-12 text-muted-foreground" />
-                          </div>
-                          <h3 className="text-lg font-semibold mb-2">No users yet</h3>
-                          <p className="text-muted-foreground text-center mb-6 max-w-sm">
-                            Add team members to this organization
-                          </p>
-                          <CreateUserDialog onUserCreated={fetchAllOrgsWithUsers} />
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {org.users.map((userItem) => (
-                            <div
-                              key={userItem.id}
-                              className="group p-5 rounded-xl border-2 hover:border-primary/50 hover:bg-accent/30 transition-all duration-200"
-                            >
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4 flex-1 min-w-0">
-                                  <div className="relative">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
-                                      <span className="text-lg font-bold text-primary-foreground">
-                                        {userItem.display_name?.charAt(0).toUpperCase() || 'U'}
-                                      </span>
-                                    </div>
-                                    {userItem.org_role === 'admin' && (
-                                      <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-primary ring-2 ring-background">
-                                        <Shield className="h-3 w-3 text-primary-foreground" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <h3 className="font-semibold text-base truncate">
-                                        {userItem.display_name || 'Unnamed User'}
-                                      </h3>
-                                      {userItem.org_role && (
-                                        <Badge variant={getRoleBadgeVariant(userItem.org_role)} className="text-xs">
-                                          {userItem.org_role}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <Mail className="h-3.5 w-3.5" />
-                                      <span className="truncate">{userItem.email || 'No email'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 mt-2">
-                                      <span className="text-xs text-muted-foreground">
-                                        Joined {new Date(userItem.created_at).toLocaleDateString()}
-                                      </span>
-                                    </div>
-                                  </div>
+                    <div>
+                      <CardTitle className="text-xl">Team Members</CardTitle>
+                      <CardDescription className="mt-1">
+                        {filteredUsers.length} members in {orgs.find(o => o.id === selectedOrg)?.name}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 sm:w-72">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 h-11"
+                      />
+                    </div>
+                    {isOrgAdmin && (
+                      <CreateUserDialog onUserCreated={fetchUsers} />
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="relative">
+                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary" />
+                      <Users className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+                    </div>
+                    <p className="text-muted-foreground mt-4 font-medium">Loading team members...</p>
+                  </div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="p-6 rounded-full bg-gradient-to-br from-muted to-muted/50 mb-4">
+                      <Users className="h-14 w-14 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      {searchQuery ? 'No matches found' : 'No users yet'}
+                    </h3>
+                    <p className="text-muted-foreground text-center mb-6 max-w-sm">
+                      {searchQuery 
+                        ? 'Try adjusting your search terms' 
+                        : 'Get started by adding team members to this organization'}
+                    </p>
+                    {isOrgAdmin && !searchQuery && (
+                      <CreateUserDialog onUserCreated={fetchUsers} />
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredUsers.map((userItem) => (
+                      <div
+                        key={userItem.id}
+                        className="group p-5 rounded-xl border-2 hover:border-primary/50 hover:bg-accent/30 transition-all duration-200"
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="relative">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+                                <span className="text-lg font-bold text-primary-foreground">
+                                  {userItem.display_name?.charAt(0).toUpperCase() || 'U'}
+                                </span>
+                              </div>
+                              {userItem.org_role === 'admin' && (
+                                <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-primary ring-2 ring-background">
+                                  <Shield className="h-3 w-3 text-primary-foreground" />
                                 </div>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <EditUserDialog
-                                    user={{
-                                      id: userItem.id,
-                                      email: userItem.email,
-                                      display_name: userItem.display_name
-                                    }}
-                                    onUserUpdated={fetchAllOrgsWithUsers}
-                                  />
-                                  <ResetPasswordDialog
-                                    userId={userItem.id}
-                                    userEmail={userItem.email}
-                                  />
-                                  <AssignOrgsDialog
-                                    user={{
-                                      id: userItem.id,
-                                      email: userItem.email,
-                                      display_name: userItem.display_name
-                                    }}
-                                    onAssignmentUpdated={fetchAllOrgsWithUsers}
-                                  />
-                                  {userItem.id !== user?.id && (
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => handleRemoveUser(org.id, userItem.id)}
-                                      className="hover:bg-destructive/10 hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-base truncate">
+                                  {userItem.display_name || 'Unnamed User'}
+                                </h3>
+                                {userItem.org_role && (
+                                  <Badge variant={getRoleBadgeVariant(userItem.org_role)} className="text-xs">
+                                    {userItem.org_role}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Mail className="h-3.5 w-3.5" />
+                                <span className="truncate">{userItem.email || 'No email'}</span>
+                              </div>
+                              <div className="flex items-center gap-3 mt-2">
+                                <UserOrgsDisplay userId={userItem.id} />
+                                <span className="text-xs text-muted-foreground">
+                                  Joined {new Date(userItem.created_at).toLocaleDateString()}
+                                </span>
                               </div>
                             </div>
-                          ))}
+                          </div>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {isOrgAdmin && (
+                              <>
+                                <EditUserDialog
+                                  user={{
+                                    id: userItem.id,
+                                    email: userItem.email,
+                                    display_name: userItem.display_name
+                                  }}
+                                  onUserUpdated={fetchUsers}
+                                />
+                                <ResetPasswordDialog
+                                  userId={userItem.id}
+                                  userEmail={userItem.email}
+                                />
+                                <AssignOrgsDialog
+                                  user={{
+                                    id: userItem.id,
+                                    email: userItem.email,
+                                    display_name: userItem.display_name
+                                  }}
+                                  onAssignmentUpdated={fetchUsers}
+                                />
+                                {userItem.id !== user?.id && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleRemoveUser(userItem.id)}
+                                    className="hover:bg-destructive/10 hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </CardContent>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
-        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
