@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -23,7 +24,8 @@ import {
   Zap,
   Award,
   Flame,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
@@ -109,13 +111,15 @@ export function Reports() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currentOrg } = useOrganization();
+  const { toast } = useToast();
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [projects, setProjects] = useState<any[]>([]);
-  const [selectedProject, setSelectedProject] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -152,7 +156,7 @@ export function Reports() {
       fetchReportData();
       fetchProjects();
     }
-  }, [user, currentOrg, selectedProject, isAdmin]);
+  }, [user, currentOrg, isAdmin]);
 
   const fetchProjects = async () => {
     if (!currentOrg) return;
@@ -180,8 +184,6 @@ export function Reports() {
     }
 
     try {
-      const projectFilter = selectedProject !== 'all' ? selectedProject : undefined;
-
       // Fetch all data
       const [testsQuery, bugsQuery, suggestionsQuery, assignmentsQuery, membersQuery, projectsQuery] = await Promise.all([
         supabase.from('tests').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
@@ -192,10 +194,10 @@ export function Reports() {
         supabase.from('projects').select('id, name').eq('org_id', currentOrg.id).is('deleted_at', null)
       ]);
 
-      const tests = projectFilter ? testsQuery.data?.filter(t => t.project_id === projectFilter) : testsQuery.data;
-      const bugs = projectFilter ? bugsQuery.data?.filter(b => b.project_id === projectFilter) : bugsQuery.data;
-      const suggestions = projectFilter ? suggestionsQuery.data?.filter(s => s.project_id === projectFilter) : suggestionsQuery.data;
-      const assignments = projectFilter ? assignmentsQuery.data?.filter(a => a.project_id === projectFilter) : assignmentsQuery.data;
+      const tests = testsQuery.data;
+      const bugs = bugsQuery.data;
+      const suggestions = suggestionsQuery.data;
+      const assignments = assignmentsQuery.data;
       const members = membersQuery.data || [];
       const projectsList = projectsQuery.data || [];
 
@@ -447,6 +449,44 @@ export function Reports() {
     }
   };
 
+  const handleResetData = async () => {
+    if (!currentOrg) return;
+    
+    setResetting(true);
+    try {
+      // Delete all data for the organization
+      await Promise.all([
+        supabase.from('test_assignments').delete().eq('org_id', currentOrg.id),
+        supabase.from('comments').delete().eq('org_id', currentOrg.id),
+        supabase.from('votes').delete().in('target_type', ['bug', 'suggestion', 'test']),
+        supabase.from('bug_reports').delete().eq('org_id', currentOrg.id),
+        supabase.from('suggestions').delete().eq('org_id', currentOrg.id),
+        supabase.from('tests').delete().eq('org_id', currentOrg.id),
+        supabase.from('notifications').delete().eq('org_id', currentOrg.id),
+        supabase.from('activity_log').delete().eq('org_id', currentOrg.id),
+      ]);
+
+      toast({
+        title: 'Data Reset Successfully',
+        description: 'All organization data has been cleared.',
+      });
+
+      // Refresh the data
+      await fetchReportData();
+      
+      setShowResetDialog(false);
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to reset data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setResetting(false);
+    }
+  };
+
   // Show loading while checking access
   if (checkingAccess) {
     return (
@@ -540,29 +580,24 @@ export function Reports() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Select value={selectedProject} onValueChange={setSelectedProject}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Select project" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('allProjects')}</SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <Button
             onClick={() => {
               setLoading(true);
               fetchReportData();
             }}
             disabled={loading}
-            size="default"
+            variant="outline"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline ml-2">Refresh</span>
+          </Button>
+          <Button
+            onClick={() => setShowResetDialog(true)}
+            disabled={loading}
+            variant="destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="hidden sm:inline ml-2">Reset Data</span>
           </Button>
         </div>
       </div>
@@ -1160,6 +1195,38 @@ export function Reports() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Reset Data Confirmation Dialog */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset All Data?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all tests, bugs, suggestions, assignments, comments, votes, notifications, and activity logs for this organization. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={resetting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetData}
+              disabled={resetting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {resetting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Resetting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Reset All Data
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
