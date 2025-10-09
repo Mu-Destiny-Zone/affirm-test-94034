@@ -33,6 +33,7 @@ type UserWithoutOrg = {
   email: string;
   display_name: string;
   created_at: string;
+  deleted_at?: string | null;
 };
 
 export function AdminUsers() {
@@ -149,11 +150,10 @@ export function AdminUsers() {
   const fetchUsersWithoutOrg = async () => {
     setLoadingUnassigned(true);
     try {
-      // Get all profiles that don't have any org membership
+      // Get all profiles that don't have any org membership (including soft-deleted)
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, display_name, created_at')
-        .is('deleted_at', null);
+        .select('id, email, display_name, created_at, deleted_at');
 
       if (profilesError) throw profilesError;
 
@@ -383,9 +383,14 @@ export function AdminUsers() {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-xs truncate leading-tight">
-                            {userItem.display_name || 'Unnamed User'}
-                          </p>
+                          <div className="flex items-center gap-1">
+                            <p className="font-medium text-xs truncate leading-tight">
+                              {userItem.display_name || 'Unnamed User'}
+                            </p>
+                            {userItem.deleted_at && (
+                              <Badge variant="outline" className="text-[9px] h-3.5 px-1">Deleted</Badge>
+                            )}
+                          </div>
                           <p className="text-[10px] text-muted-foreground truncate leading-tight">{userItem.email}</p>
                         </div>
                         <AssignOrgsDialog
