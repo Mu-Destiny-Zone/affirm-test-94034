@@ -395,11 +395,10 @@ export function Tests() {
     const matchesStatus = statusFilter === 'all' || test.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || test.priority.toString() === priorityFilter;
     
-    // For non-managers, tests are already filtered to only assigned tests at the database level,
-    // so they should see all their assigned tests regardless of status
-    // Only apply status restriction for managers when viewing unassigned tests
+    // Non-managers should not see draft or archived tests
+    const matchesRole = canManage || (test.status !== 'draft' && test.status !== 'archived');
     
-    return matchesSearch && matchesStatus && matchesPriority;
+    return matchesSearch && matchesStatus && matchesPriority && matchesRole;
   });
 
   if (loading || !currentOrg) {

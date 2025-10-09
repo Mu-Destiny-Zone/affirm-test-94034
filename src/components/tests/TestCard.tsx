@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Test } from '@/lib/types';
 import { Clock, Play, XCircle, TestTube, MoreHorizontal, Edit, Trash2, Users, PlayCircle, AlertTriangle, Copy } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -215,15 +216,29 @@ export function TestCard({ test, onEdit, onDelete, onExecute, onViewDetails, onA
 
           <div className="flex items-center gap-2">
             {(isAdmin || isManager) && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => onAssign(test)}
-                className="flex items-center gap-1.5"
-              >
-                <Users className="h-4 w-4" />
-                {t('assign')}
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => onAssign(test)}
+                        className="flex items-center gap-1.5"
+                        disabled={test.status === 'draft'}
+                      >
+                        <Users className="h-4 w-4" />
+                        {t('assign')}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {test.status === 'draft' && (
+                    <TooltipContent>
+                      <p>Cannot assign draft tests. Change status to "Active" first.</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             )}
             
             {(isAdmin || isManager) && (

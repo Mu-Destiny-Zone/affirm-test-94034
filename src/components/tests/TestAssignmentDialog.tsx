@@ -117,6 +117,16 @@ export function TestAssignmentDialog({ test, open, onOpenChange, onAssignmentUpd
       return;
     }
 
+    // Prevent assigning draft tests
+    if (test.status === 'draft') {
+      toast({
+        title: 'Cannot Assign Draft Test',
+        description: 'Tests must be set to "Active" status before they can be assigned. Please change the test status first.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     // Check if already assigned
     const existingAssignment = assignments.find(a => a.assignee_id === newAssignment.assignee_id);
     if (existingAssignment) {
@@ -196,6 +206,21 @@ export function TestAssignmentDialog({ test, open, onOpenChange, onAssignmentUpd
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Draft Test Warning */}
+          {test.status === 'draft' && (
+            <div className="p-4 border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800 rounded-lg">
+              <div className="flex gap-2">
+                <span className="text-yellow-600 dark:text-yellow-400">⚠️</span>
+                <div>
+                  <p className="font-semibold text-yellow-800 dark:text-yellow-300">Draft Test</p>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                    This test is in draft status and cannot be assigned. Change the test status to "Active" before assigning.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Existing Assignments */}
           {assignments.length > 0 && (
             <div className="space-y-3">
@@ -306,7 +331,7 @@ export function TestAssignmentDialog({ test, open, onOpenChange, onAssignmentUpd
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Close
             </Button>
-            <Button onClick={handleAssign} disabled={loading || !newAssignment.assignee_id}>
+            <Button onClick={handleAssign} disabled={loading || !newAssignment.assignee_id || test.status === 'draft'}>
               {loading ? 'Assigning...' : 'Assign Test'}
             </Button>
           </div>
