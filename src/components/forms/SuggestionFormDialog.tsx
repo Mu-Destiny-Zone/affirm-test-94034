@@ -68,21 +68,25 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
 
   useEffect(() => {
     if (open && currentOrg) {
-      fetchTests();
-      fetchOrgMembers();
-      
-      if (suggestion) {
-        setFormData({
-          title: suggestion.title,
-          description: suggestion.description || '',
-          impact: suggestion.impact,
-          status: suggestion.status,
-          test_id: suggestion.test_id || 'none',
-          owner_id: suggestion.owner_id || '',
-          tags: suggestion.tags || []
-        });
-      } else {
-        resetForm();
+      try {
+        fetchTests();
+        fetchOrgMembers();
+        
+        if (suggestion) {
+          setFormData({
+            title: suggestion.title,
+            description: suggestion.description || '',
+            impact: suggestion.impact,
+            status: suggestion.status,
+            test_id: suggestion.test_id || 'none',
+            owner_id: suggestion.owner_id || '',
+            tags: suggestion.tags || []
+          });
+        } else {
+          resetForm();
+        }
+      } catch (error) {
+        console.error('Error setting form data:', error);
       }
     }
   }, [open, suggestion, currentOrg]);

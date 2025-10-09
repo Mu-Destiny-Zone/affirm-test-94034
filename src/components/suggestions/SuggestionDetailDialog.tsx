@@ -39,6 +39,7 @@ interface SuggestionWithDetails {
   created_at: string;
   updated_at: string;
   author_id: string;
+  owner_id: string | null;
   project_id: string;
   org_id: string;
   test_id: string | null;
@@ -47,6 +48,11 @@ interface SuggestionWithDetails {
     display_name: string | null;
     email: string;
   };
+  owner?: {
+    id: string;
+    display_name: string | null;
+    email: string;
+  } | null;
   projects?: {
     id: string;
     name: string;
@@ -203,7 +209,7 @@ export function SuggestionDetailDialog({
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2">
-                  {(suggestion.author_id === user?.id || (suggestion as any).owner_id === user?.id) && onEdit && (
+                  {(suggestion.author_id === user?.id || suggestion.owner_id === user?.id) && onEdit && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -284,7 +290,7 @@ export function SuggestionDetailDialog({
           </div>
 
           {/* Owner Info */}
-          {(suggestion as any).owner && (
+          {suggestion.owner && (
             <div className="space-y-2">
               <h4 className="font-medium text-sm flex items-center gap-2">
                 <User className="h-4 w-4 text-primary" />
@@ -292,7 +298,7 @@ export function SuggestionDetailDialog({
               </h4>
               <div className="bg-primary/10 px-3 py-2 rounded-lg text-sm flex items-center gap-2 border border-primary/20">
                 <User className="h-4 w-4 text-primary" />
-                <span className="font-medium text-primary">{(suggestion as any).owner.display_name || (suggestion as any).owner.email}</span>
+                <span className="font-medium text-primary">{suggestion.owner.display_name || suggestion.owner.email}</span>
               </div>
             </div>
           )}

@@ -14,6 +14,7 @@ import { EnhancedCard, CardHeader } from '@/components/ui/enhanced-card';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { LoadingGrid, LoadingState } from '@/components/ui/enhanced-loading';
 import { VotePanel } from '@/components/shared/VotePanel';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 interface SuggestionWithDetails {
   id: string;
@@ -95,12 +96,12 @@ export function Suggestions() {
     }
 
     try {
+      // Fetch suggestions with author and related data
       const { data, error } = await supabase
         .from('suggestions')
         .select(`
           *,
           profiles!suggestions_author_id_fkey(id, display_name, email),
-          owner:profiles!suggestions_owner_id_fkey(id, display_name, email),
           projects(id, name),
           tests(id, title)
         `)
@@ -108,18 +109,40 @@ export function Suggestions() {
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching suggestions:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load suggestions",
-          variant: "destructive"
-        });
-      } else {
-        setSuggestions(data || []);
+      if (error) throw error;
+
+      // Fetch owners separately to avoid FK issues
+      const ownerIds = [...new Set((data || []).map(s => s.owner_id).filter(Boolean))] as string[];
+      let ownerMap: Record<string, { id: string; display_name: string | null; email: string }> = {};
+      
+      if (ownerIds.length > 0) {
+        const { data: ownerData, error: ownerError } = await supabase
+          .from('profiles')
+          .select('id, display_name, email')
+          .in('id', ownerIds);
+        
+        if (!ownerError && ownerData) {
+          ownerMap = ownerData.reduce((acc, owner) => {
+            acc[owner.id] = owner;
+            return acc;
+          }, {} as Record<string, { id: string; display_name: string | null; email: string }>);
+        }
       }
+
+      // Attach owners to suggestions
+      const suggestionsWithOwners = (data || []).map(suggestion => ({
+        ...suggestion,
+        owner: suggestion.owner_id ? ownerMap[suggestion.owner_id] || null : null
+      }));
+
+      setSuggestions(suggestionsWithOwners);
     } catch (error) {
-      console.error('Error in fetchSuggestions:', error);
+      console.error('Error fetching suggestions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch suggestions",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -316,21 +339,25 @@ export function Suggestions() {
         defaultExpanded={false}
       />
 
-      <SuggestionFormDialog
-        open={formDialogOpen}
-        onOpenChange={setFormDialogOpen}
-        suggestion={editingSuggestion}
-        onSuccess={handleFormSuccess}
-      />
+      <ErrorBoundary>
+        <SuggestionFormDialog
+          open={formDialogOpen}
+          onOpenChange={setFormDialogOpen}
+          suggestion={editingSuggestion}
+          onSuccess={handleFormSuccess}
+        />
+      </ErrorBoundary>
 
-      <SuggestionDetailDialog
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        suggestion={selectedSuggestion}
-        onEdit={handleDetailEdit}
-        onStatusChange={fetchSuggestions}
-        onDelete={fetchSuggestions}
-      />
+      <ErrorBoundary>
+        <SuggestionDetailDialog
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+          suggestion={selectedSuggestion}
+          onEdit={handleDetailEdit}
+          onStatusChange={fetchSuggestions}
+          onDelete={fetchSuggestions}
+        />
+      </ErrorBoundary>
 
       {/* Suggestions List */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
