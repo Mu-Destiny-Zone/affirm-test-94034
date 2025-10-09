@@ -47,7 +47,7 @@ export function BugDetailDialog({
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isAdmin, isManager } = useCurrentOrgRole();
+  const { isAdmin, isManager, orgRole, loading: roleLoading } = useCurrentOrgRole();
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -55,6 +55,16 @@ export function BugDetailDialog({
   if (!bug) return null;
 
   const canDelete = isAdmin || isManager;
+  
+  console.log('Bug Detail - Role Info:', { 
+    isAdmin, 
+    isManager, 
+    orgRole, 
+    canDelete, 
+    roleLoading,
+    userId: user?.id,
+    bugReporterId: bug.reporter_id 
+  });
 
   const handleDelete = async () => {
     setDeleting(true);
