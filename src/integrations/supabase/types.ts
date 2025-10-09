@@ -853,6 +853,14 @@ export type Database = {
         Args: { p_profile_id: string }
         Returns: number
       }
+      soft_delete_bug: {
+        Args: { bug_id: string }
+        Returns: undefined
+      }
+      soft_delete_suggestion: {
+        Args: { suggestion_id: string }
+        Returns: undefined
+      }
       soft_delete_test: {
         Args: { test_id: string }
         Returns: undefined
