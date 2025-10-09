@@ -112,13 +112,45 @@ export function Reports() {
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   useEffect(() => {
-    if (user && currentOrg) {
+    const checkAdminAccess = async () => {
+      if (!user || !currentOrg) {
+        setIsAdmin(false);
+        setCheckingAccess(false);
+        return;
+      }
+
+      try {
+        const { data } = await supabase
+          .from('org_members')
+          .select('role')
+          .eq('org_id', currentOrg.id)
+          .eq('profile_id', user.id)
+          .eq('role', 'admin')
+          .is('deleted_at', null)
+          .limit(1);
+
+        setIsAdmin(data && data.length > 0);
+      } catch (error) {
+        console.error('Error checking admin access:', error);
+        setIsAdmin(false);
+      } finally {
+        setCheckingAccess(false);
+      }
+    };
+
+    checkAdminAccess();
+  }, [user, currentOrg]);
+
+  useEffect(() => {
+    if (user && currentOrg && isAdmin) {
       fetchReportData();
       fetchProjects();
     }
-  }, [user, currentOrg, selectedProject]);
+  }, [user, currentOrg, selectedProject, isAdmin]);
 
   const fetchProjects = async () => {
     if (!currentOrg) return;
@@ -412,6 +444,50 @@ export function Reports() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking access
+  if (checkingAccess) {
+    return (
+      <div className="container mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8" />
+              {t('reportsAndAnalytics')}
+            </h1>
+          </div>
+        </div>
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (!isAdmin) {
+    return (
+      <div className="container mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8" />
+              {t('reportsAndAnalytics')}
+            </h1>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="text-center py-12">
+            <AlertTriangle className="h-12 w-12 mx-auto text-destructive mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p className="text-muted-foreground mb-4">
+              This page is only accessible to organization administrators.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading || !reportData || !currentOrg) {
     return (

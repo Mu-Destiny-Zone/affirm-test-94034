@@ -40,10 +40,10 @@ const navigation = [
   { name: 'tests', href: '/tests', icon: TestTube },
   { name: 'bugs', href: '/bugs', icon: Bug },
   { name: 'suggestions', href: '/suggestions', icon: Lightbulb },
-  { name: 'reports', href: '/reports', icon: BarChart3 },
 ];
 
 const adminNavigation = [
+  { name: 'reports', href: '/reports', icon: BarChart3 },
   { name: 'users', href: '/admin/users', icon: Users },
   { name: 'settings', href: '/admin/settings', icon: Settings },
 ];
