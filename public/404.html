@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting to Home - Mu Destiny Zone Test System</title>
+    <meta name="description" content="SPA fallback: redirect to the main page when a deep link is refreshed." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="/" />
+    <script>
+      // SPA fallback for static hosts without rewrites
+      // On 404 (direct deep link refresh), send users to the main page
+      window.location.replace("/");
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0; url=/" />
+    </noscript>
+  </head>
+  <body>
+    <p>Redirecting to the main page…</p>
+  </body>
+</html>
