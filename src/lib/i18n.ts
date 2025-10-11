@@ -199,6 +199,7 @@ const resources = {
       language: 'Language',
       english: 'English',
       bulgarian: 'Bulgarian',
+      installApp: 'Install App',
       
       // Reports
       reportsAndAnalytics: 'Reports & Analytics',
@@ -658,6 +659,7 @@ const resources = {
       language: 'Език',
       english: 'Английски',
       bulgarian: 'Български',
+      installApp: 'Инсталирай Приложение',
       
       // Reports
       reportsAndAnalytics: 'Отчети и Анализи',

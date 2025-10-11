@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, Settings, Users, User, LogOut, Moon, Sun, Monitor, Languages, ClipboardList, BookOpen } from "lucide-react";
+import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, Settings, Users, User, LogOut, Moon, Sun, Monitor, Languages, ClipboardList, BookOpen, Download } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,7 @@ export function AppSidebar() {
     setOpenMobile
   } = useSidebar();
   const collapsed = state === "collapsed";
+  const { isInstallable, isStandalone, promptInstall } = usePWAInstall();
   const handleNavClick = () => {
     if (isMobile) {
       setOpenMobile(false);
@@ -112,8 +114,7 @@ export function AppSidebar() {
               <img src="/lovable-uploads/5dc1400a-d879-4c3c-a68e-15d5b86bbafb.png" alt="Mu Destiny Zone Logo" className="w-12 h-12 object-contain filter brightness-110 contrast-110" />
             </div>
             <div>
-              <h2 className="font-bold text-base text-foreground leading-tight">Mu Destiny Zone</h2>
-              <p className="text-xs text-muted-foreground font-medium">Test System</p>
+              <h2 className="font-bold text-base text-foreground leading-tight">Tests Mu Destiny Zone</h2>
             </div>
           </div> : <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center self-center overflow-hidden shadow-lg shadow-primary/20 mx-0 hover:shadow-xl transition-all duration-300">
             <img src="/lovable-uploads/5dc1400a-d879-4c3c-a68e-15d5b86bbafb.png" alt="Mu Destiny Zone Logo" className="w-10 h-10 object-contain filter brightness-110" />
@@ -206,6 +207,17 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4 border-t border-border/40 transition-all duration-300 ease-in-out">
         {!collapsed ? <div className="space-y-1 transition-opacity duration-300">
+            {!isStandalone && isInstallable && (
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="w-full justify-start hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg font-medium"
+                onClick={() => promptInstall()}
+              >
+                <Download className="h-4 w-4 mr-3" />
+                <span className="text-sm">{t('installApp')}</span>
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full justify-start hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out rounded-lg font-medium">
@@ -251,6 +263,25 @@ export function AppSidebar() {
               <span className="text-sm">{t('signOut')}</span>
             </Button>
           </div> : <div className="flex flex-col gap-1 transition-opacity duration-300">
+            {/* Collapsed Install Button */}
+            {!isStandalone && isInstallable && (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full p-2 hover:bg-accent hover:scale-[1.02] transition-all duration-300 ease-in-out"
+                    onClick={() => promptInstall()}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="font-medium">
+                  {t('installApp')}
+                </TooltipContent>
+              </Tooltip>
+            )}
+            
             {/* Collapsed Theme Toggle */}
             <Tooltip delayDuration={0}>
               <DropdownMenu>

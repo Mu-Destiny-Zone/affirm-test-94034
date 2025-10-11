@@ -1,6 +1,6 @@
 {
-  "name": "Mu Destiny Zone Test System",
-  "short_name": "MDZ Tests",
+  "name": "Tests Mu Destiny Zone",
+  "short_name": "Tests MDZ",
   "description": "Comprehensive test management system for managing tests, bugs, and team collaboration",
   "start_url": "/",
   "id": "/",
