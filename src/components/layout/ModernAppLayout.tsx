@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { NoOrganizationAccess } from "./NoOrganizationAccess";
 
 interface ModernAppLayoutProps {
@@ -41,6 +42,7 @@ function LayoutContent({ children }: ModernAppLayoutProps) {
   const { notifications, loading: notificationsLoading, unreadCount, markAllAsRead, getNotificationIcon, getNotificationUrl } = useNotifications();
   const navigate = useNavigate();
   const [notificationMenuOpen, setNotificationMenuOpen] = useState(false);
+  const { isInstallable, isStandalone, promptInstall } = usePWAInstall();
 
   // Auto-mark all as read when dropdown opens
   useEffect(() => {
@@ -91,6 +93,18 @@ function LayoutContent({ children }: ModernAppLayoutProps) {
               </div>
 
               <div className="flex items-center gap-2">
+                {!isStandalone && isInstallable && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="rounded-lg"
+                    onClick={() => {
+                      promptInstall();
+                    }}
+                  >
+                    Install App
+                  </Button>
+                )}
                 <DropdownMenu open={notificationMenuOpen} onOpenChange={setNotificationMenuOpen}>
                   <DropdownMenuTrigger asChild>
                     <Button
