@@ -460,7 +460,20 @@ const resources = {
       docTip1: 'Use filters and search on the Bugs and Suggestions pages to quickly find relevant items.',
       docTip2: 'Add tags to your bug reports and suggestions to make them easier to categorize and find later.',
       docTip3: 'Vote on bugs and suggestions to help prioritize what is most important to the team.',
-      docTip4: 'Check notifications regularly to stay updated on responses to your reports and suggestions.'
+      docTip4: 'Check notifications regularly to stay updated on responses to your reports and suggestions.',
+      
+      // Leaderboard
+      teamPerformanceRankings: 'Team performance rankings for',
+      selectOrgToViewLeaderboard: 'Please select an organization to view the leaderboard',
+      individualUserStats: 'Individual User Statistics',
+      detailedPerformanceMetrics: 'Detailed performance metrics for all team members',
+      rank: 'Rank',
+      executions: 'Executions',
+      lastActive: 'Last Active',
+      noUserDataAvailable: 'No user data available',
+      first: '1st',
+      second: '2nd',
+      third: '3rd'
     }
   },
   bg: {
@@ -921,7 +934,20 @@ const resources = {
       docTip1: 'Използвайте филтри и търсене на страниците Грешки и Предложения, за бързо да намерите релевантни елементи.',
       docTip2: 'Добавяйте етикети към вашите доклади за грешки и предложения, за да ги направите по-лесни за категоризиране и намиране по-късно.',
       docTip3: 'Гласувайте за грешки и предложения, за да помогнете да се приоритизира това, което е най-важно за екипа.',
-      docTip4: 'Проверявайте редовно известията, за да сте в течение на отговорите на вашите доклади и предложения.'
+      docTip4: 'Проверявайте редовно известията, за да сте в течение на отговорите на вашите доклади и предложения.',
+      
+      // Leaderboard
+      teamPerformanceRankings: 'Класации за изпълнение на екипа за',
+      selectOrgToViewLeaderboard: 'Моля, изберете организация, за да видите класацията',
+      individualUserStats: 'Индивидуални потребителски статистики',
+      detailedPerformanceMetrics: 'Подробни показатели за ефективност на всички членове на екипа',
+      rank: 'Ранг',
+      executions: 'Изпълнения',
+      lastActive: 'Последна активност',
+      noUserDataAvailable: 'Няма налична потребителска информация',
+      first: '1-ви',
+      second: '2-ри',
+      third: '3-ти'
     }
   }
 };

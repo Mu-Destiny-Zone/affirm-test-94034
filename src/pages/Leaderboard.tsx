@@ -131,9 +131,9 @@ export default function Leaderboard() {
   };
 
   const getRankBadge = (index: number) => {
-    if (index === 0) return <Badge className="bg-yellow-500">🥇 1st</Badge>;
-    if (index === 1) return <Badge className="bg-gray-400">🥈 2nd</Badge>;
-    if (index === 2) return <Badge className="bg-amber-600">🥉 3rd</Badge>;
+    if (index === 0) return <Badge className="bg-yellow-500">🥇 {t('first')}</Badge>;
+    if (index === 1) return <Badge className="bg-gray-400">🥈 {t('second')}</Badge>;
+    if (index === 2) return <Badge className="bg-amber-600">🥉 {t('third')}</Badge>;
     return <Badge variant="outline">#{index + 1}</Badge>;
   };
 
@@ -144,16 +144,16 @@ export default function Leaderboard() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
               <Trophy className="h-6 w-6 sm:h-8 sm:w-8" />
-              Leaderboard
+              {t('leaderboard')}
             </h1>
           </div>
         </div>
         <Card>
           <CardContent className="text-center py-12">
             <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Organization Selected</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('noOrgSelected')}</h3>
             <p className="text-muted-foreground mb-4">
-              Please select an organization to view the leaderboard
+              {t('selectOrgToViewLeaderboard')}
             </p>
           </CardContent>
         </Card>
@@ -168,10 +168,10 @@ export default function Leaderboard() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
               <Trophy className="h-6 w-6 sm:h-8 sm:w-8" />
-              Leaderboard
+              {t('leaderboard')}
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base">
-              Team performance rankings for {currentOrg.name}
+              {t('teamPerformanceRankings')} {currentOrg.name}
             </p>
           </div>
         </div>
@@ -189,10 +189,10 @@ export default function Leaderboard() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
             <Trophy className="h-6 w-6 sm:h-8 sm:w-8" />
-            Leaderboard
+            {t('leaderboard')}
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base">
-            Team performance rankings for {currentOrg.name}
+            {t('teamPerformanceRankings')} {currentOrg.name}
           </p>
         </div>
       </div>
@@ -211,7 +211,7 @@ export default function Leaderboard() {
             <CardContent>
               <h3 className="font-bold text-lg truncate">{userStats[1].name}</h3>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Score</span>
+                <span className="text-sm text-muted-foreground">{t('score')}</span>
                 <span className="text-2xl font-bold">{userStats[1].activityScore}</span>
               </div>
             </CardContent>
@@ -228,7 +228,7 @@ export default function Leaderboard() {
             <CardContent>
               <h3 className="font-bold text-xl truncate">{userStats[0].name}</h3>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Score</span>
+                <span className="text-sm text-muted-foreground">{t('score')}</span>
                 <span className="text-3xl font-bold text-yellow-500">{userStats[0].activityScore}</span>
               </div>
             </CardContent>
@@ -245,7 +245,7 @@ export default function Leaderboard() {
             <CardContent>
               <h3 className="font-bold text-lg truncate">{userStats[2].name}</h3>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Score</span>
+                <span className="text-sm text-muted-foreground">{t('score')}</span>
                 <span className="text-2xl font-bold">{userStats[2].activityScore}</span>
               </div>
             </CardContent>
@@ -258,23 +258,23 @@ export default function Leaderboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Flame className="h-5 w-5" />
-            Individual User Statistics
+            {t('individualUserStats')}
           </CardTitle>
-          <CardDescription>Detailed performance metrics for all team members</CardDescription>
+          <CardDescription>{t('detailedPerformanceMetrics')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b bg-muted/50">
                 <tr>
-                  <th className="text-left py-3 px-2 font-semibold text-sm">Rank</th>
-                  <th className="text-left py-3 px-2 font-semibold text-sm">User</th>
-                  <th className="text-center py-3 px-2 font-semibold text-sm">Executions</th>
-                  <th className="text-center py-3 px-2 font-semibold text-sm">Bugs</th>
-                  <th className="text-center py-3 px-2 font-semibold text-sm">Suggestions</th>
-                  <th className="text-center py-3 px-2 font-semibold text-sm">Comments</th>
-                  <th className="text-center py-3 px-2 font-semibold text-sm">Score</th>
-                  <th className="text-left py-3 px-2 font-semibold text-sm">Last Active</th>
+                  <th className="text-left py-3 px-2 font-semibold text-sm">{t('rank')}</th>
+                  <th className="text-left py-3 px-2 font-semibold text-sm">{t('user')}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-sm">{t('executions')}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-sm">{t('bugs')}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-sm">{t('suggestions')}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-sm">{t('comments')}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-sm">{t('score')}</th>
+                  <th className="text-left py-3 px-2 font-semibold text-sm">{t('lastActive')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -326,7 +326,7 @@ export default function Leaderboard() {
 
           {userStats.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              No user data available
+              {t('noUserDataAvailable')}
             </div>
           )}
         </CardContent>
