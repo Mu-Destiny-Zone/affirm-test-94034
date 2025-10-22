@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -24,8 +23,7 @@ import {
   Zap,
   Award,
   Flame,
-  RefreshCw,
-  Trash2
+  RefreshCw
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
@@ -118,8 +116,6 @@ export function Reports() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
-  const [showResetDialog, setShowResetDialog] = useState(false);
-  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -449,44 +445,6 @@ export function Reports() {
     }
   };
 
-  const handleResetData = async () => {
-    if (!currentOrg) return;
-    
-    setResetting(true);
-    try {
-      // Delete all data for the organization
-      await Promise.all([
-        supabase.from('test_assignments').delete().eq('org_id', currentOrg.id),
-        supabase.from('comments').delete().eq('org_id', currentOrg.id),
-        supabase.from('votes').delete().in('target_type', ['bug', 'suggestion', 'test']),
-        supabase.from('bug_reports').delete().eq('org_id', currentOrg.id),
-        supabase.from('suggestions').delete().eq('org_id', currentOrg.id),
-        supabase.from('tests').delete().eq('org_id', currentOrg.id),
-        supabase.from('notifications').delete().eq('org_id', currentOrg.id),
-        supabase.from('activity_log').delete().eq('org_id', currentOrg.id),
-      ]);
-
-      toast({
-        title: 'Data Reset Successfully',
-        description: 'All organization data has been cleared.',
-      });
-
-      // Refresh the data
-      await fetchReportData();
-      
-      setShowResetDialog(false);
-    } catch (error) {
-      console.error('Error resetting data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to reset data. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setResetting(false);
-    }
-  };
-
   // Show loading while checking access
   if (checkingAccess) {
     return (
@@ -579,27 +537,17 @@ export function Reports() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => {
-              setLoading(true);
-              fetchReportData();
-            }}
-            disabled={loading}
-            variant="outline"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline ml-2">Refresh</span>
-          </Button>
-          <Button
-            onClick={() => setShowResetDialog(true)}
-            disabled={loading}
-            variant="destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span className="hidden sm:inline ml-2">Reset Data</span>
-          </Button>
-        </div>
+        <Button
+          onClick={() => {
+            setLoading(true);
+            fetchReportData();
+          }}
+          disabled={loading}
+          variant="outline"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <span className="hidden sm:inline ml-2">Refresh</span>
+        </Button>
       </div>
 
       {/* System Health Overview */}
@@ -1195,38 +1143,6 @@ export function Reports() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Reset Data Confirmation Dialog */}
-      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reset All Data?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete all tests, bugs, suggestions, assignments, comments, votes, notifications, and activity logs for this organization. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={resetting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleResetData}
-              disabled={resetting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {resetting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Resetting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Reset All Data
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
