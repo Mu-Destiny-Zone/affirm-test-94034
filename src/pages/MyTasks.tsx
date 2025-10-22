@@ -483,20 +483,6 @@ export function MyTasks() {
           </div>
         </div>
 
-        <div className="stat-card p-2.5 sm:p-5 cursor-pointer" onClick={() => setActiveTab('suggestions')}>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2.5 bg-warning/10 rounded-lg flex-shrink-0">
-              <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Suggestions</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-warning">{stats.pendingSuggestions}</p>
-                <p className="text-[9px] sm:text-xs text-muted-foreground">pending</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Enhanced Tabs */}
@@ -521,16 +507,6 @@ export function MyTasks() {
               <span className="font-medium">Bugs</span>
               <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
                 {userBugs.length}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="suggestions" 
-              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-2 sm:px-6 py-1.5 sm:py-3 transition-all text-[10px] sm:text-sm whitespace-nowrap"
-            >
-              <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="font-medium">Ideas</span>
-              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
-                {userSuggestions.length}
               </Badge>
             </TabsTrigger>
           </TabsList>
@@ -751,123 +727,6 @@ export function MyTasks() {
           )}
         </TabsContent>
 
-        <TabsContent value="suggestions" className="space-y-4">
-          {userSuggestions.length === 0 ? (
-            <Card className="border-border/60">
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <Lightbulb className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No suggestions assigned</h3>
-                <p className="text-muted-foreground text-center">
-                  You don't have any suggestions assigned to you at the moment
-                </p>
-                <Button onClick={() => navigate('/suggestions')} className="mt-4 sm:mt-6 btn-gradient" size="sm">
-                  <Lightbulb className="h-4 w-4 mr-2" />
-                  View All Suggestions
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-3">
-              {userSuggestions.map((suggestion, index) => (
-                <Card 
-                  key={suggestion.id} 
-                  className="card-interactive border-border/60 hover:border-warning/30 animate-slide-up overflow-hidden"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="p-3 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-sm line-clamp-1">{suggestion.title}</h3>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="h-6 w-6 p-0 flex-shrink-0 hover:bg-warning/10"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {suggestion.description}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
-                        suggestion.status === 'new' ? 'bg-primary/10 text-primary' :
-                        suggestion.status === 'consider' ? 'bg-warning/10 text-warning' :
-                        suggestion.status === 'planned' ? 'bg-info/10 text-info' :
-                        suggestion.status === 'done' ? 'bg-success/10 text-success' :
-                        suggestion.status === 'rejected' ? 'bg-destructive/10 text-destructive' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          suggestion.status === 'new' ? 'bg-primary' :
-                          suggestion.status === 'consider' ? 'bg-warning' :
-                          suggestion.status === 'planned' ? 'bg-info' :
-                          suggestion.status === 'done' ? 'bg-success' :
-                          suggestion.status === 'rejected' ? 'bg-destructive' :
-                          'bg-muted-foreground'
-                        }`}></span>
-                        {suggestion.status === 'consider' ? 'Under Review' : suggestion.status.replace('_', ' ')}
-                      </span>
-                      {suggestion.projects && (
-                        <>
-                          <span className="text-muted-foreground/40">•</span>
-                          <span className="text-muted-foreground truncate">{suggestion.projects.name}</span>
-                        </>
-                      )}
-                      <span className="ml-auto text-muted-foreground/60 flex-shrink-0">{format(new Date(suggestion.created_at), 'MMM dd')}</span>
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="flex gap-2 pt-2 border-t border-border/30">
-                      <Select 
-                        value={suggestion.status} 
-                        onValueChange={(value) => handleSuggestionStatusChange(suggestion.id, value)}
-                        disabled={updatingStatus === suggestion.id}
-                      >
-                        <SelectTrigger className="h-7 text-[11px] w-32" data-testid={`suggestion-status-select-${suggestion.id}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="consider">Consider</SelectItem>
-                          <SelectItem value="planned">Planned</SelectItem>
-                          <SelectItem value="done">Done</SelectItem>
-                          <SelectItem value="rejected">Rejected</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Input
-                        placeholder="Comment..."
-                        value={quickComments[suggestion.id] || ''}
-                        onChange={(e) => setQuickComments(prev => ({ ...prev, [suggestion.id]: e.target.value }))}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleAddComment('suggestion', suggestion.id);
-                          }
-                        }}
-                        disabled={addingComment === suggestion.id}
-                        className="flex-1 h-7 text-[11px]"
-                        data-testid={`suggestion-comment-input-${suggestion.id}`}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddComment('suggestion', suggestion.id)}
-                        disabled={!quickComments[suggestion.id]?.trim() || addingComment === suggestion.id}
-                        className="h-7 px-2"
-                        data-testid={`suggestion-comment-submit-${suggestion.id}`}
-                      >
-                        <Send className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
       </Tabs>
 
       {/* Bug Detail Dialog */}
