@@ -567,10 +567,10 @@ export function MyTasks() {
                       <Button
                         size="sm"
                         onClick={() => setExecutionDialogTest(assignment.tests as Test)}
-                        className="btn-gradient h-6 w-6 p-0 flex-shrink-0"
-                        title="Execute Test"
+                        className="btn-gradient h-6 px-2 flex-shrink-0 text-xs"
                       >
-                        <TestTube className="h-3.5 w-3.5" />
+                        <TestTube className="h-3.5 w-3.5 mr-1" />
+                        Execute test
                       </Button>
                     </div>
                     
