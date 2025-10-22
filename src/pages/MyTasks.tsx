@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -451,12 +451,19 @@ export function MyTasks() {
         </div>
       </div>
 
-      {/* Modern Stats Grid */}
+      {/* Modern Stats Grid - Now Controls Tabs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-        <div className="stat-card p-2.5 sm:p-5 cursor-pointer" onClick={() => setActiveTab('tests')}>
+        <div 
+          className={`stat-card p-2.5 sm:p-5 cursor-pointer transition-all ${
+            activeTab === 'tests' ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : 'hover:scale-[1.01]'
+          }`} 
+          onClick={() => setActiveTab('tests')}
+        >
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2.5 bg-primary/10 rounded-lg flex-shrink-0">
-              <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            <div className={`p-1.5 sm:p-2.5 rounded-lg flex-shrink-0 ${
+              activeTab === 'tests' ? 'bg-primary text-primary-foreground' : 'bg-primary/10'
+            }`}>
+              <Clock className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'tests' ? 'text-primary-foreground' : 'text-primary'}`} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Assigned Tests</p>
@@ -468,10 +475,17 @@ export function MyTasks() {
           </div>
         </div>
 
-        <div className="stat-card p-2.5 sm:p-5 cursor-pointer" onClick={() => setActiveTab('bugs')}>
+        <div 
+          className={`stat-card p-2.5 sm:p-5 cursor-pointer transition-all ${
+            activeTab === 'bugs' ? 'ring-2 ring-destructive shadow-lg scale-[1.02]' : 'hover:scale-[1.01]'
+          }`} 
+          onClick={() => setActiveTab('bugs')}
+        >
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2.5 bg-destructive/10 rounded-lg flex-shrink-0">
-              <Bug className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
+            <div className={`p-1.5 sm:p-2.5 rounded-lg flex-shrink-0 ${
+              activeTab === 'bugs' ? 'bg-destructive text-destructive-foreground' : 'bg-destructive/10'
+            }`}>
+              <Bug className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'bugs' ? 'text-destructive-foreground' : 'text-destructive'}`} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Assigned Bugs</p>
@@ -483,10 +497,17 @@ export function MyTasks() {
           </div>
         </div>
 
-        <div className="stat-card p-2.5 sm:p-5 cursor-pointer" onClick={() => setActiveTab('suggestions')}>
+        <div 
+          className={`stat-card p-2.5 sm:p-5 cursor-pointer transition-all ${
+            activeTab === 'suggestions' ? 'ring-2 ring-warning shadow-lg scale-[1.02]' : 'hover:scale-[1.01]'
+          }`} 
+          onClick={() => setActiveTab('suggestions')}
+        >
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2.5 bg-warning/10 rounded-lg flex-shrink-0">
-              <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
+            <div className={`p-1.5 sm:p-2.5 rounded-lg flex-shrink-0 ${
+              activeTab === 'suggestions' ? 'bg-warning text-warning-foreground' : 'bg-warning/10'
+            }`}>
+              <Lightbulb className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'suggestions' ? 'text-warning-foreground' : 'text-warning'}`} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Suggestions</p>
@@ -499,43 +520,8 @@ export function MyTasks() {
         </div>
       </div>
 
-      {/* Enhanced Tabs */}
+      {/* Tabs Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <TabsList className="bg-card border border-border/60 p-1 sm:p-1.5 rounded-xl shadow-sm h-auto inline-flex w-auto min-w-full sm:min-w-0">
-            <TabsTrigger 
-              value="tests" 
-              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-2 sm:px-6 py-1.5 sm:py-3 transition-all text-[10px] sm:text-sm whitespace-nowrap"
-            >
-              <TestTube className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="font-medium">Tests</span>
-              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
-                {assignedTests.length}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="bugs" 
-              className="data-[state=active]:bg-destructive data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-2 sm:px-6 py-1.5 sm:py-3 transition-all text-[10px] sm:text-sm whitespace-nowrap"
-            >
-              <Bug className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="font-medium">Bugs</span>
-              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
-                {userBugs.length}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="suggestions" 
-              className="data-[state=active]:bg-gradient-brand data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-2 sm:px-6 py-1.5 sm:py-3 transition-all text-[10px] sm:text-sm whitespace-nowrap"
-            >
-              <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="font-medium">Ideas</span>
-              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-background/20 text-current border-0 text-[9px] sm:text-xs px-1 sm:px-2">
-                {userSuggestions.length}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
         <TabsContent value="tests" className="space-y-4 animate-fade-in">
           {assignedTests.length === 0 ? (
             <Card className="glass border-border/60">
