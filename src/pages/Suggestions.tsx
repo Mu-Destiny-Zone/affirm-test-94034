@@ -157,16 +157,16 @@ export function Suggestions() {
   // Enhanced filter options with counts
   const filterOptions = {
     impact: [
-      { value: 'low', label: 'Low Impact', count: suggestions.filter(s => s.impact === 'low').length },
-      { value: 'medium', label: 'Medium Impact', count: suggestions.filter(s => s.impact === 'medium').length },
-      { value: 'high', label: 'High Impact', count: suggestions.filter(s => s.impact === 'high').length },
+      { value: 'low', label: t('lowImpact'), count: suggestions.filter(s => s.impact === 'low').length },
+      { value: 'medium', label: t('mediumImpact'), count: suggestions.filter(s => s.impact === 'medium').length },
+      { value: 'high', label: t('highImpact'), count: suggestions.filter(s => s.impact === 'high').length },
     ],
     status: [
-      { value: 'new', label: 'New', count: suggestions.filter(s => s.status === 'new').length },
-      { value: 'consider', label: 'Under Consideration', count: suggestions.filter(s => s.status === 'consider').length },
-      { value: 'planned', label: 'Planned', count: suggestions.filter(s => s.status === 'planned').length },
-      { value: 'done', label: 'Done', count: suggestions.filter(s => s.status === 'done').length },
-      { value: 'rejected', label: 'Rejected', count: suggestions.filter(s => s.status === 'rejected').length },
+      { value: 'new', label: t('new'), count: suggestions.filter(s => s.status === 'new').length },
+      { value: 'consider', label: t('consider'), count: suggestions.filter(s => s.status === 'consider').length },
+      { value: 'planned', label: t('planned'), count: suggestions.filter(s => s.status === 'planned').length },
+      { value: 'done', label: t('done'), count: suggestions.filter(s => s.status === 'done').length },
+      { value: 'rejected', label: t('rejected'), count: suggestions.filter(s => s.status === 'rejected').length },
     ],
     tags: allTags.map(tag => ({
       value: tag,
@@ -177,7 +177,7 @@ export function Suggestions() {
 
   const quickFilters = [
     {
-      label: 'My Assigned',
+      label: t('myAssigned'),
       onClick: () => {
         setShowMyAssigned(!showMyAssigned);
         setShowMyReports(false); // Clear the other filter
@@ -185,7 +185,7 @@ export function Suggestions() {
       active: showMyAssigned
     },
     {
-      label: 'My Ideas',
+      label: t('myIdeas'),
       onClick: () => {
         setShowMyReports(!showMyReports);
         setShowMyAssigned(false); // Clear the other filter
@@ -193,7 +193,7 @@ export function Suggestions() {
       active: showMyReports
     },
     {
-      label: 'High Impact',
+      label: t('highImpactFilter'),
       onClick: () => {
         if (impactFilter === 'high') {
           setImpactFilter('all');

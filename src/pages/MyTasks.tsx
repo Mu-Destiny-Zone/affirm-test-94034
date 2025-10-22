@@ -577,12 +577,12 @@ export function MyTasks() {
                           assignment.state === 'done' ? 'bg-success' :
                           'bg-muted-foreground'
                         }`}></span>
-                        {assignment.state === 'assigned' ? 'Assigned' : assignment.state === 'in_progress' ? 'In Progress' : 'Completed'}
+                        {assignment.state === 'assigned' ? t('assigned') : assignment.state === 'in_progress' ? t('inProgressStatus') : t('completed')}
                       </span>
                       <span className="text-muted-foreground/40">•</span>
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <FileText className="h-3 w-3" />
-                        <span>{assignment.tests.steps?.length || 0} steps</span>
+                        <span>{assignment.tests.steps?.length || 0} {t('steps')}</span>
                       </div>
                       {assignment.due_date && (
                         <>
@@ -608,13 +608,13 @@ export function MyTasks() {
                 <div className="p-3 sm:p-4 bg-destructive/10 rounded-full mb-3 sm:mb-4">
                   <Bug className="h-10 w-10 sm:h-16 sm:w-16 text-destructive" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-2">No bugs assigned</h3>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">{t('noBugsAssigned')}</h3>
                 <p className="text-muted-foreground text-center max-w-md text-sm">
-                  You don't have any bugs assigned to you at the moment. Check back later or contact your manager.
+                  {t('noBugsAssignedMsg')}
                 </p>
                 <Button onClick={() => navigate('/bugs')} variant="destructive" className="mt-4 sm:mt-6 shadow-md" size="sm">
                   <Bug className="h-4 w-4 mr-2" />
-                  View All Bugs
+                  {t('viewAllBugs')}
                 </Button>
               </CardContent>
             </Card>
@@ -680,13 +680,13 @@ export function MyTasks() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="triaged">Triaged</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                          <SelectItem value="fixed">Fixed</SelectItem>
-                          <SelectItem value="won't_fix">Won't Fix</SelectItem>
-                          <SelectItem value="duplicate">Duplicate</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
+                          <SelectItem value="new">{t('new')}</SelectItem>
+                          <SelectItem value="triaged">{t('triaged')}</SelectItem>
+                          <SelectItem value="in_progress">{t('inProgressStatus')}</SelectItem>
+                          <SelectItem value="fixed">{t('fixed')}</SelectItem>
+                          <SelectItem value="won't_fix">{t('wontFix')}</SelectItem>
+                          <SelectItem value="duplicate">{t('duplicate')}</SelectItem>
+                          <SelectItem value="closed">{t('closed')}</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -699,15 +699,15 @@ export function MyTasks() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
+                          <SelectItem value="low">{t('low')}</SelectItem>
+                          <SelectItem value="medium">{t('medium')}</SelectItem>
+                          <SelectItem value="high">{t('high')}</SelectItem>
+                          <SelectItem value="critical">{t('critical')}</SelectItem>
                         </SelectContent>
                       </Select>
 
                       <Input
-                        placeholder="Comment..."
+                        placeholder={t('commentPlaceholder')}
                         value={quickComments[bug.id] || ''}
                         onChange={(e) => setQuickComments(prev => ({ ...prev, [bug.id]: e.target.value }))}
                         onKeyDown={(e) => {
@@ -742,13 +742,13 @@ export function MyTasks() {
             <Card className="border-border/60">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <Lightbulb className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No suggestions assigned</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('noSuggestionsAssigned')}</h3>
                 <p className="text-muted-foreground text-center">
-                  You don't have any suggestions assigned to you at the moment
+                  {t('noSuggestionsAssignedMsg')}
                 </p>
                 <Button onClick={() => navigate('/suggestions')} className="mt-4 sm:mt-6 btn-gradient" size="sm">
                   <Lightbulb className="h-4 w-4 mr-2" />
-                  View All Suggestions
+                  {t('viewAllSuggestions')}
                 </Button>
               </CardContent>
             </Card>

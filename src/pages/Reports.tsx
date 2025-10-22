@@ -241,17 +241,17 @@ export function Reports() {
       // User stats
       const activeUsers = members.filter(m => {
         // Count as active if contributed in last 30 days
-        const userTests = tests?.filter(t => 
-          t.created_by === m.profile_id && 
-          t.created_at && 
-          new Date(t.created_at) > thirtyDaysAgo
-        ) || [];
         const userBugs = bugs?.filter(b => 
           b.reporter_id === m.profile_id && 
           b.created_at && 
           new Date(b.created_at) > thirtyDaysAgo
         ) || [];
-        return userTests.length > 0 || userBugs.length > 0;
+        const userSuggestions = suggestions?.filter(s =>
+          s.author_id === m.profile_id &&
+          s.created_at &&
+          new Date(s.created_at) > thirtyDaysAgo
+        ) || [];
+        return userBugs.length > 0 || userSuggestions.length > 0;
       }).length;
 
       // Calculate individual user stats
@@ -260,7 +260,8 @@ export function Reports() {
         const userName = (m.profiles as any)?.display_name || 'Unknown User';
         const userEmail = (m.profiles as any)?.email || '';
         
-        const userTests = tests?.filter(t => t.created_by === userId) || [];
+        // Tests don't track creator, count assignments instead
+        const userTestAssignments = assignments?.filter(a => a.assignee_id === userId) || [];
         const userBugs = bugs?.filter(b => b.reporter_id === userId) || [];
         const userSuggestions = suggestions?.filter(s => s.author_id === userId) || [];
         const userAssignments = assignments?.filter(a => a.assignee_id === userId && a.state === 'done') || [];
@@ -273,7 +274,7 @@ export function Reports() {
           .eq('org_id', currentOrg.id)
           .is('deleted_at', null);
         
-        const testsCreated = userTests.length;
+        const testsCreated = userTestAssignments.length;
         const bugsReported = userBugs.length;
         const suggestionsMade = userSuggestions.length;
         const assignmentsCompleted = userAssignments.length;
@@ -281,7 +282,6 @@ export function Reports() {
         
         // Calculate last active date
         const allDates = [
-          ...userTests.map(t => t.created_at),
           ...userBugs.map(b => b.created_at),
           ...userSuggestions.map(s => s.created_at),
           ...userAssignments.map(a => a.updated_at),
@@ -780,7 +780,7 @@ export function Reports() {
           variant="outline"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline ml-2">Refresh</span>
+          <span className="hidden sm:inline ml-2">{t('refresh')}</span>
         </Button>
       </div>
 
@@ -790,7 +790,7 @@ export function Reports() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-primary" />
-              System Health
+              {t('systemHealth')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -798,17 +798,17 @@ export function Reports() {
               <div className="flex items-center justify-between">
                 <span className="text-3xl font-bold">{reportData.systemHealth}%</span>
                 <Badge variant={reportData.systemHealth >= 80 ? 'default' : reportData.systemHealth >= 60 ? 'secondary' : 'destructive'}>
-                  {reportData.systemHealth >= 80 ? 'Excellent' : reportData.systemHealth >= 60 ? 'Good' : 'Needs Attention'}
+                  {reportData.systemHealth >= 80 ? t('excellent') : reportData.systemHealth >= 60 ? t('good') : t('needsAttention')}
                 </Badge>
               </div>
               <Progress value={reportData.systemHealth} className="h-3" />
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Test Pass Rate</p>
+                  <p className="text-muted-foreground">{t('testPassRate')}</p>
                   <p className="font-semibold">{reportData.testPassRate}%</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Data Quality</p>
+                  <p className="text-muted-foreground">{t('dataQuality')}</p>
                   <p className="font-semibold">{reportData.dataQuality}%</p>
                 </div>
               </div>
@@ -820,7 +820,7 @@ export function Reports() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-success" />
-              Team Velocity
+              {t('teamVelocity')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -833,18 +833,18 @@ export function Reports() {
                   ) : reportData.velocityTrend < 0 ? (
                     <><TrendingDown className="h-3 w-3 mr-1 inline" /> {reportData.velocityTrend}%</>
                   ) : (
-                    'Stable'
+                    t('stable')
                   )}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">Items completed this week</p>
+              <p className="text-sm text-muted-foreground">{t('itemsCompletedThisWeek')}</p>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Last Week</p>
+                  <p className="text-muted-foreground">{t('lastWeek')}</p>
                   <p className="font-semibold">{reportData.itemsCompletedLastWeek}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Bugs Fixed</p>
+                  <p className="text-muted-foreground">{t('bugsFixed')}</p>
                   <p className="font-semibold">{reportData.bugsFixedThisWeek}</p>
                 </div>
               </div>
@@ -856,7 +856,7 @@ export function Reports() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-info" />
-              Engagement
+              {t('engagement')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -867,14 +867,14 @@ export function Reports() {
                   {reportData.commentsThisWeek} new
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">Community engagement rate</p>
+              <p className="text-sm text-muted-foreground">{t('communityEngagementRate')}</p>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Comments</p>
+                  <p className="text-muted-foreground">{t('comments')}</p>
                   <p className="font-semibold">{reportData.totalComments}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Votes</p>
+                  <p className="text-muted-foreground">{t('votes')}</p>
                   <p className="font-semibold">{reportData.totalVotes}</p>
                 </div>
               </div>
@@ -944,7 +944,7 @@ export function Reports() {
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-1"></div>
-                    Draft: {reportData.draftTests}
+                    {t('draft')}: {reportData.draftTests}
                   </div>
                 </div>
               </CardContent>
@@ -984,7 +984,7 @@ export function Reports() {
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                    Done: {reportData.implementedSuggestions}
+                    {t('done')}: {reportData.implementedSuggestions}
                   </div>
                 </div>
               </CardContent>
@@ -992,7 +992,7 @@ export function Reports() {
 
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Assignments</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('assignmentsSection')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -1000,12 +1000,12 @@ export function Reports() {
                 <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-2">
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                    Done: {reportData.completedAssignments}
+                    {t('done')}: {reportData.completedAssignments}
                   </div>
                   {reportData.overdueTasks > 0 && (
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
-                      Overdue: {reportData.overdueTasks}
+                      {t('overdue')}: {reportData.overdueTasks}
                     </div>
                   )}
                 </div>
@@ -1019,9 +1019,9 @@ export function Reports() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
-                  Weekly Activity Trend
+                  {t('weeklyActivityTrend')}
                 </CardTitle>
-                <CardDescription>Activity over the last 7 days</CardDescription>
+                <CardDescription>{t('activityOverLast7Days')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -1036,21 +1036,21 @@ export function Reports() {
                       dataKey="tests_created" 
                       stroke="hsl(var(--primary))" 
                       strokeWidth={2}
-                      name="Tests Created"
+                      name={t('testsCreated')}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="bugs_reported" 
                       stroke="#ef4444" 
                       strokeWidth={2}
-                      name="Bugs Reported"
+                      name={t('bugsReported')}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="suggestions_made" 
                       stroke="#22c55e" 
                       strokeWidth={2}
-                      name="Suggestions Made"
+                      name={t('suggestionsMade')}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -1061,9 +1061,9 @@ export function Reports() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Monthly Activity Trend
+                  {t('monthlyActivityTrend')}
                 </CardTitle>
-                <CardDescription>Activity over the last 6 months</CardDescription>
+                <CardDescription>{t('activityOverLast6Months')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
