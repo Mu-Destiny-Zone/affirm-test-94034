@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, Send, Edit2, X, Check } from 'lucide-react';
+import { MessageCircle, Send, Edit2, X, Check, Trash2 } from 'lucide-react';
 import { Button } from './button';
 import { Textarea } from './textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from './badge';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { z } from 'zod';
 
 interface Comment {
@@ -40,6 +41,7 @@ export function Comments({ targetType, targetId }: CommentsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { currentOrg } = useOrganization();
+  const { isAdmin } = useUserRole(currentOrg?.id);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -176,6 +178,35 @@ export function Comments({ targetType, targetId }: CommentsProps) {
     setEditText('');
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) throw error;
+
+      fetchComments();
+      toast({
+        title: 'Success',
+        description: 'Comment deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete comment',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -212,15 +243,27 @@ export function Comments({ targetType, targetId }: CommentsProps) {
                           {formatDate(comment.created_at)}
                         </span>
                       </div>
-                      {user && comment.author_id === user.id && editingId !== comment.id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => startEdit(comment)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </Button>
+                      {user && editingId !== comment.id && (comment.author_id === user.id || isAdmin) && (
+                        <div className="flex gap-1">
+                          {comment.author_id === user.id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEdit(comment)}
+                              className="h-7 w-7 p-0"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                     {editingId === comment.id ? (

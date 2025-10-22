@@ -74,8 +74,8 @@ export type Database = {
       }
       bug_reports: {
         Row: {
-          assignment_id: string | null
           assignee_id: string | null
+          assignment_id: string | null
           created_at: string | null
           deleted_at: string | null
           description: string | null
@@ -96,8 +96,8 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
-          assignment_id?: string | null
           assignee_id?: string | null
+          assignment_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
@@ -118,8 +118,8 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
-          assignment_id?: string | null
           assignee_id?: string | null
+          assignment_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
@@ -141,17 +141,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "bug_reports_assignment_id_fkey"
-            columns: ["assignment_id"]
-            isOneToOne: false
-            referencedRelation: "test_assignments"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "bug_reports_assignee_id_fkey"
             columns: ["assignee_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bug_reports_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "test_assignments"
             referencedColumns: ["id"]
           },
           {
