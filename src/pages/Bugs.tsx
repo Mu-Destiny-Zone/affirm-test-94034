@@ -189,17 +189,6 @@ export function Bugs() {
         setShowMyAssigned(false); // Clear the other filter
       },
       active: showMyReports
-    },
-    {
-      label: t('criticalAndHigh'),
-      onClick: () => {
-        if (severityFilter === 'critical' || severityFilter === 'high') {
-          setSeverityFilter('all');
-        } else {
-          setSeverityFilter('critical');
-        }
-      },
-      active: severityFilter === 'high' || severityFilter === 'critical'
     }
   ];
 
