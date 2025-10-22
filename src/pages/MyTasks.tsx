@@ -583,78 +583,80 @@ export function MyTasks() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {assignedTests.map((assignment, index) => (
                 <Card 
                   key={assignment.id} 
-                  className="card-interactive border-border/60 hover:border-primary/30 animate-slide-up"
+                  className="card-interactive border-border/60 hover:border-primary/30 animate-slide-up overflow-hidden"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <CardHeader className="pb-2 sm:pb-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                            <TestTube className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  <div className="p-3 space-y-2.5">
+                    {/* Header */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="relative">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <TestTube className="h-5 w-5 text-primary" />
                           </div>
-                          <div className="flex-1">
-                            <CardTitle className="text-base sm:text-xl font-bold mb-1">{assignment.tests.title}</CardTitle>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={getPriorityColor(assignment.tests.priority)} className="text-xs">
-                                {getPriorityLabel(assignment.tests.priority)}
-                              </Badge>
-                              {assignment.state === 'assigned' && (
-                                <Badge variant="outline" className="text-xs bg-primary/5 border-primary/20">
-                                  <Clock className="h-3 w-3 mr-1" />
-                                  Assigned
-                                </Badge>
-                              )}
-                              {assignment.state === 'in_progress' && (
-                                <Badge variant="outline" className="text-xs bg-info/5 border-info/20">
-                                  <TestTube className="h-3 w-3 mr-1" />
-                                  In Progress
-                                </Badge>
-                              )}
-                              {assignment.state === 'done' && (
-                                <Badge variant="outline" className="text-xs bg-success/5 border-success/20">
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                  Completed
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
+                          <Badge 
+                            variant={getPriorityColor(assignment.tests.priority)} 
+                            className="absolute -top-1 -right-1 h-5 px-1.5 text-[10px] font-bold"
+                          >
+                            {assignment.tests.priority === 3 ? 'P0' : assignment.tests.priority === 2 ? 'P1' : assignment.tests.priority === 1 ? 'P2' : 'P3'}
+                          </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2 ml-14">
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-semibold text-sm line-clamp-1">{assignment.tests.title}</h3>
+                          <Button
+                            size="sm"
+                            onClick={() => setExecutionDialogTest(assignment.tests as Test)}
+                            className="btn-gradient h-6 w-6 p-0 flex-shrink-0"
+                            title="Execute Test"
+                          >
+                            <TestTube className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        
+                        <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
                           {assignment.tests.description}
                         </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => setExecutionDialogTest(assignment.tests as Test)}
-                        className="btn-gradient gap-2 shadow-md h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
-                      >
-                        <TestTube className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span className="hidden sm:inline">Execute Test</span>
-                        <span className="sm:hidden">Run</span>
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 sm:p-3 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-background rounded">
-                          <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
+                            assignment.state === 'assigned' ? 'bg-primary/10 text-primary' :
+                            assignment.state === 'in_progress' ? 'bg-info/10 text-info' :
+                            assignment.state === 'done' ? 'bg-success/10 text-success' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              assignment.state === 'assigned' ? 'bg-primary' :
+                              assignment.state === 'in_progress' ? 'bg-info' :
+                              assignment.state === 'done' ? 'bg-success' :
+                              'bg-muted-foreground'
+                            }`}></span>
+                            {assignment.state === 'assigned' ? 'Assigned' : assignment.state === 'in_progress' ? 'In Progress' : 'Completed'}
+                          </span>
+                          <span className="text-muted-foreground/40">•</span>
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <FileText className="h-3 w-3" />
+                            <span>{assignment.tests.steps?.length || 0} steps</span>
+                          </div>
+                          {assignment.due_date && (
+                            <>
+                              <span className="text-muted-foreground/40">•</span>
+                              <div className="flex items-center gap-1 text-warning">
+                                <AlertCircle className="h-3 w-3" />
+                                <span className="flex-shrink-0">{format(new Date(assignment.due_date), 'MMM dd')}</span>
+                              </div>
+                            </>
+                          )}
                         </div>
-                        <span className="font-medium">{assignment.tests.steps?.length || 0} steps</span>
                       </div>
-                      {assignment.due_date && (
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-warning" />
-                          <span>Due: {format(new Date(assignment.due_date), 'MMM dd, yyyy')}</span>
-                        </div>
-                      )}
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -679,148 +681,137 @@ export function MyTasks() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {userBugs.map((bug, index) => (
                 <Card 
                   key={bug.id} 
-                  className="card-interactive border-border/60 hover:border-destructive/30 animate-slide-up"
+                  className="card-interactive border-border/60 hover:border-destructive/30 animate-slide-up overflow-hidden"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <CardHeader className="pb-2 sm:pb-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="p-1.5 sm:p-2 bg-destructive/10 rounded-lg">
-                            <Bug className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
+                  <div className="p-3 space-y-2.5">
+                    {/* Header */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="relative">
+                          <div className="p-2 bg-destructive/10 rounded-lg">
+                            <Bug className="h-5 w-5 text-destructive" />
                           </div>
-                          <div className="flex-1">
-                            <CardTitle className="text-base sm:text-xl font-bold mb-1">{bug.title}</CardTitle>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={getSeverityColor(bug.severity)} className="text-xs">
-                                {bug.severity}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                <span className={`w-2 h-2 rounded-full mr-1.5 ${
-                                  bug.status === 'new' ? 'bg-primary' :
-                                  bug.status === 'triaged' ? 'bg-warning' :
-                                  bug.status === 'in_progress' ? 'bg-info' :
-                                  bug.status === 'fixed' ? 'bg-success' :
-                                  'bg-muted-foreground'
-                                }`}></span>
-                                {bug.status.replace('_', ' ')}
-                              </Badge>
-                            </div>
-                          </div>
+                          <Badge 
+                            variant={getSeverityColor(bug.severity)} 
+                            className="absolute -top-1 -right-1 h-5 px-1.5 text-[10px] font-bold"
+                          >
+                            {bug.severity === 'critical' ? 'C' : bug.severity === 'high' ? 'H' : bug.severity === 'medium' ? 'M' : 'L'}
+                          </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2 ml-14">
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-semibold text-sm line-clamp-1">{bug.title}</h3>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleBugClick(bug)}
+                            className="h-6 w-6 p-0 flex-shrink-0 hover:bg-destructive/10"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        
+                        <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
                           {bug.description}
                         </p>
+
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
+                            bug.status === 'new' ? 'bg-primary/10 text-primary' :
+                            bug.status === 'triaged' ? 'bg-warning/10 text-warning' :
+                            bug.status === 'in_progress' ? 'bg-info/10 text-info' :
+                            bug.status === 'fixed' ? 'bg-success/10 text-success' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              bug.status === 'new' ? 'bg-primary' :
+                              bug.status === 'triaged' ? 'bg-warning' :
+                              bug.status === 'in_progress' ? 'bg-info' :
+                              bug.status === 'fixed' ? 'bg-success' :
+                              'bg-muted-foreground'
+                            }`}></span>
+                            {bug.status.replace('_', ' ')}
+                          </span>
+                          {bug.projects && (
+                            <>
+                              <span className="text-muted-foreground/40">•</span>
+                              <span className="text-muted-foreground truncate">{bug.projects.name}</span>
+                            </>
+                          )}
+                          <span className="ml-auto text-muted-foreground/60 flex-shrink-0">{format(new Date(bug.created_at), 'MMM dd')}</span>
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="flex gap-2 pt-2 border-t border-border/30">
+                      <Select 
+                        value={bug.status} 
+                        onValueChange={(value) => handleBugStatusChange(bug.id, value)}
+                        disabled={updatingStatus === bug.id}
+                      >
+                        <SelectTrigger className="h-7 text-[11px] flex-1" data-testid={`bug-status-select-${bug.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="triaged">Triaged</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="fixed">Fixed</SelectItem>
+                          <SelectItem value="won't_fix">Won't Fix</SelectItem>
+                          <SelectItem value="duplicate">Duplicate</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Select 
+                        value={bug.severity} 
+                        onValueChange={(value) => handleBugSeverityChange(bug.id, value)}
+                        disabled={updatingSeverity === bug.id}
+                      >
+                        <SelectTrigger className="h-7 text-[11px] w-24" data-testid={`bug-severity-select-${bug.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="critical">Critical</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Input
+                        placeholder="Comment..."
+                        value={quickComments[bug.id] || ''}
+                        onChange={(e) => setQuickComments(prev => ({ ...prev, [bug.id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddComment('bug', bug.id);
+                          }
+                        }}
+                        disabled={addingComment === bug.id}
+                        className="flex-1 h-7 text-[11px]"
+                        data-testid={`bug-comment-input-${bug.id}`}
+                      />
                       <Button
                         size="sm"
-                        variant="destructive"
-                        onClick={() => handleBugClick(bug)}
-                        className="gap-2 shadow-md h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
+                        onClick={() => handleAddComment('bug', bug.id)}
+                        disabled={!quickComments[bug.id]?.trim() || addingComment === bug.id}
+                        className="h-7 px-2"
+                        data-testid={`bug-comment-submit-${bug.id}`}
                       >
-                        <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span className="hidden sm:inline">View Details</span>
-                        <span className="sm:hidden">View</span>
+                        <Send className="h-3 w-3" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {/* Quick Actions */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-muted/30 rounded-lg">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-muted-foreground">Status</label>
-                        <Select 
-                          value={bug.status} 
-                          onValueChange={(value) => handleBugStatusChange(bug.id, value)}
-                          disabled={updatingStatus === bug.id}
-                        >
-                          <SelectTrigger className="h-9" data-testid={`bug-status-select-${bug.id}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="new">New</SelectItem>
-                            <SelectItem value="triaged">Triaged</SelectItem>
-                            <SelectItem value="in_progress">In Progress</SelectItem>
-                            <SelectItem value="fixed">Fixed</SelectItem>
-                            <SelectItem value="won't_fix">Won't Fix</SelectItem>
-                            <SelectItem value="duplicate">Duplicate</SelectItem>
-                            <SelectItem value="closed">Closed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-muted-foreground">Severity</label>
-                        <Select 
-                          value={bug.severity} 
-                          onValueChange={(value) => handleBugSeverityChange(bug.id, value)}
-                          disabled={updatingSeverity === bug.id}
-                        >
-                          <SelectTrigger className="h-9" data-testid={`bug-severity-select-${bug.id}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Quick Comment */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        Quick Comment
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Add a comment..."
-                          value={quickComments[bug.id] || ''}
-                          onChange={(e) => setQuickComments(prev => ({ ...prev, [bug.id]: e.target.value }))}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleAddComment('bug', bug.id);
-                            }
-                          }}
-                          disabled={addingComment === bug.id}
-                          className="flex-1 h-9"
-                          data-testid={`bug-comment-input-${bug.id}`}
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() => handleAddComment('bug', bug.id)}
-                          disabled={!quickComments[bug.id]?.trim() || addingComment === bug.id}
-                          className="h-9 px-3"
-                          data-testid={`bug-comment-submit-${bug.id}`}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Info Row */}
-                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground pt-2 border-t">
-                      {bug.projects && (
-                        <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-background rounded">
-                            <FileText className="h-3.5 w-3.5" />
-                          </div>
-                          <span className="font-medium">{bug.projects.name}</span>
-                        </div>
-                      )}
-                      <div className="ml-auto">
-                        {format(new Date(bug.created_at), 'MMM dd, yyyy')}
-                      </div>
-                    </div>
-                  </CardContent>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -843,42 +834,85 @@ export function MyTasks() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
-              {userSuggestions.map((suggestion) => (
-                <Card key={suggestion.id} className="border-border/60 hover:border-warning/30 transition-all hover:shadow-lg">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl font-bold">{suggestion.title}</CardTitle>
-                          <Badge variant={suggestion.impact === 'high' ? 'destructive' : 'secondary'}>
-                            {suggestion.impact} impact
+            <div className="grid gap-3">
+              {userSuggestions.map((suggestion, index) => (
+                <Card 
+                  key={suggestion.id} 
+                  className="card-interactive border-border/60 hover:border-warning/30 animate-slide-up overflow-hidden"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="p-3 space-y-2.5">
+                    {/* Header */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="relative">
+                          <div className="p-2 bg-warning/10 rounded-lg">
+                            <Lightbulb className="h-5 w-5 text-warning" />
+                          </div>
+                          <Badge 
+                            variant={suggestion.impact === 'high' ? 'destructive' : suggestion.impact === 'medium' ? 'default' : 'secondary'} 
+                            className="absolute -top-1 -right-1 h-5 px-1.5 text-[10px] font-bold"
+                          >
+                            {suggestion.impact === 'high' ? 'H' : suggestion.impact === 'medium' ? 'M' : 'L'}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-semibold text-sm line-clamp-1">{suggestion.title}</h3>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className="h-6 w-6 p-0 flex-shrink-0 hover:bg-warning/10"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        
+                        <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
                           {suggestion.description}
                         </p>
+
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
+                            suggestion.status === 'new' ? 'bg-primary/10 text-primary' :
+                            suggestion.status === 'consider' ? 'bg-warning/10 text-warning' :
+                            suggestion.status === 'planned' ? 'bg-info/10 text-info' :
+                            suggestion.status === 'done' ? 'bg-success/10 text-success' :
+                            suggestion.status === 'rejected' ? 'bg-destructive/10 text-destructive' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              suggestion.status === 'new' ? 'bg-primary' :
+                              suggestion.status === 'consider' ? 'bg-warning' :
+                              suggestion.status === 'planned' ? 'bg-info' :
+                              suggestion.status === 'done' ? 'bg-success' :
+                              suggestion.status === 'rejected' ? 'bg-destructive' :
+                              'bg-muted-foreground'
+                            }`}></span>
+                            {suggestion.status === 'consider' ? 'Under Review' : suggestion.status.replace('_', ' ')}
+                          </span>
+                          {suggestion.projects && (
+                            <>
+                              <span className="text-muted-foreground/40">•</span>
+                              <span className="text-muted-foreground truncate">{suggestion.projects.name}</span>
+                            </>
+                          )}
+                          <span className="ml-auto text-muted-foreground/60 flex-shrink-0">{format(new Date(suggestion.created_at), 'MMM dd')}</span>
+                        </div>
                       </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="gap-2"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        View
-                      </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+
                     {/* Quick Actions */}
-                    <div className="p-3 bg-muted/30 rounded-lg space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Status</label>
+                    <div className="flex gap-2 pt-2 border-t border-border/30">
                       <Select 
                         value={suggestion.status} 
                         onValueChange={(value) => handleSuggestionStatusChange(suggestion.id, value)}
                         disabled={updatingStatus === suggestion.id}
                       >
-                        <SelectTrigger className="h-9" data-testid={`suggestion-status-select-${suggestion.id}`}>
+                        <SelectTrigger className="h-7 text-[11px] w-32" data-testid={`suggestion-status-select-${suggestion.id}`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -889,64 +923,32 @@ export function MyTasks() {
                           <SelectItem value="rejected">Rejected</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
 
-                    {/* Quick Comment */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        Quick Comment
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Add a comment..."
-                          value={quickComments[suggestion.id] || ''}
-                          onChange={(e) => setQuickComments(prev => ({ ...prev, [suggestion.id]: e.target.value }))}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleAddComment('suggestion', suggestion.id);
-                            }
-                          }}
-                          disabled={addingComment === suggestion.id}
-                          className="flex-1 h-9"
-                          data-testid={`suggestion-comment-input-${suggestion.id}`}
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() => handleAddComment('suggestion', suggestion.id)}
-                          disabled={!quickComments[suggestion.id]?.trim() || addingComment === suggestion.id}
-                          className="h-9 px-3"
-                          data-testid={`suggestion-comment-submit-${suggestion.id}`}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Input
+                        placeholder="Comment..."
+                        value={quickComments[suggestion.id] || ''}
+                        onChange={(e) => setQuickComments(prev => ({ ...prev, [suggestion.id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddComment('suggestion', suggestion.id);
+                          }
+                        }}
+                        disabled={addingComment === suggestion.id}
+                        className="flex-1 h-7 text-[11px]"
+                        data-testid={`suggestion-comment-input-${suggestion.id}`}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => handleAddComment('suggestion', suggestion.id)}
+                        disabled={!quickComments[suggestion.id]?.trim() || addingComment === suggestion.id}
+                        className="h-7 px-2"
+                        data-testid={`suggestion-comment-submit-${suggestion.id}`}
+                      >
+                        <Send className="h-3 w-3" />
+                      </Button>
                     </div>
-
-                    {/* Info Row */}
-                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground pt-2 border-t">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${
-                          suggestion.status === 'new' ? 'bg-primary' :
-                          suggestion.status === 'consider' ? 'bg-warning' :
-                          suggestion.status === 'planned' ? 'bg-info' :
-                          suggestion.status === 'done' ? 'bg-success' :
-                          suggestion.status === 'rejected' ? 'bg-destructive' :
-                          'bg-muted-foreground'
-                        }`}></span>
-                        <span className="font-medium capitalize">{suggestion.status.replace('_', ' ')}</span>
-                      </div>
-                      {suggestion.projects && (
-                        <div className="text-muted-foreground">
-                          Project: {suggestion.projects.name}
-                        </div>
-                      )}
-                      <div className="text-muted-foreground ml-auto">
-                        {format(new Date(suggestion.created_at), 'MMM dd, yyyy')}
-                      </div>
-                    </div>
-                  </CardContent>
+                  </div>
                 </Card>
               ))}
             </div>
