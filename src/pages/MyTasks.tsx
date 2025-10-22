@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TestTube, Bug, Lightbulb, Clock, CircleCheck as CheckCircle, CircleAlert as AlertCircle, ExternalLink, FileText } from 'lucide-react';
+import { TestTube, Bug, Lightbulb, Clock, CircleCheck as CheckCircle, CircleAlert as AlertCircle, ExternalLink, FileText, Send, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { BugDetailDialog } from '@/components/bugs/BugDetailDialog';
@@ -115,6 +117,12 @@ export function MyTasks() {
     openBugs: 0,
     pendingSuggestions: 0,
   });
+
+  // Quick action states
+  const [quickComments, setQuickComments] = useState<Record<string, string>>({});
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [updatingSeverity, setUpdatingSeverity] = useState<string | null>(null);
+  const [addingComment, setAddingComment] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && currentOrg) {
@@ -286,6 +294,137 @@ export function MyTasks() {
   const handleSuggestionEdit = (suggestion: any) => {
     setSuggestionDialogOpen(false);
     navigate('/suggestions');
+  };
+
+  // Quick action handlers
+  const handleBugStatusChange = async (bugId: string, newStatus: string) => {
+    setUpdatingStatus(bugId);
+    try {
+      const { error } = await supabase
+        .from('bug_reports')
+        .update({ status: newStatus as 'new' | 'triaged' | 'in_progress' | 'fixed' | 'closed' | 'duplicate' | "won't_fix" })
+        .eq('id', bugId);
+
+      if (error) throw error;
+
+      const updatedBugs = userBugs.map(bug => 
+        bug.id === bugId ? { ...bug, status: newStatus as any } : bug
+      );
+      setUserBugs(updatedBugs);
+      
+      // Update stats
+      const openBugs = updatedBugs.filter(b => b.status !== 'closed').length;
+      setStats(prev => ({ ...prev, openBugs }));
+      
+      toast({
+        title: 'Success',
+        description: 'Bug status updated'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  const handleBugSeverityChange = async (bugId: string, newSeverity: string) => {
+    setUpdatingSeverity(bugId);
+    try {
+      const { error } = await supabase
+        .from('bug_reports')
+        .update({ severity: newSeverity as 'low' | 'medium' | 'high' | 'critical' })
+        .eq('id', bugId);
+
+      if (error) throw error;
+
+      const updatedBugs = userBugs.map(bug => 
+        bug.id === bugId ? { ...bug, severity: newSeverity as BugSeverity } : bug
+      );
+      setUserBugs(updatedBugs);
+      
+      toast({
+        title: 'Success',
+        description: 'Bug severity updated'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingSeverity(null);
+    }
+  };
+
+  const handleSuggestionStatusChange = async (suggestionId: string, newStatus: string) => {
+    setUpdatingStatus(suggestionId);
+    try {
+      const { error } = await supabase
+        .from('suggestions')
+        .update({ status: newStatus as 'new' | 'consider' | 'planned' | 'done' | 'rejected' })
+        .eq('id', suggestionId);
+
+      if (error) throw error;
+
+      const updatedSuggestions = userSuggestions.map(suggestion => 
+        suggestion.id === suggestionId ? { ...suggestion, status: newStatus as any } : suggestion
+      );
+      setUserSuggestions(updatedSuggestions);
+      
+      // Update stats
+      const pendingSuggestions = updatedSuggestions.filter(s => s.status === 'new').length;
+      setStats(prev => ({ ...prev, pendingSuggestions }));
+      
+      toast({
+        title: 'Success',
+        description: 'Suggestion status updated'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  const handleAddComment = async (entityType: 'bug' | 'suggestion' | 'test', entityId: string) => {
+    const commentText = quickComments[entityId];
+    if (!commentText?.trim() || !user || !currentOrg) return;
+
+    setAddingComment(entityId);
+    try {
+      const { error } = await supabase.from('comments').insert({
+        body: commentText,
+        author_id: user.id,
+        org_id: currentOrg.id,
+        target_type: entityType,
+        target_id: entityId
+      });
+
+      if (error) throw error;
+
+      setQuickComments(prev => ({ ...prev, [entityId]: '' }));
+      toast({
+        title: 'Success',
+        description: 'Comment added'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setAddingComment(null);
+    }
   };
 
   if (loading || !currentOrg) {
@@ -589,8 +728,86 @@ export function MyTasks() {
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 sm:p-3 rounded-lg">
+                  <CardContent className="space-y-3">
+                    {/* Quick Actions */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-muted/30 rounded-lg">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Status</label>
+                        <Select 
+                          value={bug.status} 
+                          onValueChange={(value) => handleBugStatusChange(bug.id, value)}
+                          disabled={updatingStatus === bug.id}
+                        >
+                          <SelectTrigger className="h-9" data-testid={`bug-status-select-${bug.id}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">New</SelectItem>
+                            <SelectItem value="triaged">Triaged</SelectItem>
+                            <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="fixed">Fixed</SelectItem>
+                            <SelectItem value="won't_fix">Won't Fix</SelectItem>
+                            <SelectItem value="duplicate">Duplicate</SelectItem>
+                            <SelectItem value="closed">Closed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Severity</label>
+                        <Select 
+                          value={bug.severity} 
+                          onValueChange={(value) => handleBugSeverityChange(bug.id, value)}
+                          disabled={updatingSeverity === bug.id}
+                        >
+                          <SelectTrigger className="h-9" data-testid={`bug-severity-select-${bug.id}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Quick Comment */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3" />
+                        Quick Comment
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add a comment..."
+                          value={quickComments[bug.id] || ''}
+                          onChange={(e) => setQuickComments(prev => ({ ...prev, [bug.id]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleAddComment('bug', bug.id);
+                            }
+                          }}
+                          disabled={addingComment === bug.id}
+                          className="flex-1 h-9"
+                          data-testid={`bug-comment-input-${bug.id}`}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddComment('bug', bug.id)}
+                          disabled={!quickComments[bug.id]?.trim() || addingComment === bug.id}
+                          className="h-9 px-3"
+                          data-testid={`bug-comment-submit-${bug.id}`}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Info Row */}
+                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground pt-2 border-t">
                       {bug.projects && (
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-background rounded">
@@ -652,8 +869,63 @@ export function MyTasks() {
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-6 text-sm">
+                  <CardContent className="space-y-3">
+                    {/* Quick Actions */}
+                    <div className="p-3 bg-muted/30 rounded-lg space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Status</label>
+                      <Select 
+                        value={suggestion.status} 
+                        onValueChange={(value) => handleSuggestionStatusChange(suggestion.id, value)}
+                        disabled={updatingStatus === suggestion.id}
+                      >
+                        <SelectTrigger className="h-9" data-testid={`suggestion-status-select-${suggestion.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="consider">Consider</SelectItem>
+                          <SelectItem value="planned">Planned</SelectItem>
+                          <SelectItem value="done">Done</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Quick Comment */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3" />
+                        Quick Comment
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add a comment..."
+                          value={quickComments[suggestion.id] || ''}
+                          onChange={(e) => setQuickComments(prev => ({ ...prev, [suggestion.id]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleAddComment('suggestion', suggestion.id);
+                            }
+                          }}
+                          disabled={addingComment === suggestion.id}
+                          className="flex-1 h-9"
+                          data-testid={`suggestion-comment-input-${suggestion.id}`}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddComment('suggestion', suggestion.id)}
+                          disabled={!quickComments[suggestion.id]?.trim() || addingComment === suggestion.id}
+                          className="h-9 px-3"
+                          data-testid={`suggestion-comment-submit-${suggestion.id}`}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Info Row */}
+                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground pt-2 border-t">
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${
                           suggestion.status === 'new' ? 'bg-primary' :
