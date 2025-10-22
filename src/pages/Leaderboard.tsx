@@ -9,11 +9,9 @@ import { Badge } from "@/components/ui/badge";
 interface UserStats {
   id: string;
   name: string;
-  email: string;
   testExecutions: number;
   bugsReported: number;
   suggestionsMade: number;
-  assignmentsCompleted: number;
   commentsPosted: number;
   lastActive: string;
   activityScore: number;
@@ -39,7 +37,7 @@ export default function Leaderboard() {
       // Fetch organization members
       const { data: members, error: membersError } = await supabase
         .from('org_members')
-        .select('*, profiles(id, display_name, email)')
+        .select('*, profiles(id, display_name)')
         .eq('org_id', currentOrg.id)
         .is('deleted_at', null);
 
@@ -62,7 +60,6 @@ export default function Leaderboard() {
       const stats = await Promise.all(members.map(async (m) => {
         const userId = m.profile_id;
         const userName = (m.profiles as any)?.display_name || 'Unknown User';
-        const userEmail = (m.profiles as any)?.email || '';
 
         // Count test executions (assignments with step_results)
         const testExecutions = assignments?.filter(a => 
@@ -74,9 +71,6 @@ export default function Leaderboard() {
 
         const bugsReported = bugs?.filter(b => b.reporter_id === userId).length || 0;
         const suggestionsMade = suggestions?.filter(s => s.author_id === userId).length || 0;
-        const assignmentsCompleted = assignments?.filter(a => 
-          a.assignee_id === userId && a.state === 'done'
-        ).length || 0;
 
         // Fetch comments for this user in this org
         const { data: userComments } = await supabase
@@ -105,17 +99,14 @@ export default function Leaderboard() {
           testExecutions * 3 + // Test executions are worth more
           bugsReported * 2 + 
           suggestionsMade * 2 + 
-          assignmentsCompleted * 3 +
           commentsPosted;
 
         return {
           id: userId,
           name: userName,
-          email: userEmail,
           testExecutions,
           bugsReported,
           suggestionsMade,
-          assignmentsCompleted,
           commentsPosted,
           lastActive,
           activityScore,
@@ -219,7 +210,6 @@ export default function Leaderboard() {
             </CardHeader>
             <CardContent>
               <h3 className="font-bold text-lg truncate">{userStats[1].name}</h3>
-              <p className="text-sm text-muted-foreground truncate">{userStats[1].email}</p>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Score</span>
                 <span className="text-2xl font-bold">{userStats[1].activityScore}</span>
@@ -237,7 +227,6 @@ export default function Leaderboard() {
             </CardHeader>
             <CardContent>
               <h3 className="font-bold text-xl truncate">{userStats[0].name}</h3>
-              <p className="text-sm text-muted-foreground truncate">{userStats[0].email}</p>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Score</span>
                 <span className="text-3xl font-bold text-yellow-500">{userStats[0].activityScore}</span>
@@ -255,7 +244,6 @@ export default function Leaderboard() {
             </CardHeader>
             <CardContent>
               <h3 className="font-bold text-lg truncate">{userStats[2].name}</h3>
-              <p className="text-sm text-muted-foreground truncate">{userStats[2].email}</p>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Score</span>
                 <span className="text-2xl font-bold">{userStats[2].activityScore}</span>
@@ -284,7 +272,6 @@ export default function Leaderboard() {
                   <th className="text-center py-3 px-2 font-semibold text-sm">Executions</th>
                   <th className="text-center py-3 px-2 font-semibold text-sm">Bugs</th>
                   <th className="text-center py-3 px-2 font-semibold text-sm">Suggestions</th>
-                  <th className="text-center py-3 px-2 font-semibold text-sm">Completed</th>
                   <th className="text-center py-3 px-2 font-semibold text-sm">Comments</th>
                   <th className="text-center py-3 px-2 font-semibold text-sm">Score</th>
                   <th className="text-left py-3 px-2 font-semibold text-sm">Last Active</th>
@@ -300,10 +287,7 @@ export default function Leaderboard() {
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div>
-                        <p className="font-semibold">{user.name}</p>
-                        <p className="text-xs text-muted-foreground truncate max-w-[200px]">{user.email}</p>
-                      </div>
+                      <p className="font-semibold">{user.name}</p>
                     </td>
                     <td className="text-center py-3 px-2">
                       <Badge variant="outline" className="font-mono">
@@ -318,11 +302,6 @@ export default function Leaderboard() {
                     <td className="text-center py-3 px-2">
                       <Badge variant="outline" className="font-mono">
                         {user.suggestionsMade}
-                      </Badge>
-                    </td>
-                    <td className="text-center py-3 px-2">
-                      <Badge variant="outline" className="font-mono">
-                        {user.assignmentsCompleted}
                       </Badge>
                     </td>
                     <td className="text-center py-3 px-2">
