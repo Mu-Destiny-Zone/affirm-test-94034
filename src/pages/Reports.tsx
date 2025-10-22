@@ -214,11 +214,8 @@ export function Reports() {
         supabase.from('org_members').select('*, profiles(id, display_name, email)').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('projects').select('id, name').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('comments').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
-        // Filter votes by checking if target belongs to this org
-        supabase.from('votes').select(`
-          *,
-          target_id
-        `)
+        // Filter votes by org_id to avoid scanning unrelated records
+        supabase.from('votes').select('*').eq('org_id', currentOrg.id)
       ]);
 
       const tests = testsQuery.data;
