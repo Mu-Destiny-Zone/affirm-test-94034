@@ -66,6 +66,7 @@ export function Bugs() {
         .select(`
           *,
           profiles!bug_reports_reporter_id_fkey(id, display_name, email, avatar_url),
+          assignee:profiles!bug_reports_assignee_id_fkey(id, display_name, email),
           projects(name)
         `)
         .eq('org_id', currentOrg.id)
@@ -414,6 +415,13 @@ export function Bugs() {
 
                 {/* Compact Metadata Row */}
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
+                  {(bug as any).assignee && (
+                    <span className="flex items-center gap-0.5" data-testid={`bug-assignee-${bug.id}`}>
+                      <User className="h-2.5 w-2.5" />
+                      {(bug as any).assignee.display_name || (bug as any).assignee.email}
+                    </span>
+                  )}
+                  
                   {bug.tags && Array.isArray(bug.tags) && bug.tags.length > 0 && (
                     <span className="flex items-center gap-0.5">
                       <span className="font-medium">{bug.tags.length}</span> tags

@@ -53,6 +53,7 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
   const [tests, setTests] = useState<Array<{id: string, title: string}>>([]);
   const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState('');
+  const [orgMembers, setOrgMembers] = useState<Array<{ id: string; display_name: string | null; email: string }>>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -60,12 +61,14 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
     impact: 'medium' as 'low' | 'medium' | 'high',
     status: 'new' as 'new' | 'consider' | 'planned' | 'done' | 'rejected',
     test_id: 'none',
-    tags: [] as string[]
+    tags: [] as string[],
+    assignee_id: 'none'
   });
 
   useEffect(() => {
     if (open && currentOrg) {
       fetchTests();
+      fetchOrgMembers();
       if (suggestion) {
         setFormData({
           title: suggestion.title,
@@ -73,7 +76,8 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
           impact: suggestion.impact,
           status: suggestion.status,
           test_id: suggestion.test_id || 'none',
-          tags: suggestion.tags || []
+          tags: suggestion.tags || [],
+          assignee_id: (suggestion as any).assignee_id || 'none'
         });
       } else {
         resetForm();
@@ -98,6 +102,37 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
     }
   };
 
+  const fetchOrgMembers = async () => {
+    if (!currentOrg) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('org_members')
+        .select(`
+          profile_id,
+          profiles!org_members_profile_id_fkey (
+            id,
+            display_name,
+            email
+          )
+        `)
+        .eq('org_id', currentOrg.id)
+        .is('deleted_at', null);
+
+      if (error) throw error;
+
+      const members = data?.map((m: any) => ({
+        id: m.profiles.id,
+        display_name: m.profiles.display_name,
+        email: m.profiles.email
+      })) || [];
+
+      setOrgMembers(members);
+    } catch (error) {
+      console.error('Error fetching org members:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -105,7 +140,8 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
       impact: 'medium',
       status: 'new',
       test_id: 'none',
-      tags: []
+      tags: [],
+      assignee_id: 'none'
     });
     setTagInput('');
   };
@@ -156,14 +192,31 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
         status: formData.status,
         test_id: formData.test_id === 'none' ? null : formData.test_id || null,
         tags: formData.tags.length > 0 ? formData.tags : null,
-        author_id: user.id
+        author_id: user.id,
+        assignee_id: formData.assignee_id !== 'none' ? formData.assignee_id : null
       };
 
-      const { error } = suggestion 
-        ? await supabase.from('suggestions').update(suggestionData).eq('id', suggestion.id)
-        : await supabase.from('suggestions').insert(suggestionData);
+      const previousAssigneeId = suggestion ? (suggestion as any).assignee_id : null;
+      const newAssigneeId = formData.assignee_id !== 'none' ? formData.assignee_id : null;
+
+      const { data, error } = suggestion 
+        ? await supabase.from('suggestions').update(suggestionData).eq('id', suggestion.id).select().single()
+        : await supabase.from('suggestions').insert(suggestionData).select().single();
 
       if (error) throw error;
+
+      // Create notification if someone was assigned
+      if (newAssigneeId && newAssigneeId !== user.id && newAssigneeId !== previousAssigneeId) {
+        await supabase.from('notifications').insert({
+          user_id: newAssigneeId,
+          org_id: currentOrg.id,
+          title: 'Suggestion Assigned to You',
+          message: `You have been assigned to suggestion: "${formData.title.trim()}"`,
+          type: 'suggestion_assigned',
+          entity_type: 'suggestion',
+          entity_id: data.id
+        });
+      }
 
       toast({
         title: 'Success',
@@ -254,6 +307,26 @@ export function SuggestionFormDialog({ open, onOpenChange, suggestion, onSuccess
               </Select>
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label>Assign To</Label>
+            <Select 
+              value={formData.assignee_id} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, assignee_id: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select team member" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Unassigned</SelectItem>
+                {orgMembers.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.display_name || member.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {tests.length > 0 && (
             <div className="space-y-2">

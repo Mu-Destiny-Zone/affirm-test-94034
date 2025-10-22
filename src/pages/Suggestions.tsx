@@ -94,6 +94,7 @@ export function Suggestions() {
         .select(`
           *,
           profiles!suggestions_author_id_fkey(id, display_name, email),
+          assignee:profiles!suggestions_assignee_id_fkey(id, display_name, email),
           projects(id, name),
           tests(id, title)
         `)
@@ -427,6 +428,29 @@ export function Suggestions() {
                       day: 'numeric' 
                     })}
                   />
+
+                  {/* Compact Metadata Row */}
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70 mb-2">
+                    {(suggestion as any).assignee && (
+                      <span className="flex items-center gap-0.5" data-testid={`suggestion-assignee-${suggestion.id}`}>
+                        <User className="h-2.5 w-2.5" />
+                        {(suggestion as any).assignee.display_name || (suggestion as any).assignee.email}
+                      </span>
+                    )}
+                    
+                    {suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.length > 0 && (
+                      <span className="flex items-center gap-0.5">
+                        <span className="font-medium">{suggestion.tags.length}</span> tags
+                      </span>
+                    )}
+                    
+                    {suggestion.tests && (
+                      <span className="flex items-center gap-0.5">
+                        <Target className="h-2.5 w-2.5" />
+                        test linked
+                      </span>
+                    )}
+                  </div>
 
                 </EnhancedCard>
               );
