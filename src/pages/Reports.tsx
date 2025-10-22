@@ -214,7 +214,11 @@ export function Reports() {
         supabase.from('org_members').select('*, profiles(id, display_name, email)').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('projects').select('id, name').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('comments').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
-        supabase.from('votes').select('*')
+        // Filter votes by checking if target belongs to this org
+        supabase.from('votes').select(`
+          *,
+          target_id
+        `)
       ]);
 
       const tests = testsQuery.data;
@@ -240,8 +244,16 @@ export function Reports() {
       // User stats
       const activeUsers = members.filter(m => {
         // Count as active if contributed in last 30 days
-        const userTests = tests?.filter(t => t.created_at && new Date(t.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) || [];
-        const userBugs = bugs?.filter(b => b.created_at && new Date(b.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) || [];
+        const userTests = tests?.filter(t => 
+          t.created_by === m.profile_id && 
+          t.created_at && 
+          new Date(t.created_at) > thirtyDaysAgo
+        ) || [];
+        const userBugs = bugs?.filter(b => 
+          b.reporter_id === m.profile_id && 
+          b.created_at && 
+          new Date(b.created_at) > thirtyDaysAgo
+        ) || [];
         return userTests.length > 0 || userBugs.length > 0;
       }).length;
 
@@ -251,16 +263,17 @@ export function Reports() {
         const userName = (m.profiles as any)?.display_name || 'Unknown User';
         const userEmail = (m.profiles as any)?.email || '';
         
-        const userTests = tests?.filter(t => t.created_at && new Date(t.created_at).getTime() > 0) || [];
+        const userTests = tests?.filter(t => t.created_by === userId) || [];
         const userBugs = bugs?.filter(b => b.reporter_id === userId) || [];
         const userSuggestions = suggestions?.filter(s => s.author_id === userId) || [];
         const userAssignments = assignments?.filter(a => a.assignee_id === userId && a.state === 'done') || [];
         
-        // Fetch comments
+        // Fetch comments for this user in this org
         const { data: userComments } = await supabase
           .from('comments')
           .select('id')
           .eq('author_id', userId)
+          .eq('org_id', currentOrg.id)
           .is('deleted_at', null);
         
         const testsCreated = userTests.length;
@@ -527,9 +540,16 @@ export function Reports() {
           }, 0) / implementedSuggestionsWithTime.length).toFixed(1))
         : 0;
 
-      // Engagement metrics
+      // Engagement metrics - filter votes to only those belonging to this org's items
+      const orgItemIds = new Set([
+        ...(tests?.map(t => t.id) || []),
+        ...(bugs?.map(b => b.id) || []),
+        ...(suggestions?.map(s => s.id) || [])
+      ]);
+      const orgVotes = votes?.filter(v => orgItemIds.has(v.target_id)) || [];
+      
       const totalComments = comments.length;
-      const totalVotes = votes.length;
+      const totalVotes = orgVotes.length;
       const totalItems = totalTests + totalBugs + totalSuggestions;
       const engagementRate = totalItems > 0 ? Math.round(((totalComments + totalVotes) / totalItems) * 100) : 0;
       
@@ -574,15 +594,24 @@ export function Reports() {
         : itemsCompletedThisWeek > 0 ? 100 : 0;
       
       // Average response time (time from creation to first comment)
-      const itemsWithComments = [...tests || [], ...bugs || [], ...suggestions || []].filter(item => {
-        const itemComments = comments.filter(c => c.target_id === item.id);
+      // Build a map with proper target_type to avoid ID collisions
+      const itemsWithType = [
+        ...(tests?.map(t => ({ ...t, target_type: 'test' })) || []),
+        ...(bugs?.map(b => ({ ...b, target_type: 'bug' })) || []),
+        ...(suggestions?.map(s => ({ ...s, target_type: 'suggestion' })) || [])
+      ];
+      
+      const itemsWithComments = itemsWithType.filter(item => {
+        const itemComments = comments.filter(c => 
+          c.target_id === item.id && c.target_type === item.target_type
+        );
         return itemComments.length > 0;
       });
       
       const avgResponseTime = itemsWithComments.length > 0
         ? parseFloat((itemsWithComments.reduce((acc, item) => {
             const firstComment = comments
-              .filter(c => c.target_id === item.id)
+              .filter(c => c.target_id === item.id && c.target_type === item.target_type)
               .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
             if (firstComment) {
               const hours = (new Date(firstComment.created_at).getTime() - new Date(item.created_at).getTime()) / (1000 * 60 * 60);
@@ -759,7 +788,7 @@ export function Reports() {
       </div>
 
       {/* System Health Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="stat-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -793,27 +822,94 @@ export function Reports() {
         <Card className="stat-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-warning" />
-              Quick Stats
+              <Activity className="h-5 w-5 text-success" />
+              Team Velocity
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Execution Rate</p>
-                <p className="text-2xl font-bold text-primary">{reportData.testExecutionRate}%</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold">{reportData.itemsCompletedThisWeek}</span>
+                <Badge variant={reportData.velocityTrend > 0 ? 'default' : 'secondary'}>
+                  {reportData.velocityTrend > 0 ? (
+                    <><TrendingUp className="h-3 w-3 mr-1 inline" /> +{reportData.velocityTrend}%</>
+                  ) : reportData.velocityTrend < 0 ? (
+                    <><TrendingDown className="h-3 w-3 mr-1 inline" /> {reportData.velocityTrend}%</>
+                  ) : (
+                    'Stable'
+                  )}
+                </Badge>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Acceptance Rate</p>
-                <p className="text-2xl font-bold text-success">{reportData.acceptanceRate}%</p>
+              <p className="text-sm text-muted-foreground">Items completed this week</p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Last Week</p>
+                  <p className="font-semibold">{reportData.itemsCompletedLastWeek}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Bugs Fixed</p>
+                  <p className="font-semibold">{reportData.bugsFixedThisWeek}</p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Avg Resolution</p>
-                <p className="text-2xl font-bold text-info">{reportData.avgResolutionTime}d</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-info" />
+              Engagement
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold">{reportData.engagementRate}%</span>
+                <Badge variant="secondary">
+                  {reportData.commentsThisWeek} new
+                </Badge>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Critical Bugs</p>
-                <p className="text-2xl font-bold text-destructive">{reportData.criticalBugs}</p>
+              <p className="text-sm text-muted-foreground">Community engagement rate</p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Comments</p>
+                  <p className="font-semibold">{reportData.totalComments}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Votes</p>
+                  <p className="font-semibold">{reportData.totalVotes}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-warning" />
+              Response Time
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold">{reportData.avgResponseTime}h</span>
+                <Badge variant={reportData.avgResponseTime < 24 ? 'default' : 'secondary'}>
+                  {reportData.avgResponseTime < 24 ? 'Fast' : 'Good'}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">Average first response time</p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Bug Resolution</p>
+                  <p className="font-semibold">{reportData.avgResolutionTime}d</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Implementation</p>
+                  <p className="font-semibold">{reportData.avgImplementationTime}d</p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -920,48 +1016,160 @@ export function Reports() {
             </Card>
           </div>
 
-          {/* Weekly Activity Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Weekly Activity Trend
-              </CardTitle>
-              <CardDescription>Activity over the last 7 days</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={reportData.weeklyActivity}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="tests_created" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    name="Tests Created"
+          {/* Activity Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Weekly Activity Trend
+                </CardTitle>
+                <CardDescription>Activity over the last 7 days</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={reportData.weeklyActivity}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="tests_created" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      name="Tests Created"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="bugs_reported" 
+                      stroke="#ef4444" 
+                      strokeWidth={2}
+                      name="Bugs Reported"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="suggestions_made" 
+                      stroke="#22c55e" 
+                      strokeWidth={2}
+                      name="Suggestions Made"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Monthly Activity Trend
+                </CardTitle>
+                <CardDescription>Activity over the last 6 months</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={reportData.monthlyActivity}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="tests" fill="hsl(var(--primary))" name="Tests" />
+                    <Bar dataKey="bugs" fill="#ef4444" name="Bugs" />
+                    <Bar dataKey="suggestions" fill="#22c55e" name="Suggestions" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Additional Insights */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Target className="h-4 w-4" />
+                  Quality Metrics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-muted-foreground">Test Coverage</span>
+                    <span className="text-sm font-semibold">{reportData.testCoverage} tests/project</span>
+                  </div>
+                  <Progress value={Math.min(reportData.testCoverage * 10, 100)} className="h-2" />
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-muted-foreground">Bug Density</span>
+                    <span className="text-sm font-semibold">{reportData.bugDensity} bugs/test</span>
+                  </div>
+                  <Progress value={Math.max(0, 100 - (reportData.bugDensity * 50))} className="h-2" />
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-muted-foreground">Failed Tests</span>
+                    <span className="text-sm font-semibold">{reportData.failedTests}</span>
+                  </div>
+                  <Progress 
+                    value={reportData.totalTests > 0 ? (reportData.failedTests / reportData.totalTests) * 100 : 0} 
+                    className="h-2" 
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="bugs_reported" 
-                    stroke="#ef4444" 
-                    strokeWidth={2}
-                    name="Bugs Reported"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="suggestions_made" 
-                    stroke="#22c55e" 
-                    strokeWidth={2}
-                    name="Suggestions Made"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Flame className="h-4 w-4" />
+                  Hot Topics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Most Discussed</p>
+                  <p className="text-sm font-semibold">{reportData.mostDiscussedItem}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Comments This Week</p>
+                  <p className="text-2xl font-bold">{reportData.commentsThisWeek}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Total Engagement</p>
+                  <p className="text-sm font-semibold">
+                    {reportData.totalComments + reportData.totalVotes} interactions
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Clock className="h-4 w-4" />
+                  Time Metrics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Avg Test Duration</p>
+                  <p className="text-2xl font-bold">{reportData.avgTestDuration}m</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Avg Response Time</p>
+                  <p className="text-sm font-semibold">{reportData.avgResponseTime} hours</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Implementation Time</p>
+                  <p className="text-sm font-semibold">{reportData.avgImplementationTime} days</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Organization Tab */}
