@@ -99,6 +99,16 @@ Preferred communication style: Simple, everyday language.
 - Individual user performance metrics
 - Data reset functionality for admins
 
+**Leaderboard**:
+- Individual user statistics visible to all organization members
+- Test executions (assignments with completed step results)
+- Total assignments, bugs reported, suggestions submitted, and comments
+- Activity score calculation: (executions × 3) + assignments + comments
+- Top 3 podium display for gamification
+- Comprehensive statistics table with last active dates
+- Located under Documentation section in navigation
+- Fully localized (English and Bulgarian)
+
 **Command Palette**: Global keyboard shortcut (Cmd/Ctrl+K) provides quick navigation to any page or feature.
 
 **Bulk Operations**: Multi-select functionality for batch actions on tests, bugs, and suggestions.
