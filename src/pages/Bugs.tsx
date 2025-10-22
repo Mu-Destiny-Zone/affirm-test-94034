@@ -77,7 +77,7 @@ export function Bugs() {
 
       if (error) {
         toast({
-          title: 'Error',
+          title: t('error'),
           description: error.message,
           variant: 'destructive'
         });
@@ -152,19 +152,19 @@ export function Bugs() {
   // Enhanced filter options with counts
   const filterOptions = {
     severity: [
-      { value: 'low', label: 'Low', count: bugs.filter(b => b.severity === 'low').length },
-      { value: 'medium', label: 'Medium', count: bugs.filter(b => b.severity === 'medium').length },
-      { value: 'high', label: 'High', count: bugs.filter(b => b.severity === 'high').length },
-      { value: 'critical', label: 'Critical', count: bugs.filter(b => b.severity === 'critical').length },
+      { value: 'low', label: t('low'), count: bugs.filter(b => b.severity === 'low').length },
+      { value: 'medium', label: t('medium'), count: bugs.filter(b => b.severity === 'medium').length },
+      { value: 'high', label: t('high'), count: bugs.filter(b => b.severity === 'high').length },
+      { value: 'critical', label: t('critical'), count: bugs.filter(b => b.severity === 'critical').length },
     ],
     status: [
-      { value: 'new', label: 'New', count: bugs.filter(b => b.status === 'new').length },
-      { value: 'triaged', label: 'Triaged', count: bugs.filter(b => b.status === 'triaged').length },
-      { value: 'in_progress', label: 'In Progress', count: bugs.filter(b => b.status === 'in_progress').length },
-      { value: 'fixed', label: 'Fixed', count: bugs.filter(b => b.status === 'fixed').length },
-      { value: 'closed', label: 'Closed', count: bugs.filter(b => b.status === 'closed').length },
-      { value: 'duplicate', label: 'Duplicate', count: bugs.filter(b => b.status === 'duplicate').length },
-      { value: "won't_fix", label: "Won't Fix", count: bugs.filter(b => b.status === "won't_fix").length },
+      { value: 'new', label: t('new'), count: bugs.filter(b => b.status === 'new').length },
+      { value: 'triaged', label: t('triaged'), count: bugs.filter(b => b.status === 'triaged').length },
+      { value: 'in_progress', label: t('inProgressStatus'), count: bugs.filter(b => b.status === 'in_progress').length },
+      { value: 'fixed', label: t('fixed'), count: bugs.filter(b => b.status === 'fixed').length },
+      { value: 'closed', label: t('closed'), count: bugs.filter(b => b.status === 'closed').length },
+      { value: 'duplicate', label: t('duplicate'), count: bugs.filter(b => b.status === 'duplicate').length },
+      { value: "won't_fix", label: t('wontFix'), count: bugs.filter(b => b.status === "won't_fix").length },
     ],
     tags: allTags.map(tag => ({
       value: tag,
@@ -175,7 +175,7 @@ export function Bugs() {
 
   const quickFilters = [
     {
-      label: 'My Assigned',
+      label: t('myAssigned'),
       onClick: () => {
         setShowMyAssigned(!showMyAssigned);
         setShowMyReports(false); // Clear the other filter
@@ -183,7 +183,7 @@ export function Bugs() {
       active: showMyAssigned
     },
     {
-      label: 'My Reports',
+      label: t('myReports'),
       onClick: () => {
         setShowMyReports(!showMyReports);
         setShowMyAssigned(false); // Clear the other filter
@@ -191,7 +191,7 @@ export function Bugs() {
       active: showMyReports
     },
     {
-      label: 'Critical & High',
+      label: t('criticalAndHigh'),
       onClick: () => {
         if (severityFilter === 'critical' || severityFilter === 'high') {
           setSeverityFilter('all');
@@ -412,14 +412,14 @@ export function Bugs() {
                   
                   {bug.tags && Array.isArray(bug.tags) && bug.tags.length > 0 && (
                     <span className="flex items-center gap-0.5">
-                      <span className="font-medium">{bug.tags.length}</span> tags
+                      <span className="font-medium">{bug.tags.length}</span> {t('tagsCount')}
                     </span>
                   )}
 
                   {bug.youtube_url && (
                     <span className="flex items-center gap-0.5">
                       <ExternalLink className="h-2.5 w-2.5" />
-                      video
+                      {t('video')}
                     </span>
                   )}
                 </div>

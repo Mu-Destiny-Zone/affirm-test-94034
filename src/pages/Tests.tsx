@@ -158,7 +158,7 @@ export function Tests() {
 
       if (testsResponse.error) {
         toast({
-          title: 'Error',
+          title: t('error'),
           description: testsResponse.error.message,
           variant: 'destructive'
         });
@@ -323,15 +323,15 @@ export function Tests() {
   const getResultBadge = (result: string) => {
     switch (result) {
       case 'passed':
-        return <Badge className="bg-green-100 text-green-800 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Passed</Badge>;
+        return <Badge className="bg-green-100 text-green-800 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />{t('passed')}</Badge>;
       case 'failed':
-        return <Badge className="bg-red-100 text-red-800 border-red-200"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>;
+        return <Badge className="bg-red-100 text-red-800 border-red-200"><XCircle className="w-3 h-3 mr-1" />{t('failed')}</Badge>;
       case 'partial':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200"><MinusCircle className="w-3 h-3 mr-1" />Partial</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200"><MinusCircle className="w-3 h-3 mr-1" />{t('partial')}</Badge>;
       case 'in-progress':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200"><Clock className="w-3 h-3 mr-1" />In Progress</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200"><Clock className="w-3 h-3 mr-1" />{t('inProgress')}</Badge>;
       default:
-        return <Badge variant="outline">No Results</Badge>;
+        return <Badge variant="outline">{t('noResults')}</Badge>;
     }
   };
 
@@ -365,15 +365,15 @@ export function Tests() {
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Test deleted successfully'
+        title: t('success'),
+        description: t('testDeletedSuccessfully')
       });
 
       setDeleteDialogTest(null);
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('error'),
         description: error.message,
         variant: 'destructive'
       });
@@ -408,13 +408,13 @@ export function Tests() {
           <div>
             <h1 className="text-3xl font-bold">{t('tests')}</h1>
             <p className="text-muted-foreground">
-              {!currentOrg ? 'Please select an organization to view tests' : 'Loading...'}
+              {!currentOrg ? t('selectOrgToViewTests') : t('loading')}
             </p>
           </div>
           
           <Button disabled>
             <Plus className="h-4 w-4 mr-2" />
-            New Test
+            {t('newTest')}
           </Button>
         </div>
 
@@ -422,15 +422,15 @@ export function Tests() {
           <Card>
             <CardContent className="text-center py-12">
               <TestTube className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Organization Selected</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('noOrgSelected')}</h3>
               <p className="text-muted-foreground mb-4">
-                Please select an organization from the header to view and manage tests.
+                {t('selectOrgToManageTests')}
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="flex items-center justify-center p-8">
-            <div className="animate-pulse">Loading tests...</div>
+            <div className="animate-pulse">{t('loadingTests')}</div>
           </div>
         )}
       </div>
@@ -451,8 +451,8 @@ export function Tests() {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
               {canManage 
-                ? `Create and manage test cases for ${currentOrg.name}`
-                : `View and execute your ${tests.length} assigned test${tests.length !== 1 ? 's' : ''} in ${currentOrg.name}`
+                ? `${t('createManageTestCases')} ${currentOrg.name}`
+                : `${t('viewExecuteAssignedTests')} ${tests.length} ${tests.length !== 1 ? t('assignedTestsIn') : t('assignedTest')} ${currentOrg.name}`
               }
             </p>
           </div>
@@ -460,7 +460,7 @@ export function Tests() {
           {activeTab === 'tests' && canManage && (
             <Button onClick={() => setCreateDialogOpen(true)} size="sm" className="btn-gradient shadow-lg w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
-              <span className="text-sm">New Test</span>
+              <span className="text-sm">{t('newTest')}</span>
             </Button>
           )}
         </div>
@@ -471,7 +471,7 @@ export function Tests() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search tests..."
+            placeholder={t('searchTests')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -481,26 +481,26 @@ export function Tests() {
         <div className="flex gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-32">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t('status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="all">{t('allStatus')}</SelectItem>
+              <SelectItem value="draft">{t('draft')}</SelectItem>
+              <SelectItem value="active">{t('active')}</SelectItem>
+              <SelectItem value="archived">{t('archived')}</SelectItem>
             </SelectContent>
           </Select>
           
           <Select value={priorityFilter} onValueChange={setPriorityFilter}>
             <SelectTrigger className="w-32">
-              <SelectValue placeholder="Priority" />
+              <SelectValue placeholder={t('priority')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Priority</SelectItem>
-              <SelectItem value="0">Low</SelectItem>
-              <SelectItem value="1">Medium</SelectItem>
-              <SelectItem value="2">High</SelectItem>
-              <SelectItem value="3">Critical</SelectItem>
+              <SelectItem value="all">{t('allPriority')}</SelectItem>
+              <SelectItem value="0">{t('low')}</SelectItem>
+              <SelectItem value="1">{t('medium')}</SelectItem>
+              <SelectItem value="2">{t('high')}</SelectItem>
+              <SelectItem value="3">{t('critical')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -514,29 +514,32 @@ export function Tests() {
               <>
                 <TestTube className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">
-                  {canManage ? 'No tests yet' : 'No Assigned Tests'}
+                  {canManage ? t('noTestsYet') : t('noAssignedTests')}
                 </h3>
                 <p className="text-muted-foreground mb-4">
                   {canManage 
-                    ? 'Create your first test case to get started with testing your projects.'
-                    : 'You don\'t have any tests assigned to you yet. Contact your team manager to get test assignments.'
+                    ? t('createFirstTestCase')
+                    : t('noTestsAssigned')
                   }
                 </p>
                 {canManage && (
                   <Button onClick={() => setCreateDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Test
+                    {t('createTest')}
                   </Button>
                 )}
               </>
             ) : (
               <>
                 <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No tests found</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('noTestsFound')}</h3>
                 <p className="text-muted-foreground">
                   {canManage 
-                    ? 'Try adjusting your search criteria or filters.'
-                    : `You have ${tests.length} assigned test${tests.length !== 1 ? 's' : ''}, but none match your current filters.`
+                    ? t('tryAdjustingFilters')
+                    : t('assignedTestsNotMatch', {
+                        count: tests.length,
+                        tests: tests.length !== 1 ? t('assignedTestsIn') : t('assignedTest')
+                      }).replace('{count}', tests.length.toString()).replace('{tests}', tests.length !== 1 ? t('assignedTestsIn') : t('assignedTest'))
                   }
                 </p>
               </>

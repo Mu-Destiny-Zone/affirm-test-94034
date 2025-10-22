@@ -384,12 +384,12 @@ export function MyTasks() {
 
       setQuickComments(prev => ({ ...prev, [entityId]: '' }));
       toast({
-        title: 'Success',
-        description: 'Comment added'
+        title: t('success'),
+        description: t('addComment')
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('error'),
         description: error.message,
         variant: 'destructive'
       });
@@ -404,7 +404,7 @@ export function MyTasks() {
         <div>
           <h1 className="text-4xl font-bold tracking-tight">{t('myTasks')}</h1>
           <p className="text-muted-foreground text-lg mt-2">
-            {!currentOrg ? 'Please select an organization' : 'Loading your tasks...'}
+            {!currentOrg ? t('pleaseSelectOrg') : t('loadingYourTasks')}
           </p>
         </div>
       </div>
@@ -421,10 +421,10 @@ export function MyTasks() {
               <div className="p-1 sm:p-2 bg-gradient-brand rounded-lg shadow-brand">
                 <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
-              <span className="text-lg sm:text-2xl lg:text-3xl font-bold">My Tasks</span>
+              <span className="text-lg sm:text-2xl lg:text-3xl font-bold">{t('myTasks')}</span>
             </h1>
             <p className="text-[10px] sm:text-sm text-muted-foreground ml-[26px] sm:ml-0">
-              View and manage your assigned tests, bugs, and suggestions
+              {t('viewManageAssigned')}
             </p>
           </div>
           
@@ -437,7 +437,7 @@ export function MyTasks() {
               className="shadow-lg hover:shadow-xl transition-all flex-1 sm:flex-none h-8 sm:h-9 text-xs sm:text-sm"
             >
               <Bug className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Report Bug</span>
+              <span className="hidden sm:inline">{t('reportBug')}</span>
             </Button>
             <Button 
               onClick={() => navigate('/suggestions')} 
@@ -445,7 +445,7 @@ export function MyTasks() {
               className="btn-gradient shadow-lg flex-1 sm:flex-none h-8 sm:h-9 text-xs sm:text-sm"
             >
               <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Add Suggestion</span>
+              <span className="hidden sm:inline">{t('addSuggestion')}</span>
             </Button>
           </div>
         </div>
@@ -466,10 +466,10 @@ export function MyTasks() {
               <Clock className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'tests' ? 'text-primary-foreground' : 'text-primary'}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Assigned Tests</p>
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">{t('assignedTests')}</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">{stats.pendingTests}</p>
-                <p className="text-[9px] sm:text-xs text-muted-foreground">awaiting</p>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">{t('awaiting')}</p>
               </div>
             </div>
           </div>
@@ -488,10 +488,10 @@ export function MyTasks() {
               <Bug className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'bugs' ? 'text-destructive-foreground' : 'text-destructive'}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Assigned Bugs</p>
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">{t('assignedBugs')}</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl sm:text-3xl font-bold tracking-tight text-destructive">{stats.openBugs}</p>
-                <p className="text-[9px] sm:text-xs text-muted-foreground">assigned</p>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">{t('assigned')}</p>
               </div>
             </div>
           </div>
@@ -510,10 +510,10 @@ export function MyTasks() {
               <Lightbulb className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'suggestions' ? 'text-warning-foreground' : 'text-warning'}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Suggestions</p>
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">{t('suggestions')}</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl sm:text-3xl font-bold tracking-tight text-warning">{stats.pendingSuggestions}</p>
-                <p className="text-[9px] sm:text-xs text-muted-foreground">pending</p>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">{t('pending')}</p>
               </div>
             </div>
           </div>
@@ -531,11 +531,11 @@ export function MyTasks() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-semibold mb-2">No assigned tests</h3>
                 <p className="text-muted-foreground text-center max-w-md text-sm">
-                  You don't have any tests assigned to you at the moment. Check back later or contact your project manager.
+                  {t('noTestsAssignedMsg')}
                 </p>
                 <Button onClick={() => navigate('/tests')} className="mt-4 sm:mt-6 btn-gradient" size="sm">
                   <TestTube className="h-4 w-4 mr-2" />
-                  Browse All Tests
+                  {t('browseAllTests')}
                 </Button>
               </CardContent>
             </Card>
@@ -556,7 +556,7 @@ export function MyTasks() {
                         className="btn-gradient h-6 px-2 flex-shrink-0 text-xs"
                       >
                         <TestTube className="h-3.5 w-3.5 mr-1" />
-                        Execute test
+                        {t('executeTest')}
                       </Button>
                     </div>
                     
