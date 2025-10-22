@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, Settings, Users, User, LogOut, Moon, Sun, Monitor, Languages, ClipboardList, BookOpen, Download } from "lucide-react";
+import { Chrome as Home, TestTube, Bug, Lightbulb, ChartBar as BarChart3, Settings, Users, User, LogOut, Moon, Sun, Monitor, Languages, ClipboardList, BookOpen, Download, Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -31,6 +31,10 @@ const navigation = [{
   name: 'documentation',
   href: '/documentation',
   icon: BookOpen
+}, {
+  name: 'leaderboard',
+  href: '/leaderboard',
+  icon: Trophy
 }];
 const adminNavigation = [{
   name: 'reports',

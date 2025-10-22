@@ -15,6 +15,7 @@ import { Suggestions } from "./pages/Suggestions";
 import { Reports } from "./pages/Reports";
 import { MyTasks } from "./pages/MyTasks";
 import Documentation from "./pages/Documentation";
+import Leaderboard from "./pages/Leaderboard";
 import { AdminUsers } from "./pages/admin/Users";
 import { AdminSettings } from "./pages/admin/Settings";
 import { ProfileSettings } from "./pages/ProfileSettings";
@@ -56,6 +57,7 @@ function AppContent() {
               <Route path="/bugs" element={<Bugs />} />
               <Route path="/suggestions" element={<Suggestions />} />
               <Route path="/documentation" element={<Documentation />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/my-tasks" element={<MyTasks />} />
               <Route path="/profile" element={<ProfileSettings />} />
