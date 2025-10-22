@@ -76,12 +76,15 @@ Preferred communication style: Simple, everyday language.
 - Report bugs with severity levels (low, medium, high, critical)
 - Link bugs to specific tests and test executions
 - Track reproduction steps and attach YouTube video links
-- Assign bugs to team members
+- Assign bugs to team members via detail dialog (assignee selection in BugDetailDialog)
+- Notifications sent when bugs are assigned to team members
 - Community voting on bug priority
 - Status workflow: new → triaged → in_progress → fixed/won't_fix/duplicate → closed
 
 **Suggestions System**:
 - Submit feature suggestions with impact assessment
+- Assign suggestions to team members via detail dialog (assignee selection in SuggestionDetailDialog)
+- Notifications sent when suggestions are assigned to team members
 - Community voting (upvote/downvote) influences prioritization
 - Status workflow: new → consider → planned → done/rejected
 - Tag-based categorization
@@ -103,8 +106,9 @@ Preferred communication style: Simple, everyday language.
 **Collaboration Features**:
 - Threaded comments on all entities
 - @mention support in comments
-- Real-time notifications via Supabase subscriptions
+- Real-time notifications via Supabase subscriptions (including assignment notifications for bugs and suggestions)
 - Activity feeds showing recent team actions
+- Assignment tracking with state-based notification logic to prevent duplicate notifications
 
 ### Organization Management
 
