@@ -60,6 +60,8 @@ interface ReportData {
   testExecutionRate: number;
   testPassRate: number;
   avgTestDuration: number;
+  testCoverage: number;
+  failedTests: number;
   
   // Bug stats
   totalBugs: number;
@@ -69,6 +71,8 @@ interface ReportData {
   avgResolutionTime: number;
   bugsBySeverity: Array<{ name: string; value: number }>;
   bugTrend: Array<{ date: string; opened: number; closed: number }>;
+  bugDensity: number;
+  bugsFixedThisWeek: number;
   
   // Suggestion stats
   totalSuggestions: number;
@@ -77,6 +81,7 @@ interface ReportData {
   rejectedSuggestions: number;
   suggestionsByImpact: Array<{ name: string; value: number }>;
   acceptanceRate: number;
+  avgImplementationTime: number;
   
   // System stats
   totalAssignments: number;
@@ -84,6 +89,19 @@ interface ReportData {
   overdueTasks: number;
   systemHealth: number;
   dataQuality: number;
+  
+  // Engagement stats
+  totalComments: number;
+  totalVotes: number;
+  engagementRate: number;
+  commentsThisWeek: number;
+  mostDiscussedItem: string;
+  
+  // Velocity stats
+  itemsCompletedThisWeek: number;
+  itemsCompletedLastWeek: number;
+  velocityTrend: number;
+  avgResponseTime: number;
   
   // Project stats
   projectStats: Array<{
@@ -100,6 +118,13 @@ interface ReportData {
     tests_created: number;
     bugs_reported: number;
     suggestions_made: number;
+  }>;
+  
+  monthlyActivity: Array<{
+    month: string;
+    tests: number;
+    bugs: number;
+    suggestions: number;
   }>;
 }
 
@@ -180,14 +205,16 @@ export function Reports() {
     }
 
     try {
-      // Fetch all data
-      const [testsQuery, bugsQuery, suggestionsQuery, assignmentsQuery, membersQuery, projectsQuery] = await Promise.all([
+      // Fetch all data including comments and votes for better analytics
+      const [testsQuery, bugsQuery, suggestionsQuery, assignmentsQuery, membersQuery, projectsQuery, commentsQuery, votesQuery] = await Promise.all([
         supabase.from('tests').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('bug_reports').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('suggestions').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('test_assignments').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
         supabase.from('org_members').select('*, profiles(id, display_name, email)').eq('org_id', currentOrg.id).is('deleted_at', null),
-        supabase.from('projects').select('id, name').eq('org_id', currentOrg.id).is('deleted_at', null)
+        supabase.from('projects').select('id, name').eq('org_id', currentOrg.id).is('deleted_at', null),
+        supabase.from('comments').select('*').eq('org_id', currentOrg.id).is('deleted_at', null),
+        supabase.from('votes').select('*')
       ]);
 
       const tests = testsQuery.data;
@@ -196,12 +223,19 @@ export function Reports() {
       const assignments = assignmentsQuery.data;
       const members = membersQuery.data || [];
       const projectsList = projectsQuery.data || [];
+      const comments = commentsQuery.data || [];
+      const votes = votesQuery.data || [];
 
       // Organization stats
       const orgMembers = members.length;
       const orgAdmins = members.filter(m => m.role === 'admin').length;
       const orgProjects = projectsList.length;
-      const orgGrowth = 12.5; // Calculate based on previous period
+      
+      // Calculate org growth based on members joined in last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const newMembers = members.filter(m => new Date(m.created_at) > thirtyDaysAgo).length;
+      const orgGrowth = orgMembers > 0 ? Math.round((newMembers / orgMembers) * 100) : 0;
 
       // User stats
       const activeUsers = members.filter(m => {
@@ -299,7 +333,17 @@ export function Reports() {
         return a.step_results.every((step: any) => step.status === 'pass' || step.result === 'pass');
       }).length || 0;
       const testPassRate = executedAssignments > 0 ? Math.round((passedTests / executedAssignments) * 100) : 0;
-      const avgTestDuration = 12.5; // Minutes - calculate from actual data
+      
+      // Calculate average test duration from assignments
+      const assignmentsWithDuration = assignments?.filter(a => {
+        return a.created_at && a.updated_at && a.state === 'done';
+      }) || [];
+      const avgTestDuration = assignmentsWithDuration.length > 0
+        ? Math.round(assignmentsWithDuration.reduce((acc, a) => {
+            const duration = (new Date(a.updated_at!).getTime() - new Date(a.created_at).getTime()) / (1000 * 60);
+            return acc + duration;
+          }, 0) / assignmentsWithDuration.length)
+        : 0;
 
       // Bug stats
       const totalBugs = bugs?.length || 0;
@@ -332,7 +376,16 @@ export function Reports() {
         bugTrend.push({ date: dateStr, opened, closed });
       }
 
-      const avgResolutionTime = 3.2; // Days - calculate from actual data
+      // Calculate average bug resolution time from resolved bugs
+      const resolvedBugsWithTime = bugs?.filter(b => 
+        ['fixed', 'closed'].includes(b.status) && b.created_at && b.updated_at
+      ) || [];
+      const avgResolutionTime = resolvedBugsWithTime.length > 0
+        ? parseFloat((resolvedBugsWithTime.reduce((acc, b) => {
+            const days = (new Date(b.updated_at!).getTime() - new Date(b.created_at).getTime()) / (1000 * 60 * 60 * 24);
+            return acc + days;
+          }, 0) / resolvedBugsWithTime.length).toFixed(1))
+        : 0;
 
       // Suggestion stats
       const totalSuggestions = suggestions?.length || 0;
@@ -363,14 +416,26 @@ export function Reports() {
         (tests?.filter(t => t.description && t.steps).length || 0) / Math.max(totalTests, 1) * 100
       ));
 
-      // Project stats
-      const projectStats = projectsList.map(p => ({
-        name: p.name,
-        tests: tests?.filter(t => t.project_id === p.id).length || 0,
-        bugs: bugs?.filter(b => b.project_id === p.id).length || 0,
-        suggestions: suggestions?.filter(s => s.project_id === p.id).length || 0,
-        completion_rate: Math.round(Math.random() * 100),
-      }));
+      // Project stats with real completion rates
+      const projectStats = projectsList.map(p => {
+        const projectTests = tests?.filter(t => t.project_id === p.id) || [];
+        const projectAssignments = assignments?.filter(a => {
+          const test = tests?.find(t => t.id === a.test_id);
+          return test && test.project_id === p.id;
+        }) || [];
+        const completedProjectAssignments = projectAssignments.filter(a => a.state === 'done').length;
+        const completion_rate = projectAssignments.length > 0 
+          ? Math.round((completedProjectAssignments / projectAssignments.length) * 100) 
+          : 0;
+        
+        return {
+          name: p.name,
+          tests: projectTests.length,
+          bugs: bugs?.filter(b => b.project_id === p.id).length || 0,
+          suggestions: suggestions?.filter(s => s.project_id === p.id).length || 0,
+          completion_rate,
+        };
+      });
 
       // Weekly activity
       const weeklyActivity = [];
@@ -399,6 +464,134 @@ export function Reports() {
         });
       }
 
+      // Monthly activity trends (last 6 months)
+      const monthlyActivity = [];
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthStr = date.toLocaleDateString('en-US', { month: 'short' });
+        
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const monthTests = tests?.filter(t => {
+          const created = new Date(t.created_at);
+          return created >= monthStart && created <= monthEnd;
+        }).length || 0;
+        
+        const monthBugs = bugs?.filter(b => {
+          const created = new Date(b.created_at);
+          return created >= monthStart && created <= monthEnd;
+        }).length || 0;
+        
+        const monthSuggestions = suggestions?.filter(s => {
+          const created = new Date(s.created_at);
+          return created >= monthStart && created <= monthEnd;
+        }).length || 0;
+        
+        monthlyActivity.push({
+          month: monthStr,
+          tests: monthTests,
+          bugs: monthBugs,
+          suggestions: monthSuggestions,
+        });
+      }
+
+      // Additional test metrics
+      const failedTests = assignments?.filter(a => {
+        if (!a.step_results || !Array.isArray(a.step_results)) return false;
+        return a.step_results.some((step: any) => step.status === 'fail' || step.result === 'fail');
+      }).length || 0;
+      
+      const testCoverage = totalTests > 0 ? Math.round((totalTests / Math.max(orgProjects, 1))) : 0;
+
+      // Additional bug metrics
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const bugsFixedThisWeek = bugs?.filter(b => 
+        ['fixed', 'closed'].includes(b.status) && 
+        b.updated_at && 
+        new Date(b.updated_at) > sevenDaysAgo
+      ).length || 0;
+      
+      const bugDensity = totalTests > 0 ? parseFloat((totalBugs / totalTests).toFixed(2)) : 0;
+
+      // Suggestion implementation time
+      const implementedSuggestionsWithTime = suggestions?.filter(s => 
+        s.status === 'done' && s.created_at && s.updated_at
+      ) || [];
+      const avgImplementationTime = implementedSuggestionsWithTime.length > 0
+        ? parseFloat((implementedSuggestionsWithTime.reduce((acc, s) => {
+            const days = (new Date(s.updated_at!).getTime() - new Date(s.created_at).getTime()) / (1000 * 60 * 60 * 24);
+            return acc + days;
+          }, 0) / implementedSuggestionsWithTime.length).toFixed(1))
+        : 0;
+
+      // Engagement metrics
+      const totalComments = comments.length;
+      const totalVotes = votes.length;
+      const totalItems = totalTests + totalBugs + totalSuggestions;
+      const engagementRate = totalItems > 0 ? Math.round(((totalComments + totalVotes) / totalItems) * 100) : 0;
+      
+      const commentsThisWeek = comments.filter(c => 
+        c.created_at && new Date(c.created_at) > sevenDaysAgo
+      ).length;
+      
+      // Find most discussed item
+      const testComments = comments.filter(c => c.target_type === 'test');
+      const bugComments = comments.filter(c => c.target_type === 'bug');
+      const suggestionComments = comments.filter(c => c.target_type === 'suggestion');
+      
+      const commentCounts: Record<string, number> = {};
+      [...testComments, ...bugComments, ...suggestionComments].forEach(c => {
+        const key = `${c.target_type}-${c.target_id}`;
+        commentCounts[key] = (commentCounts[key] || 0) + 1;
+      });
+      
+      const mostDiscussedKey = Object.keys(commentCounts).reduce((a, b) => 
+        commentCounts[a] > commentCounts[b] ? a : b, 
+        Object.keys(commentCounts)[0] || ''
+      );
+      const mostDiscussedItem = mostDiscussedKey ? 
+        `${mostDiscussedKey.split('-')[0]} (${commentCounts[mostDiscussedKey]} comments)` : 
+        'None';
+
+      // Velocity metrics
+      const itemsCompletedThisWeek = 
+        (bugs?.filter(b => ['fixed', 'closed'].includes(b.status) && b.updated_at && new Date(b.updated_at) > sevenDaysAgo).length || 0) +
+        (suggestions?.filter(s => s.status === 'done' && s.updated_at && new Date(s.updated_at) > sevenDaysAgo).length || 0) +
+        (assignments?.filter(a => a.state === 'done' && a.updated_at && new Date(a.updated_at) > sevenDaysAgo).length || 0);
+      
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+      const itemsCompletedLastWeek =
+        (bugs?.filter(b => ['fixed', 'closed'].includes(b.status) && b.updated_at && new Date(b.updated_at) > fourteenDaysAgo && new Date(b.updated_at) <= sevenDaysAgo).length || 0) +
+        (suggestions?.filter(s => s.status === 'done' && s.updated_at && new Date(s.updated_at) > fourteenDaysAgo && new Date(s.updated_at) <= sevenDaysAgo).length || 0) +
+        (assignments?.filter(a => a.state === 'done' && a.updated_at && new Date(a.updated_at) > fourteenDaysAgo && new Date(a.updated_at) <= sevenDaysAgo).length || 0);
+      
+      const velocityTrend = itemsCompletedLastWeek > 0 
+        ? Math.round(((itemsCompletedThisWeek - itemsCompletedLastWeek) / itemsCompletedLastWeek) * 100)
+        : itemsCompletedThisWeek > 0 ? 100 : 0;
+      
+      // Average response time (time from creation to first comment)
+      const itemsWithComments = [...tests || [], ...bugs || [], ...suggestions || []].filter(item => {
+        const itemComments = comments.filter(c => c.target_id === item.id);
+        return itemComments.length > 0;
+      });
+      
+      const avgResponseTime = itemsWithComments.length > 0
+        ? parseFloat((itemsWithComments.reduce((acc, item) => {
+            const firstComment = comments
+              .filter(c => c.target_id === item.id)
+              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
+            if (firstComment) {
+              const hours = (new Date(firstComment.created_at).getTime() - new Date(item.created_at).getTime()) / (1000 * 60 * 60);
+              return acc + hours;
+            }
+            return acc;
+          }, 0) / itemsWithComments.length).toFixed(1))
+        : 0;
+
       const data: ReportData = {
         orgMembers,
         orgAdmins,
@@ -415,6 +608,8 @@ export function Reports() {
         testExecutionRate,
         testPassRate,
         avgTestDuration,
+        testCoverage,
+        failedTests,
         totalBugs,
         openBugs,
         resolvedBugs,
@@ -422,19 +617,32 @@ export function Reports() {
         avgResolutionTime,
         bugsBySeverity,
         bugTrend,
+        bugDensity,
+        bugsFixedThisWeek,
         totalSuggestions,
         pendingSuggestions,
         implementedSuggestions,
         rejectedSuggestions,
         suggestionsByImpact,
         acceptanceRate,
+        avgImplementationTime,
         totalAssignments,
         completedAssignments,
         overdueTasks,
         systemHealth,
         dataQuality,
+        totalComments,
+        totalVotes,
+        engagementRate,
+        commentsThisWeek,
+        mostDiscussedItem,
+        itemsCompletedThisWeek,
+        itemsCompletedLastWeek,
+        velocityTrend,
+        avgResponseTime,
         projectStats,
         weeklyActivity,
+        monthlyActivity,
       };
 
       setReportData(data);
