@@ -185,23 +185,12 @@ export function Suggestions() {
       active: showMyAssigned
     },
     {
-      label: t('myIdeas'),
+      label: t('mySuggestions'),
       onClick: () => {
         setShowMyReports(!showMyReports);
         setShowMyAssigned(false); // Clear the other filter
       },
       active: showMyReports
-    },
-    {
-      label: t('highImpactFilter'),
-      onClick: () => {
-        if (impactFilter === 'high') {
-          setImpactFilter('all');
-        } else {
-          setImpactFilter('high');
-        }
-      },
-      active: impactFilter === 'high'
     }
   ];
 
