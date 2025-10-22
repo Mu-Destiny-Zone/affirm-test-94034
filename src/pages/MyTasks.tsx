@@ -246,35 +246,6 @@ export function MyTasks() {
     }
   };
 
-  const getPriorityLabel = (priority: number) => {
-    switch (priority) {
-      case 0: return 'Low';
-      case 1: return 'Medium';
-      case 2: return 'High';
-      case 3: return 'Critical';
-      default: return 'Unknown';
-    }
-  };
-
-  const getPriorityColor = (priority: number) => {
-    switch (priority) {
-      case 0: return 'secondary';
-      case 1: return 'default';
-      case 2: return 'destructive';
-      case 3: return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'default';
-      case 'low': return 'secondary';
-      default: return 'secondary';
-    }
-  };
 
   const handleBugClick = (bug: UserBug) => {
     setSelectedBug(bug);
