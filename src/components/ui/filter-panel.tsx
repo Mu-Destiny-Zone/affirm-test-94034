@@ -56,8 +56,20 @@ export function FilterPanel({
   collapsible = false,
   defaultExpanded = true
 }: FilterPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   const { t } = useTranslation()
+  
+  // Use localStorage to remember user's filter panel preference
+  const storageKey = 'filterPanel-expanded'
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const stored = localStorage.getItem(storageKey)
+    return stored !== null ? stored === 'true' : defaultExpanded
+  })
+  
+  // Save to localStorage when expanded state changes
+  const handleExpandChange = (newValue: boolean) => {
+    setIsExpanded(newValue)
+    localStorage.setItem(storageKey, String(newValue))
+  }
 
   // Calculate active filters for display
   const activeFilterChips: ActiveFilter[] = React.useMemo(() => {
@@ -245,7 +257,7 @@ export function FilterPanel({
 
   return (
     <Card className={cn("glass", className)}>
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+      <Collapsible open={isExpanded} onOpenChange={handleExpandChange}>
         <CollapsibleTrigger asChild>
           <Button 
             variant="ghost" 

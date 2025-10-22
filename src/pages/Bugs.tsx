@@ -29,6 +29,8 @@ export function Bugs() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [tagFilter, setTagFilter] = useState<string>('all');
+  const [showMyAssigned, setShowMyAssigned] = useState(false);
+  const [showMyReports, setShowMyReports] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [selectedBug, setSelectedBug] = useState<BugReport | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -141,8 +143,10 @@ export function Bugs() {
     const matchesStatus = statusFilter === 'all' || bug.status === statusFilter;
     const matchesSeverity = severityFilter === 'all' || bug.severity === severityFilter;
     const matchesTag = tagFilter === 'all' || (bug.tags && Array.isArray(bug.tags) && bug.tags.includes(tagFilter));
+    const matchesAssigned = !showMyAssigned || (bug as any).assignee_id === user?.id;
+    const matchesReporter = !showMyReports || bug.reporter_id === user?.id;
     
-    return matchesSearch && matchesStatus && matchesSeverity && matchesTag;
+    return matchesSearch && matchesStatus && matchesSeverity && matchesTag && matchesAssigned && matchesReporter;
   });
 
   // Enhanced filter options with counts
@@ -171,25 +175,31 @@ export function Bugs() {
 
   const quickFilters = [
     {
+      label: 'My Assigned',
+      onClick: () => {
+        setShowMyAssigned(!showMyAssigned);
+        setShowMyReports(false); // Clear the other filter
+      },
+      active: showMyAssigned
+    },
+    {
       label: 'My Reports',
       onClick: () => {
-        // Filter logic could be added here
+        setShowMyReports(!showMyReports);
+        setShowMyAssigned(false); // Clear the other filter
       },
-      active: false
+      active: showMyReports
     },
     {
       label: 'Critical & High',
       onClick: () => {
-        setSeverityFilter('high')
+        if (severityFilter === 'critical' || severityFilter === 'high') {
+          setSeverityFilter('all');
+        } else {
+          setSeverityFilter('critical');
+        }
       },
       active: severityFilter === 'high' || severityFilter === 'critical'
-    },
-    {
-      label: 'Recent',
-      onClick: () => {
-        // Sort by recent could be added
-      },
-      active: false
     }
   ];
 
@@ -280,31 +290,9 @@ export function Bugs() {
           if (key === 'status') setStatusFilter(value as string);
           if (key === 'tags') setTagFilter(value as string);
         }}
-        quickFilters={[
-          {
-            label: t('myReports'),
-            onClick: () => {
-              // Filter logic could be added here
-            },
-            active: false
-          },
-          {
-            label: t('criticalAndHigh'),
-            onClick: () => {
-              setSeverityFilter('high')
-            },
-            active: severityFilter === 'high' || severityFilter === 'critical'
-          },
-          {
-            label: t('recent'),
-            onClick: () => {
-              // Sort by recent could be added
-            },
-            active: false
-          }
-        ]}
+        quickFilters={quickFilters}
         collapsible={true}
-        defaultExpanded={false}
+        defaultExpanded={true}
       />
 
       <BugFormDialog
