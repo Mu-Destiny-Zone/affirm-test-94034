@@ -590,71 +590,52 @@ export function MyTasks() {
                   className="card-interactive border-border/60 hover:border-primary/30 animate-slide-up overflow-hidden"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="p-3 space-y-2.5">
-                    {/* Header */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <div className="relative">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <TestTube className="h-5 w-5 text-primary" />
-                          </div>
-                          <Badge 
-                            variant={getPriorityColor(assignment.tests.priority)} 
-                            className="absolute -top-1 -right-1 h-5 px-1.5 text-[10px] font-bold"
-                          >
-                            {assignment.tests.priority === 3 ? 'P0' : assignment.tests.priority === 2 ? 'P1' : assignment.tests.priority === 1 ? 'P2' : 'P3'}
-                          </Badge>
-                        </div>
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-sm line-clamp-1">{assignment.tests.title}</h3>
+                      <Button
+                        size="sm"
+                        onClick={() => setExecutionDialogTest(assignment.tests as Test)}
+                        className="btn-gradient h-6 w-6 p-0 flex-shrink-0"
+                        title="Execute Test"
+                      >
+                        <TestTube className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {assignment.tests.description}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
+                        assignment.state === 'assigned' ? 'bg-primary/10 text-primary' :
+                        assignment.state === 'in_progress' ? 'bg-info/10 text-info' :
+                        assignment.state === 'done' ? 'bg-success/10 text-success' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          assignment.state === 'assigned' ? 'bg-primary' :
+                          assignment.state === 'in_progress' ? 'bg-info' :
+                          assignment.state === 'done' ? 'bg-success' :
+                          'bg-muted-foreground'
+                        }`}></span>
+                        {assignment.state === 'assigned' ? 'Assigned' : assignment.state === 'in_progress' ? 'In Progress' : 'Completed'}
+                      </span>
+                      <span className="text-muted-foreground/40">•</span>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <FileText className="h-3 w-3" />
+                        <span>{assignment.tests.steps?.length || 0} steps</span>
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-semibold text-sm line-clamp-1">{assignment.tests.title}</h3>
-                          <Button
-                            size="sm"
-                            onClick={() => setExecutionDialogTest(assignment.tests as Test)}
-                            className="btn-gradient h-6 w-6 p-0 flex-shrink-0"
-                            title="Execute Test"
-                          >
-                            <TestTube className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
-                          {assignment.tests.description}
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
-                            assignment.state === 'assigned' ? 'bg-primary/10 text-primary' :
-                            assignment.state === 'in_progress' ? 'bg-info/10 text-info' :
-                            assignment.state === 'done' ? 'bg-success/10 text-success' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              assignment.state === 'assigned' ? 'bg-primary' :
-                              assignment.state === 'in_progress' ? 'bg-info' :
-                              assignment.state === 'done' ? 'bg-success' :
-                              'bg-muted-foreground'
-                            }`}></span>
-                            {assignment.state === 'assigned' ? 'Assigned' : assignment.state === 'in_progress' ? 'In Progress' : 'Completed'}
-                          </span>
+                      {assignment.due_date && (
+                        <>
                           <span className="text-muted-foreground/40">•</span>
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <FileText className="h-3 w-3" />
-                            <span>{assignment.tests.steps?.length || 0} steps</span>
+                          <div className="flex items-center gap-1 text-warning">
+                            <AlertCircle className="h-3 w-3" />
+                            <span className="flex-shrink-0">{format(new Date(assignment.due_date), 'MMM dd')}</span>
                           </div>
-                          {assignment.due_date && (
-                            <>
-                              <span className="text-muted-foreground/40">•</span>
-                              <div className="flex items-center gap-1 text-warning">
-                                <AlertCircle className="h-3 w-3" />
-                                <span className="flex-shrink-0">{format(new Date(assignment.due_date), 'MMM dd')}</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -688,66 +669,47 @@ export function MyTasks() {
                   className="card-interactive border-border/60 hover:border-destructive/30 animate-slide-up overflow-hidden"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="p-3 space-y-2.5">
-                    {/* Header */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <div className="relative">
-                          <div className="p-2 bg-destructive/10 rounded-lg">
-                            <Bug className="h-5 w-5 text-destructive" />
-                          </div>
-                          <Badge 
-                            variant={getSeverityColor(bug.severity)} 
-                            className="absolute -top-1 -right-1 h-5 px-1.5 text-[10px] font-bold"
-                          >
-                            {bug.severity === 'critical' ? 'C' : bug.severity === 'high' ? 'H' : bug.severity === 'medium' ? 'M' : 'L'}
-                          </Badge>
-                        </div>
-                      </div>
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-sm line-clamp-1">{bug.title}</h3>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleBugClick(bug)}
+                        className="h-6 w-6 p-0 flex-shrink-0 hover:bg-destructive/10"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {bug.description}
+                    </p>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-semibold text-sm line-clamp-1">{bug.title}</h3>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleBugClick(bug)}
-                            className="h-6 w-6 p-0 flex-shrink-0 hover:bg-destructive/10"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
-                          {bug.description}
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
-                            bug.status === 'new' ? 'bg-primary/10 text-primary' :
-                            bug.status === 'triaged' ? 'bg-warning/10 text-warning' :
-                            bug.status === 'in_progress' ? 'bg-info/10 text-info' :
-                            bug.status === 'fixed' ? 'bg-success/10 text-success' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              bug.status === 'new' ? 'bg-primary' :
-                              bug.status === 'triaged' ? 'bg-warning' :
-                              bug.status === 'in_progress' ? 'bg-info' :
-                              bug.status === 'fixed' ? 'bg-success' :
-                              'bg-muted-foreground'
-                            }`}></span>
-                            {bug.status.replace('_', ' ')}
-                          </span>
-                          {bug.projects && (
-                            <>
-                              <span className="text-muted-foreground/40">•</span>
-                              <span className="text-muted-foreground truncate">{bug.projects.name}</span>
-                            </>
-                          )}
-                          <span className="ml-auto text-muted-foreground/60 flex-shrink-0">{format(new Date(bug.created_at), 'MMM dd')}</span>
-                        </div>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
+                        bug.status === 'new' ? 'bg-primary/10 text-primary' :
+                        bug.status === 'triaged' ? 'bg-warning/10 text-warning' :
+                        bug.status === 'in_progress' ? 'bg-info/10 text-info' :
+                        bug.status === 'fixed' ? 'bg-success/10 text-success' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          bug.status === 'new' ? 'bg-primary' :
+                          bug.status === 'triaged' ? 'bg-warning' :
+                          bug.status === 'in_progress' ? 'bg-info' :
+                          bug.status === 'fixed' ? 'bg-success' :
+                          'bg-muted-foreground'
+                        }`}></span>
+                        {bug.status.replace('_', ' ')}
+                      </span>
+                      {bug.projects && (
+                        <>
+                          <span className="text-muted-foreground/40">•</span>
+                          <span className="text-muted-foreground truncate">{bug.projects.name}</span>
+                        </>
+                      )}
+                      <span className="ml-auto text-muted-foreground/60 flex-shrink-0">{format(new Date(bug.created_at), 'MMM dd')}</span>
                     </div>
 
                     {/* Quick Actions */}
@@ -841,68 +803,49 @@ export function MyTasks() {
                   className="card-interactive border-border/60 hover:border-warning/30 animate-slide-up overflow-hidden"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="p-3 space-y-2.5">
-                    {/* Header */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <div className="relative">
-                          <div className="p-2 bg-warning/10 rounded-lg">
-                            <Lightbulb className="h-5 w-5 text-warning" />
-                          </div>
-                          <Badge 
-                            variant={suggestion.impact === 'high' ? 'destructive' : suggestion.impact === 'medium' ? 'default' : 'secondary'} 
-                            className="absolute -top-1 -right-1 h-5 px-1.5 text-[10px] font-bold"
-                          >
-                            {suggestion.impact === 'high' ? 'H' : suggestion.impact === 'medium' ? 'M' : 'L'}
-                          </Badge>
-                        </div>
-                      </div>
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-sm line-clamp-1">{suggestion.title}</h3>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="h-6 w-6 p-0 flex-shrink-0 hover:bg-warning/10"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {suggestion.description}
+                    </p>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-semibold text-sm line-clamp-1">{suggestion.title}</h3>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            className="h-6 w-6 p-0 flex-shrink-0 hover:bg-warning/10"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
-                          {suggestion.description}
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
-                            suggestion.status === 'new' ? 'bg-primary/10 text-primary' :
-                            suggestion.status === 'consider' ? 'bg-warning/10 text-warning' :
-                            suggestion.status === 'planned' ? 'bg-info/10 text-info' :
-                            suggestion.status === 'done' ? 'bg-success/10 text-success' :
-                            suggestion.status === 'rejected' ? 'bg-destructive/10 text-destructive' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              suggestion.status === 'new' ? 'bg-primary' :
-                              suggestion.status === 'consider' ? 'bg-warning' :
-                              suggestion.status === 'planned' ? 'bg-info' :
-                              suggestion.status === 'done' ? 'bg-success' :
-                              suggestion.status === 'rejected' ? 'bg-destructive' :
-                              'bg-muted-foreground'
-                            }`}></span>
-                            {suggestion.status === 'consider' ? 'Under Review' : suggestion.status.replace('_', ' ')}
-                          </span>
-                          {suggestion.projects && (
-                            <>
-                              <span className="text-muted-foreground/40">•</span>
-                              <span className="text-muted-foreground truncate">{suggestion.projects.name}</span>
-                            </>
-                          )}
-                          <span className="ml-auto text-muted-foreground/60 flex-shrink-0">{format(new Date(suggestion.created_at), 'MMM dd')}</span>
-                        </div>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
+                        suggestion.status === 'new' ? 'bg-primary/10 text-primary' :
+                        suggestion.status === 'consider' ? 'bg-warning/10 text-warning' :
+                        suggestion.status === 'planned' ? 'bg-info/10 text-info' :
+                        suggestion.status === 'done' ? 'bg-success/10 text-success' :
+                        suggestion.status === 'rejected' ? 'bg-destructive/10 text-destructive' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          suggestion.status === 'new' ? 'bg-primary' :
+                          suggestion.status === 'consider' ? 'bg-warning' :
+                          suggestion.status === 'planned' ? 'bg-info' :
+                          suggestion.status === 'done' ? 'bg-success' :
+                          suggestion.status === 'rejected' ? 'bg-destructive' :
+                          'bg-muted-foreground'
+                        }`}></span>
+                        {suggestion.status === 'consider' ? 'Under Review' : suggestion.status.replace('_', ' ')}
+                      </span>
+                      {suggestion.projects && (
+                        <>
+                          <span className="text-muted-foreground/40">•</span>
+                          <span className="text-muted-foreground truncate">{suggestion.projects.name}</span>
+                        </>
+                      )}
+                      <span className="ml-auto text-muted-foreground/60 flex-shrink-0">{format(new Date(suggestion.created_at), 'MMM dd')}</span>
                     </div>
 
                     {/* Quick Actions */}
