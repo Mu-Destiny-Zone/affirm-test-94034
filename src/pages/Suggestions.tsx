@@ -57,6 +57,8 @@ export function Suggestions() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [impactFilter, setImpactFilter] = useState<string>('all');
   const [tagFilter, setTagFilter] = useState<string>('all');
+  const [showMyAssigned, setShowMyAssigned] = useState(false);
+  const [showMyReports, setShowMyReports] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState<SuggestionWithDetails | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -146,8 +148,10 @@ export function Suggestions() {
     const matchesStatus = statusFilter === 'all' || suggestion.status === statusFilter;
     const matchesImpact = impactFilter === 'all' || suggestion.impact === impactFilter;
     const matchesTag = tagFilter === 'all' || (suggestion.tags && Array.isArray(suggestion.tags) && suggestion.tags.includes(tagFilter));
+    const matchesAssigned = !showMyAssigned || (suggestion as any).assignee_id === user?.id;
+    const matchesReporter = !showMyReports || suggestion.author_id === user?.id;
     
-    return matchesSearch && matchesStatus && matchesImpact && matchesTag;
+    return matchesSearch && matchesStatus && matchesImpact && matchesTag && matchesAssigned && matchesReporter;
   });
 
   // Enhanced filter options with counts
@@ -173,25 +177,31 @@ export function Suggestions() {
 
   const quickFilters = [
     {
+      label: 'My Assigned',
+      onClick: () => {
+        setShowMyAssigned(!showMyAssigned);
+        setShowMyReports(false); // Clear the other filter
+      },
+      active: showMyAssigned
+    },
+    {
       label: 'My Ideas',
       onClick: () => {
-        // Filter logic could be added here
+        setShowMyReports(!showMyReports);
+        setShowMyAssigned(false); // Clear the other filter
       },
-      active: false
+      active: showMyReports
     },
     {
       label: 'High Impact',
       onClick: () => {
-        setImpactFilter('high')
+        if (impactFilter === 'high') {
+          setImpactFilter('all');
+        } else {
+          setImpactFilter('high');
+        }
       },
       active: impactFilter === 'high'
-    },
-    {
-      label: 'In Progress',
-      onClick: () => {
-        setStatusFilter('planned')
-      },
-      active: statusFilter === 'planned'
     }
   ];
 
@@ -283,31 +293,9 @@ export function Suggestions() {
           if (key === 'status') setStatusFilter(value as string);
           if (key === 'tags') setTagFilter(value as string);
         }}
-        quickFilters={[
-          {
-            label: t('myIdeas'),
-            onClick: () => {
-              // Filter logic could be added here
-            },
-            active: false
-          },
-          {
-            label: t('highImpactFilter'),
-            onClick: () => {
-              setImpactFilter('high')
-            },
-            active: impactFilter === 'high'
-          },
-          {
-            label: t('inProgressFilter'),
-            onClick: () => {
-              setStatusFilter('planned')
-            },
-            active: statusFilter === 'planned'
-          }
-        ]}
+        quickFilters={quickFilters}
         collapsible={true}
-        defaultExpanded={false}
+        defaultExpanded={true}
       />
 
       <SuggestionFormDialog
