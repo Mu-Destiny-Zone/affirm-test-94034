@@ -75,6 +75,7 @@ export type Database = {
       bug_reports: {
         Row: {
           assignment_id: string | null
+          assignee_id: string | null
           created_at: string | null
           deleted_at: string | null
           description: string | null
@@ -96,6 +97,7 @@ export type Database = {
         }
         Insert: {
           assignment_id?: string | null
+          assignee_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
@@ -117,6 +119,7 @@ export type Database = {
         }
         Update: {
           assignment_id?: string | null
+          assignee_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
@@ -142,6 +145,13 @@ export type Database = {
             columns: ["assignment_id"]
             isOneToOne: false
             referencedRelation: "test_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bug_reports_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -590,6 +600,7 @@ export type Database = {
       }
       suggestions: {
         Row: {
+          assignee_id: string | null
           author_id: string
           created_at: string | null
           deleted_at: string | null
@@ -606,6 +617,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          assignee_id?: string | null
           author_id: string
           created_at?: string | null
           deleted_at?: string | null
@@ -622,6 +634,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          assignee_id?: string | null
           author_id?: string
           created_at?: string | null
           deleted_at?: string | null
@@ -638,6 +651,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "suggestions_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "suggestions_author_id_fkey"
             columns: ["author_id"]
