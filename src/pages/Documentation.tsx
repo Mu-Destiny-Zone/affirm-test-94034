@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { BookOpen, ClipboardList, TestTube, Bug, Lightbulb, PlayCircle, FileText, MessageSquare, CheckCircle2, AlertCircle, Info, ThumbsUp } from 'lucide-react';
+import { BookOpen, ClipboardList, TestTube, Bug, Lightbulb, PlayCircle, FileText, MessageSquare, CheckCircle2, AlertCircle, Info, ThumbsUp, Trophy } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,12 @@ export default function Documentation() {
       title: t('docCollaborationTitle'),
       description: t('docCollaborationDetail'),
       color: 'text-pink-500'
+    },
+    {
+      icon: Trophy,
+      title: t('leaderboard'),
+      description: t('docLeaderboardDetail'),
+      color: 'text-amber-500'
     }
   ];
 
@@ -212,6 +218,34 @@ export default function Documentation() {
               <li className="flex items-start gap-2">
                 <ThumbsUp className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                 <span>{t('docSuggestionStep3')}</span>
+              </li>
+            </ul>
+          </div>
+
+          <Separator />
+
+          {/* Leaderboard Section */}
+          <div>
+            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              {t('docLeaderboardTitle')}
+            </h3>
+            <ul className="space-y-2 text-sm text-muted-foreground ml-7">
+              <li className="flex items-start gap-2">
+                <Trophy className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <span>{t('docLeaderboardStep1')}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Trophy className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <span>{t('docLeaderboardStep2')}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Trophy className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <span>{t('docLeaderboardStep3')}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Trophy className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <span>{t('docLeaderboardStep4')}</span>
               </li>
             </ul>
           </div>
