@@ -41,6 +41,7 @@ interface UserBug {
   org_id: string;
   project_id: string | null;
   reporter_id: string;
+  assignee_id: string | null;
   test_id: string | null;
   assignment_id: string | null;
   repro_steps: any[];
@@ -68,6 +69,7 @@ interface UserSuggestion {
   created_at: string;
   updated_at: string;
   author_id: string;
+  assignee_id: string | null;
   org_id: string;
   project_id: string | null;
   test_id: string | null;
@@ -162,6 +164,7 @@ export function MyTasks() {
             org_id,
             project_id,
             reporter_id,
+            assignee_id,
             test_id,
             assignment_id,
             repro_steps,
@@ -174,7 +177,7 @@ export function MyTasks() {
             projects (name)
           `)
           .eq('org_id', currentOrg.id)
-          .eq('reporter_id', user.id)
+          .eq('assignee_id', user.id)
           .is('deleted_at', null)
           .order('created_at', { ascending: false }),
 
@@ -189,6 +192,7 @@ export function MyTasks() {
             created_at,
             updated_at,
             author_id,
+            assignee_id,
             org_id,
             project_id,
             test_id,
@@ -198,7 +202,7 @@ export function MyTasks() {
             tests (id, title)
           `)
           .eq('org_id', currentOrg.id)
-          .eq('author_id', user.id)
+          .eq('assignee_id', user.id)
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
       ]);
@@ -360,10 +364,10 @@ export function MyTasks() {
               <Bug className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Open Bugs</p>
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Assigned Bugs</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl sm:text-3xl font-bold tracking-tight text-destructive">{stats.openBugs}</p>
-                <p className="text-[9px] sm:text-xs text-muted-foreground">reported</p>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">assigned</p>
               </div>
             </div>
           </div>
@@ -525,13 +529,13 @@ export function MyTasks() {
                 <div className="p-3 sm:p-4 bg-destructive/10 rounded-full mb-3 sm:mb-4">
                   <Bug className="h-10 w-10 sm:h-16 sm:w-16 text-destructive" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-2">No bugs reported</h3>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">No bugs assigned</h3>
                 <p className="text-muted-foreground text-center max-w-md text-sm">
-                  You haven't reported any bugs yet. Found an issue? Report it now!
+                  You don't have any bugs assigned to you at the moment. Check back later or contact your manager.
                 </p>
                 <Button onClick={() => navigate('/bugs')} variant="destructive" className="mt-4 sm:mt-6 shadow-md" size="sm">
                   <Bug className="h-4 w-4 mr-2" />
-                  Report Your First Bug
+                  View All Bugs
                 </Button>
               </CardContent>
             </Card>
@@ -611,10 +615,14 @@ export function MyTasks() {
             <Card className="border-border/60">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <Lightbulb className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No suggestions</h3>
+                <h3 className="text-xl font-semibold mb-2">No suggestions assigned</h3>
                 <p className="text-muted-foreground text-center">
-                  You haven't submitted any suggestions yet
+                  You don't have any suggestions assigned to you at the moment
                 </p>
+                <Button onClick={() => navigate('/suggestions')} className="mt-4 sm:mt-6 btn-gradient" size="sm">
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  View All Suggestions
+                </Button>
               </CardContent>
             </Card>
           ) : (
