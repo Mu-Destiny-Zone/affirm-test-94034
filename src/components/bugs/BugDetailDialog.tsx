@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentOrgRole } from '@/hooks/useCurrentOrgRole';
 import { useToast } from '@/hooks/use-toast';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -24,10 +25,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { VotePanel } from '@/components/shared/VotePanel';
 import { Comments } from '@/components/ui/comments';
 import { BugReport, BugSeverity, BugStatus } from '@/lib/types';
-import { Bug, Edit, AlertCircle, User, Calendar, ExternalLink, List, Video, Trash2 } from 'lucide-react';
+import { Bug, Edit, AlertCircle, User, Calendar, ExternalLink, List, Video, Trash2, UserCheck } from 'lucide-react';
 
 interface BugDetailDialogProps {
   open: boolean;
@@ -46,11 +48,98 @@ export function BugDetailDialog({
 }: BugDetailDialogProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { currentOrg } = useOrganization();
   const { toast } = useToast();
   const { isAdmin, isManager } = useCurrentOrgRole();
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [orgMembers, setOrgMembers] = useState<Array<{ id: string; display_name: string | null; email: string }>>([]);
+  const [assigneeId, setAssigneeId] = useState<string>('none');
+  const [updatingAssignee, setUpdatingAssignee] = useState(false);
+
+  useEffect(() => {
+    if (open && currentOrg) {
+      fetchOrgMembers();
+      setAssigneeId((bug as any)?.assignee_id || 'none');
+    }
+  }, [open, currentOrg, bug]);
+
+  const fetchOrgMembers = async () => {
+    if (!currentOrg) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('org_members')
+        .select(`
+          profile_id,
+          profiles!org_members_profile_id_fkey (
+            id,
+            display_name,
+            email
+          )
+        `)
+        .eq('org_id', currentOrg.id)
+        .is('deleted_at', null);
+
+      if (error) throw error;
+
+      const members = data?.map((m: any) => ({
+        id: m.profiles.id,
+        display_name: m.profiles.display_name,
+        email: m.profiles.email
+      })) || [];
+
+      setOrgMembers(members);
+    } catch (error) {
+      console.error('Error fetching org members:', error);
+    }
+  };
+
+  const handleAssigneeChange = async (newAssigneeId: string) => {
+    if (!bug || !user || !currentOrg) return;
+
+    setUpdatingAssignee(true);
+    try {
+      const previousAssigneeId = assigneeId !== 'none' ? assigneeId : null;
+      const assigneeValue = newAssigneeId !== 'none' ? newAssigneeId : null;
+
+      const { error } = await supabase
+        .from('bug_reports')
+        .update({ assignee_id: assigneeValue })
+        .eq('id', bug.id);
+
+      if (error) throw error;
+
+      // Create notification if someone was assigned
+      if (assigneeValue && assigneeValue !== user.id && assigneeValue !== previousAssigneeId) {
+        await supabase.from('notifications').insert({
+          user_id: assigneeValue,
+          org_id: currentOrg.id,
+          title: 'Bug Assigned to You',
+          message: `You have been assigned to bug: "${bug.title}"`,
+          type: 'bug_assigned',
+          entity_type: 'bug',
+          entity_id: bug.id
+        });
+      }
+
+      setAssigneeId(newAssigneeId);
+      toast({
+        title: 'Success',
+        description: assigneeValue ? 'Bug assigned successfully' : 'Assignment removed'
+      });
+    } catch (error: any) {
+      console.error('Error updating assignee:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update assignee',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingAssignee(false);
+    }
+  };
 
   if (!bug) return null;
 
@@ -238,6 +327,30 @@ export function BugDetailDialog({
             </div>
           )}
 
+          {/* Assignee */}
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm flex items-center gap-2">
+              <UserCheck className="h-4 w-4" />
+              Assigned To
+            </h4>
+            <Select 
+              value={assigneeId} 
+              onValueChange={handleAssigneeChange}
+              disabled={updatingAssignee}
+            >
+              <SelectTrigger data-testid="bug-assignee-select">
+                <SelectValue placeholder="Unassigned" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Unassigned</SelectItem>
+                {orgMembers.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.display_name || member.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <Separator />
 

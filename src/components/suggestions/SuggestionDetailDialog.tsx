@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentOrgRole } from '@/hooks/useCurrentOrgRole';
 import { useToast } from '@/hooks/use-toast';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -27,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { VotePanel } from '@/components/shared/VotePanel';
 import { Comments } from '@/components/ui/comments';
-import { Lightbulb, Edit, Target, Tag, User, Calendar, TestTube, Trash2 } from 'lucide-react';
+import { Lightbulb, Edit, Target, Tag, User, Calendar, TestTube, Trash2, UserCheck } from 'lucide-react';
 
 interface SuggestionWithDetails {
   id: string;
@@ -76,11 +77,98 @@ export function SuggestionDetailDialog({
 }: SuggestionDetailDialogProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { currentOrg } = useOrganization();
   const { toast } = useToast();
   const { isAdmin, isManager } = useCurrentOrgRole();
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [orgMembers, setOrgMembers] = useState<Array<{ id: string; display_name: string | null; email: string }>>([]);
+  const [assigneeId, setAssigneeId] = useState<string>('none');
+  const [updatingAssignee, setUpdatingAssignee] = useState(false);
+
+  useEffect(() => {
+    if (open && currentOrg) {
+      fetchOrgMembers();
+      setAssigneeId((suggestion as any)?.assignee_id || 'none');
+    }
+  }, [open, currentOrg, suggestion]);
+
+  const fetchOrgMembers = async () => {
+    if (!currentOrg) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('org_members')
+        .select(`
+          profile_id,
+          profiles!org_members_profile_id_fkey (
+            id,
+            display_name,
+            email
+          )
+        `)
+        .eq('org_id', currentOrg.id)
+        .is('deleted_at', null);
+
+      if (error) throw error;
+
+      const members = data?.map((m: any) => ({
+        id: m.profiles.id,
+        display_name: m.profiles.display_name,
+        email: m.profiles.email
+      })) || [];
+
+      setOrgMembers(members);
+    } catch (error) {
+      console.error('Error fetching org members:', error);
+    }
+  };
+
+  const handleAssigneeChange = async (newAssigneeId: string) => {
+    if (!suggestion || !user || !currentOrg) return;
+
+    setUpdatingAssignee(true);
+    try {
+      const previousAssigneeId = assigneeId !== 'none' ? assigneeId : null;
+      const assigneeValue = newAssigneeId !== 'none' ? newAssigneeId : null;
+
+      const { error } = await supabase
+        .from('suggestions')
+        .update({ assignee_id: assigneeValue })
+        .eq('id', suggestion.id);
+
+      if (error) throw error;
+
+      // Create notification if someone was assigned
+      if (assigneeValue && assigneeValue !== user.id && assigneeValue !== previousAssigneeId) {
+        await supabase.from('notifications').insert({
+          user_id: assigneeValue,
+          org_id: currentOrg.id,
+          title: 'Suggestion Assigned to You',
+          message: `You have been assigned to suggestion: "${suggestion.title}"`,
+          type: 'suggestion_assigned',
+          entity_type: 'suggestion',
+          entity_id: suggestion.id
+        });
+      }
+
+      setAssigneeId(newAssigneeId);
+      toast({
+        title: 'Success',
+        description: assigneeValue ? 'Suggestion assigned successfully' : 'Assignment removed'
+      });
+    } catch (error: any) {
+      console.error('Error updating assignee:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update assignee',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingAssignee(false);
+    }
+  };
 
   if (!suggestion) return null;
 
@@ -271,7 +359,30 @@ export function SuggestionDetailDialog({
             </div>
           )}
 
-
+          {/* Assignee */}
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm flex items-center gap-2">
+              <UserCheck className="h-4 w-4" />
+              Assigned To
+            </h4>
+            <Select 
+              value={assigneeId} 
+              onValueChange={handleAssigneeChange}
+              disabled={updatingAssignee}
+            >
+              <SelectTrigger data-testid="suggestion-assignee-select">
+                <SelectValue placeholder="Unassigned" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Unassigned</SelectItem>
+                {orgMembers.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.display_name || member.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <VotePanel 
